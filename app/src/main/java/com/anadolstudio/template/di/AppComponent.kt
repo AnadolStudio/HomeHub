@@ -3,7 +3,7 @@ package com.anadolstudio.template.di
 import android.content.Context
 import com.anadolstudio.template.App
 import com.anadolstudio.template.di.viewmodel.ViewModelsInjector
-import com.anadolstudio.template.feature.home.di.HomeModule
+import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.di.AutoSetupHomeAssistantUrlModule
 import com.anadolstudio.template.feature.splash.di.SplashModule
 import dagger.BindsInstance
 import dagger.Component
@@ -13,7 +13,7 @@ import javax.inject.Singleton
 @Component(
     modules = [
         AppModule::class,
-        HomeModule::class,
+        AutoSetupHomeAssistantUrlModule::class,
         SplashModule::class,
     ]
 )

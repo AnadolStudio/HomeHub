@@ -245,7 +245,7 @@ private fun ButtonsPreview(@PreviewParameter(ThemePreviewParameter::class) useDa
     AppTheme(useDarkMode) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.background(AppTheme.colors.colorPrimary)
+            modifier = Modifier.background(AppTheme.colors.colorSecondary)
         ) {
             PrimaryButtonLarge(
                 text = "PrimaryButtonLarge",
@@ -340,8 +340,8 @@ data class AppButtonColors(
 
         @Composable
         fun primaryButtonColors(
-            backgroundColor: Color = AppTheme.colors.template,
-            contentColor: Color = AppTheme.colors.template,
+            backgroundColor: Color = AppTheme.colors.colorPrimary,
+            contentColor: Color = AppTheme.colors.textPrimary,
             disabledBackgroundColor: Color = AppTheme.colors.template,
             disabledContentColor: Color = contentColor,
         ): AppButtonColors = AppButtonColors(
@@ -354,7 +354,7 @@ data class AppButtonColors(
         @Composable
         fun outlineButtonColors(
             backgroundColor: Color = Color.Transparent,
-            contentColor: Color = AppTheme.colors.template,
+            contentColor: Color = AppTheme.colors.colorAccent,
         ): AppButtonColors = AppButtonColors(
             backgroundColor = backgroundColor,
             contentColor = contentColor,
@@ -365,8 +365,8 @@ data class AppButtonColors(
         @Composable
         fun textButtonColors(
             backgroundColor: Color = Color.Transparent,
-            contentColor: Color = AppTheme.colors.template,
-            disabledContentColor: Color = AppTheme.colors.template
+            contentColor: Color = AppTheme.colors.colorAccent,
+            disabledContentColor: Color = AppTheme.colors.colorAccent
                 .copy(alpha = ContentAlpha.disabled),
         ): AppButtonColors = AppButtonColors(
             backgroundColor = backgroundColor,

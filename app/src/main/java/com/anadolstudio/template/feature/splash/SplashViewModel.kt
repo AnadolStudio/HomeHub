@@ -2,7 +2,7 @@ package com.anadolstudio.template.feature.splash
 
 import androidx.lifecycle.viewModelScope
 import com.anadolstudio.template.base.viewmodel.BaseViewModel
-import com.anadolstudio.template.feature.main.MainGraph.navigateToHome
+import com.anadolstudio.template.feature.main.MainGraph.navigateToAutoSetupHomeAssistantUrl
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -15,7 +15,7 @@ internal class SplashViewModel @Inject constructor(
 
     private fun navigateToStartDestination() {
         viewModelScope.launch {
-            navigateToHome()
+            navigateToAutoSetupHomeAssistantUrl()
         }
     }
 }

@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.anadolstudio.template.feature.home.presetnation
+package com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.presetnation
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
@@ -34,15 +34,15 @@ import com.anadolstudio.template.feature.main.NavigationController
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @Composable
-internal fun HomeScreen(
+internal fun AutoSetupHomeAssistantUrlScreen(
         navigator: NavigationController,
         snackbarHostState: SnackbarHostState,
-        viewModel: HomeViewModel = daggerViewModel()
+        viewModel: AutoSetupHomeAssistantUrlViewModel = daggerViewModel()
 ) {
     val state by viewModel.stateFlow.collectAsState()
     ObserveEvents(viewModel.events, snackbarHostState, navigator)
 
-    HomeLayout(
+    AutoSetupHomeAssistantUrlLayout(
             state = state,
             controller = viewModel,
     )
@@ -50,9 +50,9 @@ internal fun HomeScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HomeLayout(
-        state: HomeState,
-        controller: HomeController,
+private fun AutoSetupHomeAssistantUrlLayout(
+        state: AutoSetupHomeAssistantUrlState,
+        controller: AutoSetupHomeAssistantUrlController,
 ) {
     BackHandler { controller.onBackClicked() }
     Row(modifier = Modifier.statusBarsPadding()) {
@@ -86,17 +86,17 @@ private fun ToolbarAction(action: () -> Unit, painter: Painter) {
 @Composable
 private fun PreviewMedia(@PreviewParameter(ThemePreviewParameter::class) useDarkMode: Boolean) {
     val state = remember {
-        HomeState()
+        AutoSetupHomeAssistantUrlState()
     }
     val exampleList = listOf("Set", "Set1", "Set2")
     val images = MutableStateFlow(PagingData.from(exampleList)).collectAsLazyPagingItems()
 
-    val controller = object : HomeController {
+    val controller = object : AutoSetupHomeAssistantUrlController {
         override fun onBackClicked() = Unit
     }
 
     AppTheme(useDarkMode) {
-        HomeLayout(
+        AutoSetupHomeAssistantUrlLayout(
                 state = state,
                 controller = controller,
         )

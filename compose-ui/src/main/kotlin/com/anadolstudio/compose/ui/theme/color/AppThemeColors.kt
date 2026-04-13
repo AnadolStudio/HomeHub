@@ -13,6 +13,7 @@ data class AppThemeColors(
     val textSecondary: Color,
     val buttonPrimaryRipple: Color,
     val divider: Color,
+    val disable: Color,
     val template: Color = AppColor.template,
     val colorOverlay: Color = AppColor.colorOverlay,
     val shimmerGradient: GradientColor = GradientColor(
