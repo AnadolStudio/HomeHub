@@ -1,25 +1,95 @@
 package com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.presetnation
 
-import android.content.res.Resources
+import androidx.lifecycle.viewModelScope
 import com.anadolstudio.template.base.viewmodel.StatefulViewModel
 import com.anadolstudio.template.event.navigateUp
+import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.model.HomeAssistantInstance
+import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.repository.HomeAssistantDiscoveryRepository
+import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.wifi.WifiAvailabilityChecker
+import com.anadolstudio.template.feature.main.MainGraph.navigateToHomeAssistantAuth
+import com.anadolstudio.template.feature.main.MainGraph.navigateToManualSetupHomeAssistantUrl
+import com.anadolstudio.utils.states.LoadingContext
 import com.anadolstudio.utils.states.ProgressState
+import com.anadolstudio.utils.states.toContent
+import com.anadolstudio.utils.states.toStartState
 import javax.inject.Inject
-import timber.log.Timber
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
+
+private const val DISCOVERY_TIMEOUT_MS = 5_000L
 
 internal class AutoSetupHomeAssistantUrlViewModel @Inject constructor(
-        private val resources: Resources,
+        private val discoveryRepository: HomeAssistantDiscoveryRepository,
+        private val wifiAvailabilityChecker: WifiAvailabilityChecker,
 ) : StatefulViewModel<AutoSetupHomeAssistantUrlState>(
-        AutoSetupHomeAssistantUrlState()
+        AutoSetupHomeAssistantUrlState(
+               hasWifiConnect = wifiAvailabilityChecker.isWifiConnected()
+        ),
 ), AutoSetupHomeAssistantUrlController {
 
-    override fun onBackClicked() {
-        Timber.tag("DEBUG_TAG").d("onBackClicked:")
-        navigateUp()
+    private var discoveryJob: Job? = null
+
+    init {
+        observeWifiAvailability()
     }
 
-    override fun onManualEnterClicked() {
-        val progressState = if (state.progressState.isLoading) ProgressState.Content else ProgressState.Loading
-        updateState { copy(progressState = progressState) }
+    override fun onBackClicked() = navigateUp()
+
+    override fun onManualEnterClicked() = navigateToManualSetupHomeAssistantUrl()
+
+    override fun onInstanceClicked(instance: HomeAssistantInstance) = navigateToHomeAssistantAuth(instance)
+
+    private fun observeWifiAvailability() {
+        viewModelScope.launch {
+            wifiAvailabilityChecker.observeWifiAvailability().collect { isAvailable ->
+                updateWifiConnect(isAvailable) // TODO Баг. Не всегда приходят изменения сети
+
+                if (isAvailable) {
+                    startDiscovery(LoadingContext.INIT_LOADING)
+                } else {
+                    clearDiscovery()
+                }
+            }
+        }
+    }
+
+    private fun clearDiscovery() {
+        discoveryJob?.cancel()
+        discoveryJob = null
+        updateState { copy(progressState = ProgressState.Error(), instanceSet = emptySet()) }
+    }
+
+    private fun startDiscovery(loadingContext: LoadingContext) {
+        checkWifiConnect()
+
+        if (!state.hasWifiConnect){
+            updateState { copy(progressState = ProgressState.Error()) }
+        }
+
+        if (discoveryJob?.isActive == true) return
+
+        updateState { copy(progressState = loadingContext.toStartState()) }
+
+        discoveryJob = viewModelScope.launch {
+            withTimeoutOrNull(DISCOVERY_TIMEOUT_MS) {
+                discoveryRepository.discover().collect { instance ->
+                    updateState { copy(instanceSet = instanceSet + instance) }
+                }
+            }
+
+            updateState { copy(progressState = loadingContext.toContent(oldState = state.progressState)) }
+        }
+    }
+
+    override fun onRefreshSwiped() {
+        startDiscovery(LoadingContext.REFRESH)
+    }
+
+    private fun checkWifiConnect() = updateWifiConnect(wifiAvailabilityChecker.isWifiConnected())
+
+    private fun updateWifiConnect(isAvailable: Boolean) {
+
+        updateState { copy(hasWifiConnect = isAvailable) }
     }
 }

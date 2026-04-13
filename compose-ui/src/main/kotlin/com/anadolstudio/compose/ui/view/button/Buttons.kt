@@ -20,7 +20,7 @@ import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
-import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.State
@@ -71,7 +71,7 @@ fun PrimaryButtonLarge(
             .rememberMinSize { _, _ -> !loading }
             .indication(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = rememberRipple(
+                indication = ripple(
                     color = AppTheme.colors.buttonPrimaryRipple,
                     radius = 10.dp
                 )

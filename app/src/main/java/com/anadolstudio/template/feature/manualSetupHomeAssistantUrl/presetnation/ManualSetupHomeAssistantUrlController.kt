@@ -1,0 +1,5 @@
+package com.anadolstudio.template.feature.manualSetupHomeAssistantUrl.presetnation
+
+import com.anadolstudio.template.base.viewmodel.BaseController
+
+interface ManualSetupHomeAssistantUrlController : BaseController

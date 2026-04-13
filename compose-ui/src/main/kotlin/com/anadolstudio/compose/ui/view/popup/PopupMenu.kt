@@ -72,7 +72,7 @@ private fun GroupActionsItem(
     tint: Color = AppTheme.colors.textPrimary,
 ) {
     Row(
-        modifier = Modifier.padding(end = Dimension.mediumMargin)
+        modifier = Modifier.padding(end = Dimension.smallMargin)
     ) {
         Icon(
             modifier = Modifier

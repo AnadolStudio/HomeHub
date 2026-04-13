@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -97,7 +97,7 @@ private fun BaseCheckbox(
                 contentDescription = null,
                 modifier = Modifier.indication(
                     interactionSource = interactionSource,
-                    indication = rememberRipple(bounded = false, radius = RippleRadius),
+                    indication = ripple(bounded = false, radius = RippleRadius),
                 )
             )
 

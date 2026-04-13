@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">ХоумХаб</string>
+    <string name="app_name_label">ХоумХаб</string>
+
+    <string name="auto_setup_home_assistant_url_title">Поиск в\nдомашней сети</string>
+    <string name="auto_setup_home_assistant_url_manual_enter_button">Ввести адрес вручную</string>
+
+    <string name="auto_setup_home_assistant_url_loading">Поиск Home Assistant в локальной сети…</string>
+    <string name="auto_setup_home_assistant_url_empty_state">Ничего не найдено. Попробуйте ввести адрес вручную.</string>
+    <string name="auto_setup_home_assistant_url_wifi_required_error">Для поиска сервера Home Assistant необходимо подключиться к Wi-Fi сети.</string>
+    <string name="auto_setup_home_assistant_url_default_server_name">Home Assistant Server</string>
+</resources>

@@ -4,9 +4,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 object Dimension {
-    val smallMargin: Dp = 4.dp
-    val mediumMargin: Dp = 8.dp
-    val extraMediumMargin: Dp = 12.dp
+    val extraSmallMargin: Dp = 4.dp
+    val smallMargin: Dp = 8.dp
+    val mediumMargin: Dp = 12.dp
     val mainMargin: Dp = 16.dp
     val largeMargin: Dp = 24.dp
     val extraLargeMargin: Dp = 32.dp

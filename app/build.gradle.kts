@@ -6,6 +6,8 @@ plugins {
 //    id("com.google.gms.google-services") // TODO
 }
 
+apply(plugin = libs.plugins.kotlin.serialization.get().pluginId)
+
 android {
 
     signingConfigs {

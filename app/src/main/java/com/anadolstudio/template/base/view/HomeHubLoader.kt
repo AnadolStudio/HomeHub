@@ -1,6 +1,7 @@
 package com.anadolstudio.template.base.view
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -12,14 +13,17 @@ import com.anadolstudio.compose.ui.view.state.Loader
 
 @Composable
 internal fun HomeHubLoader(
-        modifier: Modifier,
+        modifier: Modifier = Modifier,
+        underLoadingView: @Composable () -> Unit = {}
 ) {
-    Box(modifier = modifier.fillMaxSize()) {
+    Column(modifier = modifier) {
         Loader(
                 modifier = Modifier
                         .padding(vertical = 24.dp)
-                        .align(Alignment.Center),
+                        .align(Alignment.CenterHorizontally),
                 color = AppTheme.colors.colorAccent
         )
+
+        underLoadingView.invoke()
     }
 }
