@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ХоумХаб</string>
+    <string name="app_name_label">ХоумХаб</string>
+
+    <string name="auto_setup_home_assistant_url_title">Поиск в\nдомашней сети</string>
+    <string name="auto_setup_home_assistant_url_manual_enter_button">Ввести адрес вручную</string>
+</resources>

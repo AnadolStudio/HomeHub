@@ -4,4 +4,5 @@ import com.anadolstudio.template.base.viewmodel.BaseController
 
 interface AutoSetupHomeAssistantUrlController : BaseController {
 
+    fun onManualEnterClicked()
 }

@@ -2,4 +2,6 @@
     <string name="app_name">HomeHub</string>
     <string name="app_name_label">HomeHub</string>
 
+    <string name="auto_setup_home_assistant_url_title">Search on\nthe home network</string>
+    <string name="auto_setup_home_assistant_url_manual_enter_button">Enter address manually</string>
 </resources>

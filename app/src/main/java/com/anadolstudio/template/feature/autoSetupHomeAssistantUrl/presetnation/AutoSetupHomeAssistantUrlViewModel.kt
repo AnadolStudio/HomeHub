@@ -17,4 +17,8 @@ internal class AutoSetupHomeAssistantUrlViewModel @Inject constructor(
         Timber.tag("DEBUG_TAG").d("onBackClicked:")
         navigateUp()
     }
+
+    override fun onManualEnterClicked() {
+        TODO("Not yet implemented")
+    }
 }
