@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Theme.App" parent="Base.Theme.App"/>
 
     <style name="Base.Theme.App" parent="Theme.AppCompat.Light.NoActionBar">
         <!--System UI-->
-        <item name="android:statusBarColor">@color/app_system_ui_scrim_light</item>
-        <item name="android:navigationBarColor">@color/app_system_ui_scrim_dark</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:fitsSystemWindows">false</item>
+        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
+        <item name="android:enforceStatusBarContrast" tools:targetApi="q">false</item>
     </style>
 
 </resources>

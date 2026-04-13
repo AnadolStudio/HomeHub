@@ -3,17 +3,15 @@
 package com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.presetnation
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -21,27 +19,26 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import androidx.paging.PagingData
-import androidx.paging.compose.collectAsLazyPagingItems
 import com.anadolstudio.compose.ui.theme.AppTheme
-import com.anadolstudio.compose.ui.theme.AppTypography
 import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.Shapes
 import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
 import com.anadolstudio.compose.ui.view.button.TextButton
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
+import com.anadolstudio.compose.ui.view.state.Loader
+import com.anadolstudio.compose.ui.view.state.LoaderLayout
 import com.anadolstudio.template.R
+import com.anadolstudio.template.base.view.HomeHubLoader
 import com.anadolstudio.template.di.viewmodel.daggerViewModel
 import com.anadolstudio.template.event.ObserveEvents
 import com.anadolstudio.template.feature.main.NavigationController
-import java.nio.file.WatchEvent
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.anadolstudio.utils.states.ProgressState
 
 @Composable
 internal fun AutoSetupHomeAssistantUrlScreen(
@@ -78,17 +75,28 @@ private fun AutoSetupHomeAssistantUrlLayout(
                 modifier = Modifier
                         .padding(horizontal = 80.dp),
                 text = stringResource(R.string.auto_setup_home_assistant_url_title),
-                style = AppTypography.textBook24,
+                style = AppTheme.typography.textBook24.copy(fontWeight = FontWeight.Bold),
+                color = AppTheme.colors.colorAccent,
                 textAlign = TextAlign.Center
         )
-        Content(
-                modifier = Modifier.weight(1F)
-                        .background(color = AppTheme.colors.template),
-                state = state,
-                controller = controller
-        )
+        Column(
+                modifier = Modifier
+                        .weight(1F)
+        ) {
+            when (state.progressState) {
+                ProgressState.Loading -> HomeHubLoader(Modifier)
+
+                ProgressState.LoadingFromError, is ProgressState.Error -> Error(Modifier, state, controller)
+
+                ProgressState.Content -> Content(Modifier, state, controller)
+
+                else -> Unit
+            }
+        }
+
         TextButton(
                 text = stringResource(R.string.auto_setup_home_assistant_url_manual_enter_button),
+                shape = Shapes.large,
                 onClick = { controller.onManualEnterClicked() }
         )
     }
@@ -98,14 +106,26 @@ private fun AutoSetupHomeAssistantUrlLayout(
 private fun Content(
         modifier: Modifier,
         state: AutoSetupHomeAssistantUrlState,
-        controller: AutoSetupHomeAssistantUrlController
+        controller: AutoSetupHomeAssistantUrlController,
 ) {
-    Column(modifier) {
-
-    }
 }
 
-@Preview
+@Composable
+private fun Loading(
+        modifier: Modifier,
+) {
+    Loader(modifier)
+}
+
+@Composable
+private fun Error(
+        modifier: Modifier,
+        state: AutoSetupHomeAssistantUrlState,
+        controller: AutoSetupHomeAssistantUrlController,
+) {
+}
+
+@Preview(widthDp = 360, heightDp = 640)
 @Composable
 private fun PreviewMedia(@PreviewParameter(ThemePreviewParameter::class) useDarkMode: Boolean) {
     val state = remember {
