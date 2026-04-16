@@ -44,44 +44,41 @@ internal class HomeAssistantDiscoveryRepositoryImpl @Inject constructor(
         val resolveQueue = Channel<NsdServiceInfo>(capacity = Channel.UNLIMITED)
 
         val discoveryListener = object : NsdManager.DiscoveryListener {
-            override fun onDiscoveryStarted(serviceType: String) {
-                Timber.tag(TAG).d("Discovery started for %s", serviceType)
-            }
+            override fun onDiscoveryStarted(serviceType: String) = Unit
 
-            override fun onDiscoveryStopped(serviceType: String) {
-                Timber.tag(TAG).d("Discovery stopped for %s", serviceType)
-            }
+            override fun onDiscoveryStopped(serviceType: String) = Unit
 
             override fun onServiceFound(serviceInfo: NsdServiceInfo) {
                 Timber.tag(TAG).d("Service found: %s", serviceInfo.serviceName)
                 resolveQueue.trySend(serviceInfo)
             }
 
-            override fun onServiceLost(serviceInfo: NsdServiceInfo) {
-                Timber.tag(TAG).d("Service lost: %s", serviceInfo.serviceName)
-            }
+            override fun onServiceLost(serviceInfo: NsdServiceInfo) = Unit
 
             override fun onStartDiscoveryFailed(serviceType: String, errorCode: Int) {
-                Timber.tag(TAG).w("Start discovery failed: code=%d", errorCode)
                 close(IllegalStateException("NSD start failed: code=$errorCode"))
             }
 
-            override fun onStopDiscoveryFailed(serviceType: String, errorCode: Int) {
-                Timber.tag(TAG).w("Stop discovery failed: code=%d", errorCode)
-            }
+            override fun onStopDiscoveryFailed(serviceType: String, errorCode: Int) = Unit
         }
 
         // Резолвим сервисы строго последовательно — параллельные resolveService приводят к ошибкам.
         val resolveJob = launch {
             for (candidate in resolveQueue) {
-                val resolved = resolveServiceAwait(candidate) ?: continue
-                val instance = resolved.toHomeAssistantInstance() ?: continue
+                val instance = resolveServiceAwait(candidate)
+                        ?.toHomeAssistantInstance()
+                        ?: continue
+
                 trySend(instance)
             }
         }
 
         try {
-            nsdManager.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, discoveryListener)
+            nsdManager.discoverServices(
+                    SERVICE_TYPE,
+                    NsdManager.PROTOCOL_DNS_SD,
+                    discoveryListener
+            )
         } catch (error: IllegalArgumentException) {
             close(error)
         }

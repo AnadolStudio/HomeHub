@@ -70,7 +70,7 @@ internal fun Snackbar(
                     text = snackbarData.message,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    style = AppTypography.captionBook14,
+                    style = AppTypography.textBook18,
                 )
             }
         },

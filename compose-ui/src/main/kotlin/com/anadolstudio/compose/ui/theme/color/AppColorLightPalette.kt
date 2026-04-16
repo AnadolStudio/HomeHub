@@ -9,5 +9,6 @@ val AppColorLightPalette: AppThemeColors = AppThemeColors(
         textSecondary = AppColor.colorAccentLight,
         buttonPrimaryRipple = AppColor.gray,
         divider = AppColor.colorAccentLight,
-        disable = AppColor.colorDisableLight
+        disable = AppColor.colorDisableLight,
+        colorError = AppColor.error
 )

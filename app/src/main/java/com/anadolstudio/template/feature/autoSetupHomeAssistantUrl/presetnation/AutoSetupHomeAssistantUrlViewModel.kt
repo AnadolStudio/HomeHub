@@ -3,6 +3,7 @@ package com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.presetnation
 import androidx.lifecycle.viewModelScope
 import com.anadolstudio.template.base.viewmodel.StatefulViewModel
 import com.anadolstudio.template.event.navigateUp
+import com.anadolstudio.template.event.showTodo
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.model.HomeAssistantInstance
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.repository.HomeAssistantDiscoveryRepository
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.wifi.WifiAvailabilityChecker
@@ -36,7 +37,10 @@ internal class AutoSetupHomeAssistantUrlViewModel @Inject constructor(
 
     override fun onBackClicked() = navigateUp()
 
-    override fun onManualEnterClicked() = navigateToManualSetupHomeAssistantUrl()
+    override fun onManualEnterClicked() {
+        showTodo()
+//        navigateToManualSetupHomeAssistantUrl()
+    }
 
     override fun onInstanceClicked(instance: HomeAssistantInstance) = navigateToHomeAssistantAuth(instance)
 

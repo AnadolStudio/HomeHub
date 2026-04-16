@@ -107,7 +107,7 @@ private fun AutoSetupHomeAssistantUrlLayout(
             when (state.progressState) {
                 ProgressState.Loading -> Loading(modifier = Modifier.fillMaxSize())
 
-                is ProgressState.Error -> Error(modifier = Modifier.fillMaxSize())
+                is ProgressState.Error -> Error(modifier = Modifier.fillMaxSize()) // TODO нужна дефолтная заглушка
 
                 ProgressState.Content, ProgressState.Refresh -> Content(
                         modifier = Modifier.fillMaxSize(),
