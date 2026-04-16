@@ -8,4 +8,7 @@
     <string name="auto_setup_home_assistant_url_empty_state">Nothing found. Try entering the address manually.</string>
     <string name="auto_setup_home_assistant_url_wifi_required_error">To search for a Home Assistant server, you need to be connected to a Wi-Fi network.</string>
     <string name="auto_setup_home_assistant_url_default_server_name">Home Assistant Server</string>
+
+    <string name="home_assistant_auth_error_generic">Could not connect to the server. Check the address and your network connection.</string>
+    <string name="home_assistant_auth_retry">Retry</string>
 </resources>

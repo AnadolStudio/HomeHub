@@ -24,7 +24,7 @@ import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
 @Composable
 fun Loader(
     modifier: Modifier = Modifier,
-    color: Color = AppTheme.colors.template,
+    color: Color = AppTheme.colors.colorAccent,
     strokeWidth: Dp = 4.dp,
 ) {
     CircularProgressIndicator(

@@ -15,15 +15,15 @@ import javax.inject.Singleton
 
 @Singleton
 internal class ViewModelsInjector @Inject constructor(
-    val viewModelFactory: ViewModelFactory,
-    private val factories: Map<Class<out ViewModel>, @JvmSuppressWildcards Provider<ViewModel>>,
+        val viewModelFactory: ViewModelFactory,
+        private val factories: Map<Class<out Any>, @JvmSuppressWildcards Provider<Any>>,
 ) {
 
-    inline fun <reified T : ViewModel> assistedViewModelFactory(): T = assistedViewModelFactory(T::class.java)
+    inline fun <reified T : Any> assistedViewModelFactory(): T = assistedViewModelFactory(T::class.java)
 
-    fun <T : ViewModel> assistedViewModelFactory(factoryClass: Class<T>): T {
+    fun <T : Any> assistedViewModelFactory(factoryClass: Class<T>): T {
         val provider = factories[factoryClass]
-            ?: throw IllegalArgumentException("Binding for $factoryClass not found.")
+                ?: throw IllegalArgumentException("Binding for $factoryClass not found.")
 
         @Suppress("UNCHECKED_CAST")
         return provider.get() as T
@@ -34,10 +34,10 @@ internal val LocalViewModelFactory = staticCompositionLocalOf { DI.viewModelsInj
 
 @Composable
 internal inline fun <reified VM : ViewModel> daggerViewModel(
-    viewModelStoreOwner: ViewModelStoreOwner = checkNotNull(LocalViewModelStoreOwner.current) {
-        "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
-    },
-    factory: ViewModelProvider.Factory = LocalViewModelFactory.current,
+        viewModelStoreOwner: ViewModelStoreOwner = checkNotNull(LocalViewModelStoreOwner.current) {
+            "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
+        },
+        factory: ViewModelProvider.Factory = LocalViewModelFactory.current,
 ): VM {
     return viewModel(factory = factory, viewModelStoreOwner = viewModelStoreOwner)
 }
@@ -49,14 +49,14 @@ internal inline fun <reified T : Any> rememberViewModelFactory(): T {
 
 @Composable
 internal inline fun <reified VM : ViewModel> assistedViewModel(
-    crossinline createViewModel: () -> VM,
+        crossinline createViewModel: () -> VM,
 ): VM {
     val factory = remember { createSingleViewModelFactory(createViewModel) }
     return viewModel(factory = factory)
 }
 
 internal inline fun createSingleViewModelFactory(
-    crossinline createViewModel: () -> ViewModel,
+        crossinline createViewModel: () -> ViewModel,
 ): ViewModelProvider.Factory {
     return object : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")

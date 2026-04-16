@@ -2,19 +2,53 @@ package com.anadolstudio.template.feature.homeAssistantAuth.presetnation
 
 import com.anadolstudio.template.base.viewmodel.StatefulViewModel
 import com.anadolstudio.template.event.navigateUp
-import javax.inject.Inject
+import com.anadolstudio.utils.states.ProgressState
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import timber.log.Timber
 
-internal class HomeAssistantAuthViewModel @Inject constructor(
+internal class HomeAssistantAuthViewModel @AssistedInject constructor(
+        @Assisted private val url: String,
 ) : StatefulViewModel<HomeAssistantAuthState>(
-        HomeAssistantAuthState(),
+        HomeAssistantAuthState(url = url),
 ), HomeAssistantAuthController {
 
-    fun setInstance(instance: com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.model.HomeAssistantInstance) {
-        if (state.instance != null) return
-        updateState { copy(instance = instance) }
+    override fun onAuthCallback(authCode: String) {
+        showEvent(
+                HomeAssistantAuthEvent.Authenticated(
+                        url = url,
+                        authCode = authCode,
+                        requiredMTLS = state.requiredMTLS,
+                )
+        )
     }
 
-    override fun onBackClicked() {
-        navigateUp()
+    override fun onExternalLink(url: String) = showEvent(HomeAssistantAuthEvent.OpenExternalLink(url))
+
+    override fun onPageFinished() = updateState { copy(progressState = ProgressState.Content) }
+
+    override fun onWebViewError(error: HomeAssistantAuthError) = updateState {
+        copy(progressState = ProgressState.Error())
+    }
+
+    override fun onClientCertRequest() {
+        Timber.tag(DEBUG_TAG).d("onClientCertRequest: mTLS required")
+        updateState { copy(requiredMTLS = true) }
+    }
+
+    override fun onRetryClicked() {
+        updateState { copy(progressState = ProgressState.LoadingFromError, retryCount = retryCount + 1) }
+    }
+
+    override fun onBackClicked() = navigateUp()
+
+    @AssistedFactory
+    interface Factory {
+        fun create(url: String): HomeAssistantAuthViewModel
+    }
+
+    companion object {
+        private const val DEBUG_TAG = "DEBUG_TAG"
     }
 }

@@ -8,7 +8,6 @@ import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.model.
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.repository.HomeAssistantDiscoveryRepository
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.wifi.WifiAvailabilityChecker
 import com.anadolstudio.template.feature.main.MainGraph.navigateToHomeAssistantAuth
-import com.anadolstudio.template.feature.main.MainGraph.navigateToManualSetupHomeAssistantUrl
 import com.anadolstudio.utils.states.LoadingContext
 import com.anadolstudio.utils.states.ProgressState
 import com.anadolstudio.utils.states.toContent
@@ -25,7 +24,7 @@ internal class AutoSetupHomeAssistantUrlViewModel @Inject constructor(
         private val wifiAvailabilityChecker: WifiAvailabilityChecker,
 ) : StatefulViewModel<AutoSetupHomeAssistantUrlState>(
         AutoSetupHomeAssistantUrlState(
-               hasWifiConnect = wifiAvailabilityChecker.isWifiConnected()
+                hasWifiConnect = wifiAvailabilityChecker.isWifiConnected()
         ),
 ), AutoSetupHomeAssistantUrlController {
 
@@ -39,7 +38,7 @@ internal class AutoSetupHomeAssistantUrlViewModel @Inject constructor(
 
     override fun onManualEnterClicked() {
         showTodo()
-//        navigateToManualSetupHomeAssistantUrl()
+        //        navigateToManualSetupHomeAssistantUrl()
     }
 
     override fun onInstanceClicked(instance: HomeAssistantInstance) = navigateToHomeAssistantAuth(instance)
@@ -67,7 +66,7 @@ internal class AutoSetupHomeAssistantUrlViewModel @Inject constructor(
     private fun startDiscovery(loadingContext: LoadingContext) {
         checkWifiConnect()
 
-        if (!state.hasWifiConnect){
+        if (!state.hasWifiConnect) {
             updateState { copy(progressState = ProgressState.Error()) }
         }
 

@@ -105,6 +105,9 @@ dependencies {
 
     implementation(libs.bundles.utils)
 
+    implementation(libs.webkit)
+    implementation(libs.accompanist.webview)
+
     implementation(libs.dagger)
     kapt(libs.dagger.compiler)
 

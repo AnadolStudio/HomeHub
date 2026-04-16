@@ -13,21 +13,19 @@ import com.anadolstudio.template.feature.manualSetupHomeAssistantUrl.presetnatio
 import com.anadolstudio.template.feature.splash.SplashScreen
 import com.anadolstudio.template.feature.splash.SplashViewModel
 import com.anadolstudio.template.navigation.NavGraphContract
-import com.anadolstudio.template.navigation.objectToString
-import com.anadolstudio.template.navigation.requireObject
 import com.anadolstudio.template.navigation.stringArgument
 
 @Suppress("TooManyFunctions", "MemberNameEqualsClassName")
 internal object MainGraph : NavGraphContract() {
 
-    private val instanceArgument = stringArgument(name = "instance")
+    private val urlArgument = stringArgument(name = "url")
 
     private fun autoSetupHomeAssistantUrl() = route { "autoSetupHomeAssistantUrl" }
 
-    private fun homeAssistantAuthRoute() = route { "homeAssistantAuth/{${instanceArgument.name}}" }
+    private fun homeAssistantAuthRoute() = route { "homeAssistantAuth/{${urlArgument.name}}" }
 
-    private fun homeAssistantAuthRoute(instance: HomeAssistantInstance): String =
-            route { "homeAssistantAuth/${Uri.encode(objectToString(instance))}" }
+    private fun homeAssistantAuthRoute(url: String): String =
+            route { "homeAssistantAuth/${Uri.encode(url)}" }
 
     private fun manualSetupHomeAssistantUrl() = route { "manualSetupHomeAssistantUrl" }
 
@@ -44,13 +42,13 @@ internal object MainGraph : NavGraphContract() {
         }
         composable(
                 route = homeAssistantAuthRoute(),
-                arguments = listOf(instanceArgument),
+                arguments = listOf(urlArgument),
         ) { entry ->
-            val instance = entry.requireObject<HomeAssistantInstance>(instanceArgument)
+            val url = requireNotNull(entry.arguments?.getString(urlArgument.name))
             HomeAssistantAuthScreen(
                     navigator = navigator,
                     snackbarHostState = snackbarHostState,
-                    instance = instance,
+                    url = url,
             )
         }
         composable(manualSetupHomeAssistantUrl()) {
@@ -61,7 +59,7 @@ internal object MainGraph : NavGraphContract() {
     fun SplashViewModel.navigateToAutoSetupHomeAssistantUrl() = navigateFromRoot(autoSetupHomeAssistantUrl())
 
     fun AutoSetupHomeAssistantUrlViewModel.navigateToHomeAssistantAuth(instance: HomeAssistantInstance) =
-            navigateTo(homeAssistantAuthRoute(instance))
+            navigateTo(homeAssistantAuthRoute(instance.url))
 
     fun AutoSetupHomeAssistantUrlViewModel.navigateToManualSetupHomeAssistantUrl() =
             navigateTo(manualSetupHomeAssistantUrl())

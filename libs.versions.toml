@@ -2,7 +2,7 @@
 kotlin = "1.9.25"
 compileSdk = "34"
 buildTools = "30.0.3"
-minSdk = "23"
+minSdk = "26"
 targetSdk = "34"
 versionCode = "1"
 versionName = "1.0.0"
@@ -26,6 +26,7 @@ firebase-bom = "33.1.2"
 preferences = "1.0.1"
 timber = "5.0.1"
 
+webkit = "1.12.1"
 dagger = "2.46"
 room = "2.5.2"
 
@@ -88,6 +89,9 @@ kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 paging-runtime = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref = "paging-compose" }
 paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging-compose" }
 
+#WebView
+webkit = { group = "androidx.webkit", name = "webkit", version.ref = "webkit" }
+
 #Dagger
 dagger = { group = "com.google.dagger", name = "dagger", version.ref = "dagger" }
 dagger-compiler = { group = "com.google.dagger", name = "dagger-compiler", version.ref = "dagger" }
@@ -99,6 +103,7 @@ room-compiler = { group = "androidx.room", name = "room-compiler", version.ref =
 #Compose
 accompanist-navigation-material = { group = "com.google.accompanist", name = "accompanist-navigation-material", version.ref = "accompanist" }
 accompanist-systemuicontroller = { group = "com.google.accompanist", name = "accompanist-systemuicontroller", version.ref = "accompanist" }
+accompanist-webview = { group = "com.google.accompanist", name = "accompanist-webview", version.ref = "accompanist" }
 compose-material = { group = "androidx.compose.material", name = "material", version.ref = "compose" }
 compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "compose" }
 compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
