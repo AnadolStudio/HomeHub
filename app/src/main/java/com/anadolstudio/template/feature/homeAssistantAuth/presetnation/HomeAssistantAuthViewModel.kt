@@ -6,7 +6,6 @@ import com.anadolstudio.utils.states.ProgressState
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import timber.log.Timber
 
 internal class HomeAssistantAuthViewModel @AssistedInject constructor(
         @Assisted private val url: String,
@@ -32,10 +31,7 @@ internal class HomeAssistantAuthViewModel @AssistedInject constructor(
         copy(progressState = ProgressState.Error())
     }
 
-    override fun onClientCertRequest() {
-        Timber.tag(DEBUG_TAG).d("onClientCertRequest: mTLS required")
-        updateState { copy(requiredMTLS = true) }
-    }
+    override fun onClientCertRequest() = updateState { copy(requiredMTLS = true) }
 
     override fun onRetryClicked() {
         updateState { copy(progressState = ProgressState.LoadingFromError, retryCount = retryCount + 1) }
@@ -48,7 +44,4 @@ internal class HomeAssistantAuthViewModel @AssistedInject constructor(
         fun create(url: String): HomeAssistantAuthViewModel
     }
 
-    companion object {
-        private const val DEBUG_TAG = "DEBUG_TAG"
-    }
 }

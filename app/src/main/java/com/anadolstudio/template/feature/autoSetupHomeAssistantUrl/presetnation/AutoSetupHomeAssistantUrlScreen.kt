@@ -21,8 +21,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -200,7 +198,7 @@ private fun Content(
                 ),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            items(items = instances.toList(), key = { it.url }) { instance ->
+            items(items = instances.toList(), key = { it.internalUrl }) { instance ->
                 ServerListItem(
                         instance = instance,
                         onClick = { controller.onInstanceClicked(instance) },
@@ -250,14 +248,22 @@ private fun ServerListItem(
                     color = AppTheme.colors.colorAccent,
                     maxLines = 2
             )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                    text = instance.url,
-                    style = AppTheme.typography.captionBook14,
-                    color = AppTheme.colors.colorAccent,
-            )
+            UrlText(instance.internalUrl)
+
+            instance.externalUrl?.let { url -> UrlText(url) }
         }
     }
+}
+
+@Composable
+private fun UrlText(url: String) {
+    Spacer(modifier = Modifier.height(4.dp))
+
+    Text(
+            text = url,
+            style = AppTheme.typography.captionBook14,
+            color = AppTheme.colors.colorAccent,
+    )
 }
 
 @Composable
@@ -297,17 +303,18 @@ private fun PreviewContent(@PreviewParameter(ThemePreviewParameter::class) useDa
                 instanceSet = setOf(
                         HomeAssistantInstance(
                                 name = "Home Sweet Home",
-                                url = "http://192.168.1.10:8123",
+                                internalUrl = "http://192.168.1.10:8123",
+                                externalUrl = "https://google.com",
                                 version = HomeAssistantVersion(2024, 10, 3),
                         ),
                         HomeAssistantInstance(
                                 name = "Home Assistant Server",
-                                url = "http://192.168.1.20:8123",
+                                internalUrl = "http://192.168.1.20:8123",
                                 version = HomeAssistantVersion(2024, 9, 1),
                         ),
                         HomeAssistantInstance(
                                 name = "Home Assistant Server Home Assistant Server Home Assistant Server",
-                                url = "http://192.168.1.30:8123",
+                                internalUrl = "http://192.168.1.30:8123",
                                 version = HomeAssistantVersion(2024, 9, 1),
                         ),
                 ),

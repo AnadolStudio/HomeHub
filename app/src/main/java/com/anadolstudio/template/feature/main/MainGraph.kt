@@ -59,7 +59,7 @@ internal object MainGraph : NavGraphContract() {
     fun SplashViewModel.navigateToAutoSetupHomeAssistantUrl() = navigateFromRoot(autoSetupHomeAssistantUrl())
 
     fun AutoSetupHomeAssistantUrlViewModel.navigateToHomeAssistantAuth(instance: HomeAssistantInstance) =
-            navigateTo(homeAssistantAuthRoute(instance.url))
+            navigateTo(homeAssistantAuthRoute(instance.internalUrl))
 
     fun AutoSetupHomeAssistantUrlViewModel.navigateToManualSetupHomeAssistantUrl() =
             navigateTo(manualSetupHomeAssistantUrl())

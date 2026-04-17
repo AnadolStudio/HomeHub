@@ -4,8 +4,9 @@ import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.net.wifi.WifiManager
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.model.HomeAssistantInstance
-import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.model.toHomeAssistantInstance
+import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.model.HomeAssistantVersion
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.repository.HomeAssistantDiscoveryRepository
+import com.anadolstudio.utils.util.extentions.nullIfEmpty
 import javax.inject.Inject
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.channels.Channel
@@ -17,6 +18,10 @@ import timber.log.Timber
 
 private const val SERVICE_TYPE = "_home-assistant._tcp."
 private const val MULTICAST_LOCK_TAG = "HomeHub.HomeAssistantDiscovery"
+private const val ATTRIBUTE_VERSION = "version"
+private const val ATTRIBUTE_LOCATION_NAME = "location_name"
+private const val ATTRIBUTE_EXTERNAL_URL = "external_url"
+private const val ATTRIBUTE_INTERNAL_URL = "internal_url"
 
 /**
  * Реализация поиска инстансов Home Assistant через Android NSD (mDNS).
@@ -93,6 +98,42 @@ internal class HomeAssistantDiscoveryRepositoryImpl @Inject constructor(
                     .onFailure { Timber.tag(TAG).w(it, "MulticastLock release failed") }
         }
     }
+
+    /**
+     * Маппит [NsdServiceInfo] в [HomeAssistantInstance]. Возвращает `null`, если обязательные данные
+     * отсутствуют или невалидны:
+     * - host (IP) должен быть валидным;
+     * - атрибут `version` должен присутствовать и парситься в [HomeAssistantVersion].
+     *
+     * URL формируется в формате `http://<ip>:8123` независимо от анонсированных `base_url`/портов,
+     * как это требуется ТЗ.
+     */
+    private fun NsdServiceInfo.toHomeAssistantInstance(): HomeAssistantInstance? {
+        val attrs = attributes.orEmpty().mapValues { it.value.toString(Charsets.UTF_8) }
+
+        val versionRaw = attrs[ATTRIBUTE_VERSION]
+                ?: return null
+        val version = HomeAssistantVersion.fromString(versionRaw)
+                ?: return null
+
+        val name = attrs[ATTRIBUTE_LOCATION_NAME]
+                ?.nullIfEmpty()
+                ?: return null
+
+        val internalUrl = attrs[ATTRIBUTE_INTERNAL_URL]
+                ?.nullIfEmpty()
+                ?: return null
+
+        val externalUrl = attrs[ATTRIBUTE_EXTERNAL_URL]?.nullIfEmpty()
+
+        return HomeAssistantInstance(
+                name = name,
+                internalUrl = internalUrl,
+                externalUrl = externalUrl,
+                version = version
+        )
+    }
+
 
     private suspend fun resolveServiceAwait(serviceInfo: NsdServiceInfo): NsdServiceInfo? {
         val deferred = CompletableDeferred<NsdServiceInfo?>()
