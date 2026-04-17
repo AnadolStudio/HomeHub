@@ -7,9 +7,9 @@ import android.net.wifi.WifiManager
 import androidx.lifecycle.ViewModel
 import com.anadolstudio.template.di.viewmodel.ViewModelKey
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.data.repository.HomeAssistantDiscoveryRepositoryImpl
-import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.data.wifi.WifiAvailabilityCheckerImpl
+import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.data.wifi.WifiAvailabilityRepositoryImpl
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.repository.HomeAssistantDiscoveryRepository
-import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.wifi.WifiAvailabilityChecker
+import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.wifi.WifiAvailabilityRepository
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.presetnation.AutoSetupHomeAssistantUrlViewModel
 import dagger.Binds
 import dagger.Module
@@ -30,7 +30,7 @@ internal interface AutoSetupHomeAssistantUrlModule {
     ): HomeAssistantDiscoveryRepository
 
     @Binds
-    fun bindWifiAvailabilityChecker(impl: WifiAvailabilityCheckerImpl): WifiAvailabilityChecker
+    fun bindWifiAvailabilityChecker(impl: WifiAvailabilityRepositoryImpl): WifiAvailabilityRepository
 
     companion object {
 

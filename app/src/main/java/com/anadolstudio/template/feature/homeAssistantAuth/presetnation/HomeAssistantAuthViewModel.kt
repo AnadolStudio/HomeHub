@@ -1,17 +1,28 @@
 package com.anadolstudio.template.feature.homeAssistantAuth.presetnation
 
+import androidx.lifecycle.viewModelScope
 import com.anadolstudio.template.base.viewmodel.StatefulViewModel
 import com.anadolstudio.template.event.navigateUp
+import com.anadolstudio.template.feature.homeAssistantAuth.data.CheckInternalUrlUseCase
 import com.anadolstudio.utils.states.ProgressState
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.launch
 
 internal class HomeAssistantAuthViewModel @AssistedInject constructor(
         @Assisted private val url: String,
+        private val checkInternalUrlUseCase: CheckInternalUrlUseCase,
 ) : StatefulViewModel<HomeAssistantAuthState>(
         HomeAssistantAuthState(url = url),
 ), HomeAssistantAuthController {
+
+    init {
+        viewModelScope.launch {
+            val isInternal = checkInternalUrlUseCase.isInternalUrl(url)
+            updateState { copy(isInternalUrl = isInternal) }
+        }
+    }
 
     override fun onAuthCallback(authCode: String) {
         showEvent(
@@ -43,5 +54,4 @@ internal class HomeAssistantAuthViewModel @AssistedInject constructor(
     interface Factory {
         fun create(url: String): HomeAssistantAuthViewModel
     }
-
 }

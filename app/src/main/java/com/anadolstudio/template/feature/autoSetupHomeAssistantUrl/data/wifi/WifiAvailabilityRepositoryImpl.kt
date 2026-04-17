@@ -4,7 +4,7 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
-import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.wifi.WifiAvailabilityChecker
+import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.wifi.WifiAvailabilityRepository
 import javax.inject.Inject
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
@@ -14,9 +14,9 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.onStart
 
-internal class WifiAvailabilityCheckerImpl @Inject constructor(
+internal class WifiAvailabilityRepositoryImpl @Inject constructor(
         private val connectivityManager: ConnectivityManager,
-) : WifiAvailabilityChecker {
+) : WifiAvailabilityRepository {
 
     override fun isWifiConnected(): Boolean {
         val activeNetwork = connectivityManager.activeNetwork ?: return false

@@ -6,7 +6,7 @@ import com.anadolstudio.template.event.navigateUp
 import com.anadolstudio.template.event.showTodo
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.model.HomeAssistantInstance
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.repository.HomeAssistantDiscoveryRepository
-import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.wifi.WifiAvailabilityChecker
+import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.wifi.WifiAvailabilityRepository
 import com.anadolstudio.template.feature.main.MainGraph.navigateToHomeAssistantAuth
 import com.anadolstudio.utils.states.LoadingContext
 import com.anadolstudio.utils.states.ProgressState
@@ -21,10 +21,10 @@ private const val DISCOVERY_TIMEOUT_MS = 5_000L
 
 internal class AutoSetupHomeAssistantUrlViewModel @Inject constructor(
         private val discoveryRepository: HomeAssistantDiscoveryRepository,
-        private val wifiAvailabilityChecker: WifiAvailabilityChecker,
+        private val wifiAvailabilityRepository: WifiAvailabilityRepository,
 ) : StatefulViewModel<AutoSetupHomeAssistantUrlState>(
         AutoSetupHomeAssistantUrlState(
-                hasWifiConnect = wifiAvailabilityChecker.isWifiConnected()
+                hasWifiConnect = wifiAvailabilityRepository.isWifiConnected()
         ),
 ), AutoSetupHomeAssistantUrlController {
 
@@ -45,7 +45,7 @@ internal class AutoSetupHomeAssistantUrlViewModel @Inject constructor(
 
     private fun observeWifiAvailability() {
         viewModelScope.launch {
-            wifiAvailabilityChecker.observeWifiAvailability().collect { isAvailable ->
+            wifiAvailabilityRepository.observeWifiAvailability().collect { isAvailable ->
                 updateWifiConnect(isAvailable) // TODO Баг. Не всегда приходят изменения сети
 
                 if (isAvailable) {
@@ -89,7 +89,7 @@ internal class AutoSetupHomeAssistantUrlViewModel @Inject constructor(
         startDiscovery(LoadingContext.REFRESH)
     }
 
-    private fun checkWifiConnect() = updateWifiConnect(wifiAvailabilityChecker.isWifiConnected())
+    private fun checkWifiConnect() = updateWifiConnect(wifiAvailabilityRepository.isWifiConnected())
 
     private fun updateWifiConnect(isAvailable: Boolean) {
 

@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 /**
  * Абстракция над проверкой подключения к Wi-Fi сети.
  */
-interface WifiAvailabilityChecker {
+interface WifiAvailabilityRepository {
 
     fun isWifiConnected(): Boolean
 

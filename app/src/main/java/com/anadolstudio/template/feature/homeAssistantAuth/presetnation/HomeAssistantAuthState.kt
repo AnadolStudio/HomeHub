@@ -9,6 +9,7 @@ internal data class HomeAssistantAuthState(
         val progressState: ProgressState = if (authUrl != null) ProgressState.Loading else ProgressState.Error(),
         val requiredMTLS: Boolean = false,
         val retryCount: Int = 0,
+        val isInternalUrl: Boolean = false,
 ) {
 
     companion object {
