@@ -39,6 +39,13 @@ class PreferencesStorage(private val preferences: SharedPreferences) {
         set(value) = preferences.modify { putString(TOKEN_TYPE, value) }
         get() = preferences.getString(TOKEN_TYPE, null)
 
+    fun clearAuthData() {
+        baseUrl = null
+        accessToken = null
+        refreshToken = null
+        tokenType = null
+        accessTokenExpiresIn = 0L
+    }
 
     private inline fun SharedPreferences.modify(action: SharedPreferences.Editor.() -> Unit) {
         with(edit()) {

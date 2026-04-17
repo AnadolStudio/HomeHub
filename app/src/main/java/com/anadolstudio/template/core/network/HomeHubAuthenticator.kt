@@ -20,6 +20,7 @@ import timber.log.Timber
 class HomeHubAuthenticator @Inject constructor(
         private val preferencesStorage: PreferencesStorage,
         private val apiFactory: HomeAssistantApiFactory,
+        private val sessionExpiredNotifier: SessionExpiredNotifier,
 ) : Authenticator {
 
     override fun authenticate(route: Route?, response: Response): Request? {
@@ -27,6 +28,7 @@ class HomeHubAuthenticator @Inject constructor(
         val baseUrl = preferencesStorage.baseUrl ?: return null
 
         if (response.priorResponseCount() >= MAX_RETRY) {
+            handleSessionExpired()
             return null
         }
 
@@ -42,6 +44,7 @@ class HomeHubAuthenticator @Inject constructor(
             }
         } catch (error: Exception) {
             Timber.tag(TAG).e(error, "Token refresh failed")
+            handleSessionExpired()
             return null
         }
 
@@ -53,6 +56,11 @@ class HomeHubAuthenticator @Inject constructor(
         return response.request.newBuilder()
                 .header(HEADER_AUTHORIZATION, "${tokenResponse.tokenType} ${tokenResponse.accessToken}")
                 .build()
+    }
+
+    private fun handleSessionExpired() {
+        preferencesStorage.clearAuthData()
+        sessionExpiredNotifier.notifySessionExpired()
     }
 
     private fun Response.priorResponseCount(): Int {

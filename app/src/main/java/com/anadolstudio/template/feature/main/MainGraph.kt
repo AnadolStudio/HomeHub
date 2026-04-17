@@ -8,6 +8,8 @@ import com.anadolstudio.template.event.navigateTo
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.model.HomeAssistantInstance
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.presetnation.AutoSetupHomeAssistantUrlScreen
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.presetnation.AutoSetupHomeAssistantUrlViewModel
+import com.anadolstudio.template.feature.home.presentation.HomeScreen
+import com.anadolstudio.template.feature.home.presentation.HomeViewModel
 import com.anadolstudio.template.feature.homeAssistantAuth.presetnation.HomeAssistantAuthScreen
 import com.anadolstudio.template.feature.manualSetupHomeAssistantUrl.presetnation.ManualSetupHomeAssistantUrlScreen
 import com.anadolstudio.template.feature.splash.SplashScreen
@@ -26,6 +28,8 @@ internal object MainGraph : NavGraphContract() {
 
     private fun homeAssistantAuthRoute(url: String): String =
             route { "homeAssistantAuth/${Uri.encode(url)}" }
+
+    private fun home() = route { "home" }
 
     private fun manualSetupHomeAssistantUrl() = route { "manualSetupHomeAssistantUrl" }
 
@@ -51,6 +55,9 @@ internal object MainGraph : NavGraphContract() {
                     url = url,
             )
         }
+        composable(home()) {
+            HomeScreen(navigator = navigator, snackbarHostState = snackbarHostState)
+        }
         composable(manualSetupHomeAssistantUrl()) {
             ManualSetupHomeAssistantUrlScreen(navigator = navigator, snackbarHostState = snackbarHostState)
         }
@@ -58,9 +65,25 @@ internal object MainGraph : NavGraphContract() {
 
     fun SplashViewModel.navigateToAutoSetupHomeAssistantUrl() = navigateFromRoot(autoSetupHomeAssistantUrl())
 
+    fun SplashViewModel.navigateToHome() = navigateFromRoot(home())
+
+    fun HomeViewModel.navigateToHome() = navigateFromRoot(home())
+
     fun AutoSetupHomeAssistantUrlViewModel.navigateToHomeAssistantAuth(instance: HomeAssistantInstance) =
             navigateTo(homeAssistantAuthRoute(instance.internalUrl))
 
     fun AutoSetupHomeAssistantUrlViewModel.navigateToManualSetupHomeAssistantUrl() =
             navigateTo(manualSetupHomeAssistantUrl())
+
+    fun navigateToHome(navigator: NavigationController) {
+        navigator.navigate(home()) {
+            popUpTo(0)
+        }
+    }
+
+    fun navigateToAutoSetupHomeAssistantUrl(navigator: NavigationController) {
+        navigator.navigate(autoSetupHomeAssistantUrl()) {
+            popUpTo(0)
+        }
+    }
 }

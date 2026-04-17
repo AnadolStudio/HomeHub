@@ -32,12 +32,13 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.anadolstudio.compose.ui.theme.AppTheme
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
-import com.anadolstudio.template.base.view.HomeHubLoader
 import com.anadolstudio.template.R
+import com.anadolstudio.template.base.view.HomeHubLoader
 import com.anadolstudio.template.di.viewmodel.assistedViewModel
 import com.anadolstudio.template.di.viewmodel.rememberViewModelFactory
 import com.anadolstudio.template.event.ObserveEvents
 import com.anadolstudio.template.feature.homeAssistantAuth.presetnation.webview.HAWebView
+import com.anadolstudio.template.feature.main.MainGraph
 import com.anadolstudio.template.feature.main.NavigationController
 import com.anadolstudio.utils.states.ProgressState
 
@@ -62,7 +63,7 @@ internal fun HomeAssistantAuthScreen(
             }
 
             is HomeAssistantAuthEvent.Authenticated -> {
-                // TODO: навигация на следующий экран onboarding с authCode
+                MainGraph.navigateToHome(navigator)
                 true
             }
 
