@@ -1,6 +1,7 @@
 package com.anadolstudio.template.feature.homeAssistantAuth.presetnation.webview
 
 import android.net.http.SslError
+import android.view.autofill.AutofillManager
 import android.webkit.ClientCertRequest
 import android.webkit.SslErrorHandler
 import android.webkit.WebResourceRequest
@@ -29,6 +30,7 @@ internal class HAWebViewClient(
         if (uri.scheme == CALLBACK_SCHEME && uri.host == CALLBACK_HOST) {
             val code = uri.getQueryParameter(CODE_PARAM)
             if (!code.isNullOrEmpty()) {
+                view.commitAutofill()
                 onAuthCallback.invoke(code)
             }
             return true
@@ -105,6 +107,10 @@ internal class HAWebViewClient(
     override fun onRenderProcessGone(view: WebView, detail: android.webkit.RenderProcessGoneDetail?): Boolean {
         onError.invoke(HomeAssistantAuthError.RenderProcessGone)
         return true
+    }
+
+    private fun WebView.commitAutofill() {
+        context.getSystemService(AutofillManager::class.java)?.commit()
     }
 
     private companion object {

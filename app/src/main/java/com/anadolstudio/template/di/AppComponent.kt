@@ -15,6 +15,7 @@ import javax.inject.Singleton
 @Component(
     modules = [
         AppModule::class,
+        NetworkModule::class,
         AutoSetupHomeAssistantUrlModule::class,
         HomeAssistantAuthModule::class,
         ManualSetupHomeAssistantUrlModule::class,

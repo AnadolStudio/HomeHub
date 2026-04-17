@@ -108,6 +108,11 @@ dependencies {
     implementation(libs.webkit)
     implementation(libs.accompanist.webview)
 
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.kotlinx.serialization)
+
     implementation(libs.dagger)
     kapt(libs.dagger.compiler)
 

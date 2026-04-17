@@ -2,6 +2,7 @@ package com.anadolstudio.template.feature.homeAssistantAuth.presetnation.webview
 
 import android.annotation.SuppressLint
 import android.os.Message
+import android.view.View
 import android.webkit.WebSettings
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
@@ -80,7 +81,11 @@ internal fun HAWebView(
                     cacheMode = WebSettings.LOAD_NO_CACHE
                     minimumFontSize = MINIMUM_FONT_SIZE
                     displayZoomControls = false
+
+                    @Suppress("DEPRECATION")
+                    saveFormData = true
                 }
+                webView.importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_AUTO
                 webView.clearCache(true)
                 webView.setBackgroundColor(android.graphics.Color.TRANSPARENT)
                 webView.settings.setNightModeTheme(isNightMode)
