@@ -15,6 +15,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
+import retrofit2.converter.scalars.ScalarsConverterFactory
 
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
@@ -49,6 +50,7 @@ object NetworkModule {
             json: Json,
     ): Retrofit.Builder = Retrofit.Builder()
             .client(okHttpClient)
+            .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
 
     @Provides
@@ -75,6 +77,7 @@ object NetworkModule {
         return Retrofit.Builder()
                 .client(okHttpClient)
                 .baseUrl(baseUrl)
+                .addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
                 .build()
                 .create(AuthHomeAssistantApi::class.java)

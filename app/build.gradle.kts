@@ -112,6 +112,7 @@ dependencies {
     implementation(libs.okhttp.logging)
     implementation(libs.retrofit)
     implementation(libs.retrofit.kotlinx.serialization)
+    implementation(libs.retrofit.scalars)
 
     implementation(libs.dagger)
     kapt(libs.dagger.compiler)
