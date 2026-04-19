@@ -53,7 +53,7 @@ import androidx.compose.material.TextButton as MaterialTextButton
 fun PrimaryButtonLarge(
     text: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.fillMaxWidth(),
     enabled: Boolean = true,
     colors: AppButtonColors = AppButtonColors.primaryButtonColors(),
     maxLines: Int = 1,
@@ -65,7 +65,6 @@ fun PrimaryButtonLarge(
     Button(
         onClick = onClick,
         modifier = modifier
-            .fillMaxWidth()
             .defaultMinSize(minHeight = LargeButtonHeight)
             .consumeTouches(loading)
             .rememberMinSize { _, _ -> !loading }
@@ -342,7 +341,7 @@ data class AppButtonColors(
         fun primaryButtonColors(
             backgroundColor: Color = AppTheme.colors.colorPrimary,
             contentColor: Color = AppTheme.colors.textPrimary,
-            disabledBackgroundColor: Color = AppTheme.colors.template,
+            disabledBackgroundColor: Color = AppTheme.colors.colorPrimary,
             disabledContentColor: Color = contentColor,
         ): AppButtonColors = AppButtonColors(
             backgroundColor = backgroundColor,
