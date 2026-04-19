@@ -3,6 +3,7 @@ package com.anadolstudio.template.feature.home.presentation
 import com.anadolstudio.template.core.websocket.WebSocketConnectionState
 import com.anadolstudio.template.feature.home.data.model.EntityDomain
 import com.anadolstudio.template.feature.home.data.model.EntityRegistryEntry
+import com.anadolstudio.template.feature.home.data.model.HomeAssistantDevice
 import com.anadolstudio.utils.states.ProgressState
 
 internal data class HomeState(
@@ -11,6 +12,7 @@ internal data class HomeState(
         val connectionState: WebSocketConnectionState = WebSocketConnectionState.Disconnected,
         val allEntities: List<EntityRegistryEntry> = emptyList(),
         val selectedDomain: EntityDomain? = null,
+        val devices: List<HomeAssistantDevice> = emptyList(),
 ) {
     val filteredEntities: List<EntityRegistryEntry>
         get() {

@@ -1,36 +1,60 @@
 package com.anadolstudio.template.feature.home.presentation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.Lightbulb
+import androidx.compose.material.icons.outlined.PowerSettingsNew
+import androidx.compose.material.icons.outlined.ToggleOn
 import androidx.compose.material3.Card
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import com.anadolstudio.compose.ui.theme.AppTheme
-import com.anadolstudio.compose.ui.view.button.PrimaryButtonLarge
+import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
 import com.anadolstudio.template.base.view.HomeHubLoader
-import com.anadolstudio.template.core.websocket.WebSocketConnectionState
 import com.anadolstudio.template.di.viewmodel.daggerViewModel
 import com.anadolstudio.template.event.ObserveEvents
-import com.anadolstudio.template.feature.home.data.model.EntityDomain
 import com.anadolstudio.template.feature.home.data.model.EntityRegistryEntry
+import com.anadolstudio.template.feature.home.data.model.HomeAssistantDevice
+import com.anadolstudio.template.feature.home.data.model.HomeAssistantEntity
 import com.anadolstudio.template.feature.main.NavigationController
 import com.anadolstudio.utils.states.ProgressState
+
+private const val HOME_TITLE = "Домостроительня улица 4, к.3, кв.11"
+private const val GRID_COLUMNS = 3
+private const val NO_AREA_ID = "__no_area__"
+private const val NO_AREA_TITLE = "Без комнаты"
 
 @Composable
 internal fun HomeScreen(
@@ -43,150 +67,379 @@ internal fun HomeScreen(
 
     HomeLayout(
             state = state,
-            onGetApiStatusClicked = viewModel::onGetApiStatusClicked,
-            onGetEntitiesClicked = viewModel::onGetEntitiesClicked,
-            onDomainFilterClicked = viewModel::onDomainFilterClicked,
+            onToggleClicked = viewModel::onToggleClicked,
     )
 }
 
 @Composable
 private fun HomeLayout(
         state: HomeState,
-        onGetApiStatusClicked: () -> Unit,
-        onGetEntitiesClicked: () -> Unit,
-        onDomainFilterClicked: (EntityDomain?) -> Unit,
+        onToggleClicked: (HomeAssistantEntity) -> Unit = {},
 ) {
-    Column(
+    val groups = remember(state.allEntities) { state.allEntities.toGroups() }
+
+    LazyVerticalGrid(
+            columns = GridCells.Fixed(GRID_COLUMNS),
             modifier = Modifier
+                    .background(color = AppTheme.colors.colorSecondary)
                     .fillMaxSize()
-                    .systemBarsPadding()
-                    .padding(horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+                    .systemBarsPadding(),
+            contentPadding = PaddingValues(
+                    start = Dimension.mainMargin,
+                    end = Dimension.mainMargin,
+                    top = Dimension.mainMargin,
+                    bottom = Dimension.largeMargin,
+            ),
+            horizontalArrangement = Arrangement.spacedBy(Dimension.mediumMargin),
+            verticalArrangement = Arrangement.spacedBy(Dimension.mediumMargin),
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
-
-        ConnectionStateLabel(state.connectionState)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        PrimaryButtonLarge(
-                text = "Get API Status",
-                onClick = onGetApiStatusClicked,
-        )
-
-        val apiStatusMessage = state.apiStatusMessage
-        if (apiStatusMessage != null) {
-            Spacer(modifier = Modifier.height(8.dp))
+        item(span = { GridItemSpan(maxLineSpan) }) {
             Text(
-                    text = apiStatusMessage,
+                    text = HOME_TITLE,
                     style = AppTheme.typography.textBook18,
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.colorAccent,
+                    modifier = Modifier.fillMaxWidth(),
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        val isConnected = state.connectionState is WebSocketConnectionState.ConnectedAuthenticated
-        PrimaryButtonLarge(
-                text = "Get Entities (WebSocket)",
-                onClick = onGetEntitiesClicked,
-                enabled = isConnected,
-        )
-
-        if (state.progressState is ProgressState.Loading) {
-            Spacer(modifier = Modifier.height(16.dp))
-            HomeHubLoader(modifier = Modifier)
+        if (state.progressState is ProgressState.Loading && state.allEntities.isEmpty()) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Box(
+                        modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = Dimension.extraLargeMargin),
+                        contentAlignment = Alignment.Center,
+                ) {
+                    HomeHubLoader(modifier = Modifier)
+                }
+            }
         }
 
         if (state.progressState is ProgressState.Error) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                    text = "Error: ${(state.progressState as ProgressState.Error).error?.message}",
-                    color = AppTheme.colors.textSecondary,
-            )
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Text(
+                        text = "Error: ${(state.progressState as ProgressState.Error).error?.message}",
+                        color = AppTheme.colors.textSecondary,
+                        style = AppTheme.typography.textBook14,
+                )
+            }
         }
 
-        if (state.allEntities.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(16.dp))
+        groups.forEach { group ->
+            item(span = { GridItemSpan(maxLineSpan) }, key = "header_${group.id}") {
+                GroupHeader(title = group.title, onClick = {})
+            }
 
-            DomainFilterChips(
-                    selectedDomain = state.selectedDomain,
-                    onDomainSelected = onDomainFilterClicked,
-            )
+            items(group.entities, key = { entity -> "${group.id}/${entity.entityId}" }) { entity ->
+                EntityCard(
+                        entity = entity,
+                        onToggleClicked = { },
+                )
+            }
+        }
 
-            Spacer(modifier = Modifier.height(8.dp))
+        state.devices.forEach { device ->
+            item(span = { GridItemSpan(maxLineSpan) }, key = "device_${device.id}") {
+                GroupHeader(title = device.name ?: device.id, onClick = {})
+            }
 
-            val filtered = state.filteredEntities
-            Text(
-                    text = "Entities (${filtered.size} / ${state.allEntities.size}):",
-                    style = AppTheme.typography.textBook18,
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                items(filtered, key = { it.entityId }) { entity ->
-                    EntityRegistryItem(entity = entity)
-                }
+            items(device.list, key = { entity -> "${device.id}/${entity.id}" }) { entity ->
+                SwitchEntityCard(
+                        entity = entity,
+                        onToggleClicked = { onToggleClicked(entity) },
+                )
             }
         }
     }
 }
 
 @Composable
-private fun DomainFilterChips(
-        selectedDomain: EntityDomain?,
-        onDomainSelected: (EntityDomain?) -> Unit,
-) {
-    LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        item {
-            FilterChip(
-                    selected = selectedDomain == null,
-                    onClick = { onDomainSelected(null) },
-                    label = { Text(text = "All") },
-            )
-        }
-        items(EntityDomain.entries.toList()) { domain ->
-            FilterChip(
-                    selected = selectedDomain == domain,
-                    onClick = { onDomainSelected(domain) },
-                    label = { Text(text = domain.label) },
-            )
-        }
-    }
-}
-
-@Composable
-private fun ConnectionStateLabel(connectionState: WebSocketConnectionState) {
-    val label = when (connectionState) {
-        is WebSocketConnectionState.Disconnected -> "Disconnected"
-        is WebSocketConnectionState.Connecting -> "Connecting..."
-        is WebSocketConnectionState.ConnectedUnauthenticated -> "Connected (no auth)"
-        is WebSocketConnectionState.Authenticating -> "Authenticating..."
-        is WebSocketConnectionState.ConnectedAuthenticated -> "Connected"
-        is WebSocketConnectionState.Reconnecting -> "Reconnecting (${connectionState.attempt})..."
-        is WebSocketConnectionState.Failed -> "Failed: ${connectionState.reason.message}"
-    }
-    Text(text = "WS: $label", style = AppTheme.typography.textBook18)
-}
-
-@Composable
-private fun EntityRegistryItem(entity: EntityRegistryEntry) {
-    Card(
+private fun GroupHeader(title: String, onClick: () -> Unit) {
+    Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp),
+                    .padding(top = Dimension.smallMargin),
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(
-                    text = entity.displayName,
-                    style = AppTheme.typography.textBook18,
-            )
-            Text(
-                    text = "${entity.entityId} · ${entity.platform}",
-                    style = AppTheme.typography.textBook14,
-                    color = AppTheme.colors.textSecondary,
+        Text(
+                text = title,
+                style = AppTheme.typography.textBook18,
+                color = AppTheme.colors.colorAccent,
+                fontWeight = FontWeight.SemiBold,
+        )
+        Spacer(modifier = Modifier.size(Dimension.extraSmallMargin))
+        IconButton(onClick = onClick, modifier = Modifier.size(20.dp)) {
+            Icon(
+                    imageVector = Icons.Outlined.ChevronRight,
+                    contentDescription = null,
+                    tint = AppTheme.colors.textSecondary,
             )
         }
     }
 }
+
+@Composable
+private fun EntityCard(
+        entity: EntityRegistryEntry,
+        onToggleClicked: () -> Unit,
+) {
+    Card(
+            modifier = Modifier
+                    .fillMaxWidth(),
+    ) {
+        Column(modifier = Modifier
+                .background(color = AppTheme.colors.colorPrimary)
+                .padding(Dimension.mediumMargin)) {
+            Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.Top,
+            ) {
+                Icon(
+                        imageVector = entity.domainIcon(),
+                        contentDescription = null,
+                        modifier = Modifier.size(60.dp),
+                        tint = AppTheme.colors.textPrimary,
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                IconButton(
+                        onClick = onToggleClicked,
+                        modifier = Modifier.size(24.dp),
+                ) {
+                    Icon(
+                            imageVector = Icons.Outlined.PowerSettingsNew,
+                            contentDescription = "Toggle",
+                            tint = AppTheme.colors.colorAccent,
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(Dimension.smallMargin))
+
+            Text(
+                    text = entity.displayName,
+                    style = AppTheme.typography.captionMedium12,
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.colorAccent,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+            )
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            Text(
+                    text = entity.entityId,
+                    style = AppTheme.typography.captionMedium12,
+                    color = AppTheme.colors.colorAccent,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+private fun EntityRegistryEntry.domainIcon(): ImageVector = when (domain) {
+    "light" -> Icons.Outlined.Lightbulb
+    "switch", "input_boolean" -> Icons.Outlined.ToggleOn
+    else -> Icons.Outlined.PowerSettingsNew
+}
+
+@Composable
+private fun SwitchEntityCard(
+        entity: HomeAssistantEntity,
+        onToggleClicked: () -> Unit,
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+                modifier = Modifier
+                        .background(color = AppTheme.colors.colorPrimary)
+                        .padding(Dimension.mediumMargin),
+        ) {
+            Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.Top,
+            ) {
+                Icon(
+                        imageVector = Icons.Outlined.ToggleOn,
+                        contentDescription = null,
+                        modifier = Modifier.size(60.dp),
+                        tint = AppTheme.colors.textPrimary,
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                IconButton(
+                        onClick = onToggleClicked,
+                        modifier = Modifier.size(24.dp),
+                ) {
+                    Icon(
+                            imageVector = Icons.Outlined.PowerSettingsNew,
+                            contentDescription = "Toggle",
+                            tint = AppTheme.colors.colorAccent,
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(Dimension.smallMargin))
+
+            Text(
+                    text = entity.id,
+                    style = AppTheme.typography.captionMedium12,
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.colorAccent,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+            )
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            Text(
+                    text = entity.services.joinToString(", "),
+                    style = AppTheme.typography.captionMedium12,
+                    color = AppTheme.colors.colorAccent,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+private data class EntityGroupUi(
+        val id: String,
+        val title: String,
+        val entities: List<EntityRegistryEntry>,
+)
+
+private fun List<EntityRegistryEntry>.toGroups(): List<EntityGroupUi> =
+        groupBy { it.areaId ?: NO_AREA_ID }
+                .map { (areaId, entities) ->
+                    EntityGroupUi(
+                            id = areaId,
+                            title = if (areaId == NO_AREA_ID) NO_AREA_TITLE else areaId,
+                            entities = entities.sortedBy { it.displayName },
+                    )
+                }
+                .sortedBy { it.title }
+
+// region Previews
+
+private fun previewEntity(
+        entityId: String,
+        name: String?,
+        areaId: String?,
+): EntityRegistryEntry = EntityRegistryEntry(
+        entityId = entityId,
+        platform = "mqtt",
+        name = name,
+        areaId = areaId,
+)
+
+private val previewEntities: List<EntityRegistryEntry> = listOf(
+        previewEntity("switch.zal_main", "Выключатель", "Зал"),
+        previewEntity("switch.zal_long", "Выключатель на длинном тексте", "Зал"),
+        previewEntity("switch.zal_extra", "Выключатель", "Зал"),
+        previewEntity("switch.kuhnia_1", "Выключатель", "Кухня"),
+        previewEntity("switch.kuhnia_2", "Выключатель на длинном тексте", "Кухня"),
+        previewEntity("switch.kuhnia_3", "Выключатель", "Кухня"),
+        previewEntity("light.bedroom", "Лампа", "Спальня"),
+)
+
+@Preview(showBackground = true, heightDp = 800)
+@Composable
+private fun HomeScreenPreview(
+        @PreviewParameter(ThemePreviewParameter::class) useDarkMode: Boolean,
+) {
+    AppTheme(useDarkMode) {
+        HomeLayout(state = HomeState(allEntities = previewEntities))
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun HomeScreenLoadingPreview(
+        @PreviewParameter(ThemePreviewParameter::class) useDarkMode: Boolean,
+) {
+    AppTheme(useDarkMode) {
+        HomeLayout(state = HomeState(progressState = ProgressState.Loading))
+    }
+}
+
+@Preview(showBackground = true, widthDp = 140, heightDp = 140)
+@Composable
+private fun EntityCardPreview(
+        @PreviewParameter(ThemePreviewParameter::class) useDarkMode: Boolean,
+) {
+    AppTheme(useDarkMode) {
+        EntityCard(
+                entity = previewEntity("switch.zal_long", "Выключатель на длинном тексте", "Зал"),
+                onToggleClicked = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun GroupHeaderPreview(
+        @PreviewParameter(ThemePreviewParameter::class) useDarkMode: Boolean,
+) {
+    AppTheme(useDarkMode) {
+        GroupHeader(title = "Зал", onClick = {})
+    }
+}
+
+private val previewDevices: List<HomeAssistantDevice> = listOf(
+        HomeAssistantDevice(
+                id = "4f745823d042948d34938086261e40d7",
+                name = "Выключатель Зал/Кухня",
+                list = listOf(
+                        HomeAssistantEntity(
+                                id = "switch.vykliuchatel_zal_kukhnia_1",
+                                domain = "switch",
+                                services = setOf("turn_on", "turn_off", "toggle"),
+                        ),
+                        HomeAssistantEntity(
+                                id = "switch.vykliuchatel_zal_kukhnia_kukhnia",
+                                domain = "switch",
+                                services = setOf("turn_on", "turn_off", "toggle"),
+                        ),
+                ),
+        ),
+        HomeAssistantDevice(
+                id = "416f948a315f700d4ef3ea300f698d1e",
+                name = "Выключатель на балконе",
+                list = listOf(
+                        HomeAssistantEntity(
+                                id = "switch.0x603d61fffe758b32_1",
+                                domain = "switch",
+                                services = setOf("turn_on", "turn_off", "toggle"),
+                        ),
+                ),
+        ),
+)
+
+@Preview(showBackground = true, heightDp = 800)
+@Composable
+private fun HomeScreenDevicesPreview(
+        @PreviewParameter(ThemePreviewParameter::class) useDarkMode: Boolean,
+) {
+    AppTheme(useDarkMode) {
+        HomeLayout(state = HomeState(devices = previewDevices))
+    }
+}
+
+@Preview(showBackground = true, widthDp = 140, heightDp = 140)
+@Composable
+private fun SwitchEntityCardPreview(
+        @PreviewParameter(ThemePreviewParameter::class) useDarkMode: Boolean,
+) {
+    AppTheme(useDarkMode) {
+        SwitchEntityCard(
+                entity = HomeAssistantEntity(
+                        id = "switch.vykliuchatel_zal_kukhnia_1",
+                        domain = "switch",
+                        services = setOf("turn_on", "turn_off", "toggle"),
+                ),
+                onToggleClicked = {},
+        )
+    }
+}
+
+// endregion

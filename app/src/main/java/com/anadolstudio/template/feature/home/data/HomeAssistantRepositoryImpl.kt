@@ -2,12 +2,27 @@ package com.anadolstudio.template.feature.home.data
 
 import com.anadolstudio.template.core.websocket.WebSocketCore
 import com.anadolstudio.template.core.websocket.WsRequest
+import com.anadolstudio.template.feature.home.data.model.CallServiceResult
 import com.anadolstudio.template.feature.home.data.model.EntityRegistryEntry
 import com.anadolstudio.template.feature.home.data.model.EntityRegistryListResult
+import com.anadolstudio.template.feature.home.data.model.ExtractFromTargetResult
+import com.anadolstudio.template.feature.home.data.model.ServiceDescription
+import com.anadolstudio.template.feature.home.data.model.ServiceTarget
 import com.anadolstudio.template.feature.home.domain.HomeAssistantRepository
 import com.anadolstudio.template.feature.homeAssistantAuth.data.api.AuthHomeAssistantApi
+import com.anadolstudio.template.feature.homeAssistantAuth.data.api.model.UpdateStateRequest
 import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.ApiStatus
+import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.Config
+import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.Event
+import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.Message
+import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.ServiceDomain
+import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.State
+import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.UpdateState
 import javax.inject.Inject
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -17,14 +32,64 @@ import kotlinx.serialization.json.putJsonObject
 internal class HomeAssistantRepositoryImpl @Inject constructor(
         private val api: AuthHomeAssistantApi,
         private val webSocketCore: WebSocketCore,
+        private val json: Json,
 ) : HomeAssistantRepository {
 
     override suspend fun getApiStatus(): ApiStatus = api.getApiStatus().toDomain()
 
+    override suspend fun getComponents(): List<String> = api.getComponents()
+
+    override suspend fun getConfig(): Config = api.getConfig().toDomain()
+
+    override suspend fun getEvents(): List<Event> = api.getEvents().map { it.toDomain() }
+
+    override suspend fun getServices(): List<ServiceDomain> = api.getServices().map { it.toDomain() }
+
+    override suspend fun getAllStates(): List<State> = api.getStates().map { it.toDomain() }
+
+    override suspend fun getState(entityId: String): State = api.getState(entityId).toDomain()
+
+    override suspend fun getErrorLog(): String = api.getErrorLog()
+
+    override suspend fun getHistory(
+            timestamp: String,
+            filterEntityId: String,
+            endTime: String?,
+            minimalResponse: Boolean,
+            noAttributes: Boolean,
+            significantChangesOnly: Boolean,
+    ): List<List<State>> = api.getHistory(
+            timestamp = timestamp,
+            filterEntityId = filterEntityId,
+            endTime = endTime,
+            minimalResponse = HISTORY_FLAG.takeIf { minimalResponse },
+            noAttributes = HISTORY_FLAG.takeIf { noAttributes },
+            significantChangesOnly = HISTORY_FLAG.takeIf { significantChangesOnly },
+    ).map { period -> period.map { it.toDomain() } }
+
+    override suspend fun updateState(entityId: String, update: UpdateState): State =
+            api.updateState(entityId = entityId, body = UpdateStateRequest.from(update)).toDomain()
+
+    override suspend fun fireEvent(eventType: String, eventData: JsonObject?): Message =
+            api.fireEvent(eventType = eventType, eventData = eventData).toDomain()
+
+    override suspend fun callService(
+            domain: String,
+            service: String,
+            serviceData: JsonObject?,
+    ): List<State> = api.callService(
+            domain = domain,
+            service = service,
+            serviceData = serviceData,
+    ).map { it.toDomain() }
+
+    override suspend fun deleteState(entityId: String): Message =
+            api.deleteState(entityId).toDomain()
+
     override suspend fun getEntities(): List<EntityRegistryEntry> {
         val result = webSocketCore.sendCommandForResult(
-            request = WsRequest(type = COMMAND_ENTITY_REGISTRY_LIST_FOR_DISPLAY),
-            deserializer = EntityRegistryListResult.serializer(),
+                request = WsRequest(type = COMMAND_ENTITY_REGISTRY_LIST_FOR_DISPLAY),
+                deserializer = EntityRegistryListResult.serializer(),
         )
         return result.entities
     }
@@ -37,45 +102,53 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
         return emptyList()
     }
 
-    override suspend fun getServiceList(): List<EntityRegistryEntry> {
-        webSocketCore.sendCommandForResult(
+    override suspend fun getServiceList(): Map<String, Map<String, ServiceDescription>> {
+        return webSocketCore.sendCommandForResult(
                 request = WsRequest(type = COMMAND_GET_SERVICES),
-                deserializer = EntityRegistryListResult.serializer(),
+                deserializer = MapSerializer(
+                        String.serializer(),
+                        MapSerializer(String.serializer(), ServiceDescription.serializer()),
+                ),
         )
-        return emptyList()
     }
 
-    override suspend fun extractFromTarget() {
-        webSocketCore.sendCommandForResult(
+    override suspend fun extractFromTarget(
+            target: ServiceTarget,
+            expandGroup: Boolean,
+    ): ExtractFromTargetResult {
+        val payload = buildJsonObject {
+            put("target", json.encodeToJsonElement(ServiceTarget.serializer(), target))
+            put("expand_group", expandGroup)
+        }
+
+        return webSocketCore.sendCommandForResult(
                 request = WsRequest(
                         type = COMMAND_EXTRACT_FROM_TARGET,
-                        payload = buildJsonObject {
-                            putJsonObject("target"){
-                                putJsonArray("device_id"){
-                                    add("e4071905b85ad41d99b42db60ed8f936")
-                                }
-                            }
-                        }
+                        payload = payload,
                 ),
-                deserializer = EntityRegistryListResult.serializer(),
+                deserializer = ExtractFromTargetResult.serializer(),
         )
     }
 
-    override suspend fun callService() {
-        webSocketCore.sendCommandForResult(
+    override suspend fun callService(
+            entityId: String,
+            domain: String,
+            service: String,
+    ): CallServiceResult {
+        val payload = buildJsonObject {
+            put("domain", domain)
+            put("service", service)
+            putJsonObject("target") {
+                putJsonArray("entity_id") { add(entityId) }
+            }
+        }
+
+        return webSocketCore.sendCommandForResult(
                 request = WsRequest(
                         type = COMMAND_CALL_SERVICE,
-                        payload = buildJsonObject {
-                            put("domain", "switch")
-                            put("service", "toggle")
-                            putJsonObject("target"){
-                                putJsonArray("entity_id"){
-                                    add("switch.vykliuchatel_zal_kukhnia_1")
-                                }
-                            }
-                        }
+                        payload = payload,
                 ),
-                deserializer = EntityRegistryListResult.serializer(),
+                deserializer = CallServiceResult.serializer(),
         )
     }
 
@@ -85,5 +158,8 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
         const val COMMAND_GET_SERVICES = "get_services"
         const val COMMAND_EXTRACT_FROM_TARGET = "extract_from_target"
         const val COMMAND_CALL_SERVICE = "call_service"
+
+        /** HA-флаги для истории: параметр трактуется как "true" при любом непустом значении. */
+        const val HISTORY_FLAG = "true"
     }
 }

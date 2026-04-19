@@ -258,7 +258,7 @@ class WebSocketCoreImpl @Inject constructor(
 
     // region Private
 
-    private suspend fun connectInternal(url: String, accessToken: String, isAuthRetry: Boolean = true) {
+    private suspend fun connectInternal(url: String, accessToken: String, isAuthRetry: Boolean = false) {
         _connectionState.value = WebSocketConnectionState.Connecting
 
         val request = Request.Builder().url(url).build()
