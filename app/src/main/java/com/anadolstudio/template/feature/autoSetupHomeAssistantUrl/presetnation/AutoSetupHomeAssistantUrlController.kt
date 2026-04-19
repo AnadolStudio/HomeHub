@@ -9,5 +9,7 @@ interface AutoSetupHomeAssistantUrlController : BaseController {
 
     fun onRefreshSwiped()
 
+    fun onRetryClicked()
+
     fun onInstanceClicked(instance: HomeAssistantInstance)
 }

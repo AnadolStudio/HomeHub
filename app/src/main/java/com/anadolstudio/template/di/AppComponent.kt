@@ -18,6 +18,7 @@ import javax.inject.Singleton
     modules = [
         AppModule::class,
         NetworkModule::class,
+        WebSocketModule::class,
         AutoSetupHomeAssistantUrlModule::class,
         HomeAssistantAuthModule::class,
         HomeModule::class,

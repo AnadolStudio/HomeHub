@@ -85,9 +85,9 @@ internal class AutoSetupHomeAssistantUrlViewModel @Inject constructor(
         }
     }
 
-    override fun onRefreshSwiped() {
-        startDiscovery(LoadingContext.REFRESH)
-    }
+    override fun onRefreshSwiped() = startDiscovery(LoadingContext.REFRESH)
+
+    override fun onRetryClicked() = startDiscovery(LoadingContext.RETRY)
 
     private fun checkWifiConnect() = updateWifiConnect(wifiAvailabilityRepository.isWifiConnected())
 

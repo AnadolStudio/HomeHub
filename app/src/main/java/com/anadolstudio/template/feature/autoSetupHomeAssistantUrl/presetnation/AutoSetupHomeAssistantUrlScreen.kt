@@ -3,6 +3,7 @@
 package com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.presetnation
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -49,6 +50,7 @@ import com.anadolstudio.compose.ui.theme.largeShimmer
 import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
 import com.anadolstudio.compose.ui.view.button.TextButton
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
+import com.anadolstudio.compose.ui.view.stub.ErrorStub
 import com.anadolstudio.template.R
 import com.anadolstudio.template.base.view.HomeHubLoader
 import com.anadolstudio.template.di.viewmodel.daggerViewModel
@@ -102,19 +104,23 @@ private fun AutoSetupHomeAssistantUrlLayout(
                         .fillMaxWidth()
                         .weight(1F),
         ) {
-            when (state.progressState) {
-                ProgressState.Loading -> Loading(modifier = Modifier.fillMaxSize())
 
-                is ProgressState.Error -> Error(modifier = Modifier.fillMaxSize()) // TODO нужна дефолтная заглушка
+            val modifier = Modifier.fillMaxSize()
+                    .background(color = AppTheme.colors.colorSecondary)
+            when (state.progressState) {
+                ProgressState.LoadingFromError, ProgressState.Loading -> Loading(modifier = modifier)
+
+                is ProgressState.Error -> Error(
+                        modifier = modifier,
+                        controller = controller
+                )
 
                 ProgressState.Content, ProgressState.Refresh -> Content(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = modifier,
                         isRefreshing = state.progressState is ProgressState.Refresh,
                         instances = state.instanceSet,
                         controller = controller
                 )
-
-                else -> Unit
             }
         }
 
@@ -146,19 +152,15 @@ private fun Loading(modifier: Modifier) {
 }
 
 @Composable
-private fun Error(modifier: Modifier) {
-    Column(
-            modifier = modifier.padding(horizontal = Dimension.mainMargin),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-    ) {
-        Text(
-                text = stringResource(R.string.auto_setup_home_assistant_url_wifi_required_error),
-                style = AppTheme.typography.textBook18,
-                color = AppTheme.colors.textPrimary,
-                textAlign = TextAlign.Center,
-        )
-    }
+private fun Error(modifier: Modifier, controller: AutoSetupHomeAssistantUrlController) {
+    ErrorStub(
+            errorTitle = "",
+            errorMessage = stringResource(R.string.auto_setup_home_assistant_url_wifi_required_error),
+            buttonTitle = stringResource(R.string.home_assistant_auth_retry),
+            onRefreshClick = { controller.onRetryClicked() },
+            fillMaxSize = false,
+            modifier = modifier
+    )
 }
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -274,7 +276,7 @@ private fun ServerIcon(painter: Painter) {
                     .background(color = Color.Transparent, shape = Shapes.small),
             contentAlignment = Alignment.Center,
     ) {
-        androidx.compose.foundation.Image(
+        Image(
                 modifier = Modifier.size(32.dp),
                 painter = painter,
                 contentDescription = null,
@@ -350,4 +352,5 @@ private val PreviewController = object : AutoSetupHomeAssistantUrlController {
     override fun onManualEnterClicked() = Unit
     override fun onInstanceClicked(instance: HomeAssistantInstance) = Unit
     override fun onRefreshSwiped() = Unit
+    override fun onRetryClicked() = Unit
 }
