@@ -16,7 +16,7 @@ interface NonAuthHomeAssistantApi {
             @Field("grant_type") grantType: String,
             @Field("code") code: String,
             @Field("client_id") clientId: String,
-    ): TokenResponse
+    ): AllTokenResponse
 
     @FormUrlEncoded
     @POST("auth/token")
@@ -24,5 +24,5 @@ interface NonAuthHomeAssistantApi {
             @Field("grant_type") grantType: String,
             @Field("refresh_token") refreshToken: String,
             @Field("client_id") clientId: String,
-    ): TokenResponse
+    ): AccessTokenResponse
 }

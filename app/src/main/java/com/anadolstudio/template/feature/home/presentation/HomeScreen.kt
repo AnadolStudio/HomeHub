@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import com.anadolstudio.compose.ui.theme.AppTheme
 import com.anadolstudio.compose.ui.theme.Dimension
 import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
+import com.anadolstudio.compose.ui.view.button.FloatTextButton
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
 import com.anadolstudio.template.base.view.HomeHubLoader
 import com.anadolstudio.template.di.viewmodel.daggerViewModel
@@ -67,14 +68,14 @@ internal fun HomeScreen(
 
     HomeLayout(
             state = state,
-            onToggleClicked = viewModel::onToggleClicked,
+            controller = viewModel,
     )
 }
 
 @Composable
 private fun HomeLayout(
         state: HomeState,
-        onToggleClicked: (HomeAssistantEntity) -> Unit = {},
+        controller: HomeController,
 ) {
     val groups = remember(state.allEntities) { state.allEntities.toGroups() }
 
@@ -102,6 +103,14 @@ private fun HomeLayout(
                     modifier = Modifier.fillMaxWidth(),
             )
         }
+
+        item {
+            FloatTextButton(
+                    text = "Test Button",
+                    onClick = { controller.onTestButtonClicked() },
+            )
+        }
+
 
         if (state.progressState is ProgressState.Loading && state.allEntities.isEmpty()) {
             item(span = { GridItemSpan(maxLineSpan) }) {
@@ -147,7 +156,7 @@ private fun HomeLayout(
             items(device.list, key = { entity -> "${device.id}/${entity.id}" }) { entity ->
                 SwitchEntityCard(
                         entity = entity,
-                        onToggleClicked = { onToggleClicked(entity) },
+                        onToggleClicked = { /*onToggleClicked(entity)*/ },
                 )
             }
         }
@@ -188,9 +197,11 @@ private fun EntityCard(
             modifier = Modifier
                     .fillMaxWidth(),
     ) {
-        Column(modifier = Modifier
-                .background(color = AppTheme.colors.colorPrimary)
-                .padding(Dimension.mediumMargin)) {
+        Column(
+                modifier = Modifier
+                        .background(color = AppTheme.colors.colorPrimary)
+                        .padding(Dimension.mediumMargin)
+        ) {
             Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.Top,
@@ -342,13 +353,17 @@ private val previewEntities: List<EntityRegistryEntry> = listOf(
         previewEntity("light.bedroom", "Лампа", "Спальня"),
 )
 
+private fun createPreviewController(): HomeController = object : HomeController {
+    override fun onTestButtonClicked() = Unit
+}
+
 @Preview(showBackground = true, heightDp = 800)
 @Composable
 private fun HomeScreenPreview(
         @PreviewParameter(ThemePreviewParameter::class) useDarkMode: Boolean,
 ) {
     AppTheme(useDarkMode) {
-        HomeLayout(state = HomeState(allEntities = previewEntities))
+        HomeLayout(state = HomeState(allEntities = previewEntities), controller = createPreviewController())
     }
 }
 
@@ -358,7 +373,7 @@ private fun HomeScreenLoadingPreview(
         @PreviewParameter(ThemePreviewParameter::class) useDarkMode: Boolean,
 ) {
     AppTheme(useDarkMode) {
-        HomeLayout(state = HomeState(progressState = ProgressState.Loading))
+        HomeLayout(state = HomeState(progressState = ProgressState.Loading), controller = createPreviewController())
     }
 }
 
@@ -421,7 +436,7 @@ private fun HomeScreenDevicesPreview(
         @PreviewParameter(ThemePreviewParameter::class) useDarkMode: Boolean,
 ) {
     AppTheme(useDarkMode) {
-        HomeLayout(state = HomeState(devices = previewDevices))
+        HomeLayout(state = HomeState(devices = previewDevices), controller = createPreviewController())
     }
 }
 

@@ -1,8 +1,8 @@
 package com.anadolstudio.template.core.network
 
 import com.anadolstudio.template.feature.common.data.PreferencesStorage
+import com.anadolstudio.template.feature.homeAssistantAuth.data.api.AccessTokenResponse
 import com.anadolstudio.template.feature.homeAssistantAuth.data.api.NonAuthHomeAssistantApi
-import com.anadolstudio.template.feature.homeAssistantAuth.data.api.TokenResponse
 import javax.inject.Inject
 import javax.inject.Singleton
 import timber.log.Timber
@@ -19,12 +19,7 @@ class TokenRefresher @Inject constructor(
         private val sessionExpiredNotifier: SessionExpiredNotifier,
 ) {
 
-    /**
-     * Выполняет refresh. На успех — сохраняет новые токены в [PreferencesStorage]
-     * и возвращает [TokenResponse]. На неудачу — очищает auth-данные, нотифицирует
-     * [SessionExpiredNotifier] и возвращает null.
-     */
-    suspend fun refresh(): TokenResponse? {
+    suspend fun refresh(): AccessTokenResponse? {
         val refreshToken = preferencesStorage.refreshToken
         val baseUrl = preferencesStorage.baseUrl
 
@@ -49,7 +44,6 @@ class TokenRefresher @Inject constructor(
         }
 
         preferencesStorage.accessToken = response.accessToken
-        preferencesStorage.refreshToken = response.refreshToken
         preferencesStorage.tokenType = response.tokenType
         preferencesStorage.accessTokenExpiresIn = response.expiresIn
 

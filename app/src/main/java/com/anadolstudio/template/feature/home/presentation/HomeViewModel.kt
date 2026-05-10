@@ -16,14 +16,19 @@ internal class HomeViewModel @Inject constructor(
         private val homeAssistantRepository: HomeAssistantRepository,
         private val webSocketCore: WebSocketCore,
         private val preferencesStorage: PreferencesStorage,
-) : StatefulViewModel<HomeState>(HomeState()) {
+) : StatefulViewModel<HomeState>(HomeState()), HomeController {
 
     init {
-        observeConnectionState()
-        connectWebSocket()
+        onGetApiStatusClicked()
+//        observeConnectionState()
+//        connectWebSocket()
     }
 
-    fun onGetApiStatusClicked() {
+    override fun onTestButtonClicked() {
+        onGetApiStatusClicked()
+    }
+
+    private fun onGetApiStatusClicked() {
         updateState { copy(progressState = ProgressState.Loading) }
 
         viewModelScope.launch {
