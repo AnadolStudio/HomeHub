@@ -2,8 +2,9 @@ package com.anadolstudio.template.feature.home.presentation
 
 import androidx.lifecycle.viewModelScope
 import com.anadolstudio.template.base.viewmodel.StatefulViewModel
-import com.anadolstudio.template.core.websocket.WebSocketConnectionState
 import com.anadolstudio.template.core.websocket.WebSocketCore
+import com.anadolstudio.template.core.websocket.connection.WebSocketConnectionState
+import com.anadolstudio.template.core.websocket.message.WsRequest
 import com.anadolstudio.template.feature.common.data.PreferencesStorage
 import com.anadolstudio.template.feature.home.data.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.data.model.HomeAssistantEntity
@@ -19,14 +20,22 @@ internal class HomeViewModel @Inject constructor(
 ) : StatefulViewModel<HomeState>(HomeState()), HomeController {
 
     init {
-        onGetApiStatusClicked()
-//        observeConnectionState()
-//        connectWebSocket()
+        observeConnectionState()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        webSocketCore.resume()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        webSocketCore.pause()
     }
 
     override fun onTestButtonClicked() {
         viewModelScope.launch {
-            runCatching { homeAssistantRepository.getServices() }
+            runCatching { webSocketCore.subscribe(WsRequest("s")) }
                     .onFailure { error ->
                 updateState { copy(progressState = ProgressState.Error(error)) }
             }
@@ -67,16 +76,8 @@ internal class HomeViewModel @Inject constructor(
     }
 
     private fun connectWebSocket() {
-        val baseUrl = preferencesStorage.baseUrl ?: return
-        val accessToken = preferencesStorage.accessToken ?: return
-
-        val wsUrl = baseUrl
-                .replace("https://", "wss://")
-                .replace("http://", "ws://")
-                .trimEnd('/') + "/api/websocket"
-
         viewModelScope.launch {
-            runCatching { webSocketCore.connect(wsUrl, accessToken) }
+            runCatching { webSocketCore.connect() }
                     .onFailure { error ->
                         updateState { copy(progressState = ProgressState.Error(error)) }
                     }
@@ -152,11 +153,6 @@ internal class HomeViewModel @Inject constructor(
                         updateState { copy(progressState = ProgressState.Error(error)) }
                     }
         }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        webSocketCore.close()
     }
 
     private companion object {

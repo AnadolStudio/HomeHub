@@ -44,6 +44,7 @@ import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
 import com.anadolstudio.compose.ui.view.button.FloatTextButton
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
 import com.anadolstudio.template.base.view.HomeHubLoader
+import com.anadolstudio.template.base.viewmodel.ObserveViewModelLifecycle
 import com.anadolstudio.template.di.viewmodel.daggerViewModel
 import com.anadolstudio.template.event.ObserveEvents
 import com.anadolstudio.template.feature.home.data.model.EntityRegistryEntry
@@ -65,6 +66,7 @@ internal fun HomeScreen(
 ) {
     val state by viewModel.stateFlow.collectAsState()
     ObserveEvents(viewModel.events, snackbarHostState, navigator)
+    ObserveViewModelLifecycle(viewModel)
 
     HomeLayout(
             state = state,

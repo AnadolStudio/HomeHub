@@ -1,4 +1,4 @@
-package com.anadolstudio.template.core.websocket
+package com.anadolstudio.template.core.websocket.connection
 
 fun interface WebSocketAuthRefresher {
 

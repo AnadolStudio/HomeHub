@@ -1,6 +1,6 @@
 package com.anadolstudio.template.feature.home.presentation
 
-import com.anadolstudio.template.core.websocket.WebSocketConnectionState
+import com.anadolstudio.template.core.websocket.connection.WebSocketConnectionState
 import com.anadolstudio.template.feature.home.data.model.EntityDomain
 import com.anadolstudio.template.feature.home.data.model.EntityRegistryEntry
 import com.anadolstudio.template.feature.home.data.model.HomeAssistantDevice

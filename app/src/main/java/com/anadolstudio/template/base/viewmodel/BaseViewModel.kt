@@ -46,6 +46,9 @@ internal abstract class BaseViewModel :
         _requestPermissionStateFlow.value = null
     }
 
+    open fun onStart() = Unit
+
+    open fun onStop() = Unit
 
     protected fun showInformationAlertDialog(
         titleTextResId: Int,

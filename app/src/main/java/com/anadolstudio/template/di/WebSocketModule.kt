@@ -4,10 +4,10 @@ import com.anadolstudio.template.BuildConfig
 import com.anadolstudio.template.core.network.WebSocketAuthRefresherImpl
 import com.anadolstudio.template.core.websocket.NoOpWebSocketLogger
 import com.anadolstudio.template.core.websocket.TimberWebSocketLogger
-import com.anadolstudio.template.core.websocket.WebSocketAuthRefresher
 import com.anadolstudio.template.core.websocket.WebSocketCore
 import com.anadolstudio.template.core.websocket.WebSocketCoreImpl
 import com.anadolstudio.template.core.websocket.WebSocketLogger
+import com.anadolstudio.template.core.websocket.connection.WebSocketAuthRefresher
 import dagger.Binds
 import dagger.Module
 import dagger.Provides

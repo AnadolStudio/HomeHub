@@ -1,5 +1,13 @@
-package com.anadolstudio.template.core.websocket
+package com.anadolstudio.template.core.websocket.message.parser
 
+import com.anadolstudio.template.core.websocket.message.WsAuthInvalidMessage
+import com.anadolstudio.template.core.websocket.message.WsAuthOkMessage
+import com.anadolstudio.template.core.websocket.message.WsAuthRequiredMessage
+import com.anadolstudio.template.core.websocket.message.WsEventMessage
+import com.anadolstudio.template.core.websocket.message.WsMessage
+import com.anadolstudio.template.core.websocket.message.WsPongMessage
+import com.anadolstudio.template.core.websocket.message.WsResultMessage
+import com.anadolstudio.template.core.websocket.message.WsUnknownMessage
 import javax.inject.Inject
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -9,7 +17,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 
 class WebSocketMessageParser @Inject constructor(
-    private val json: Json,
+        private val json: Json,
 ) {
 
     fun parse(rawText: String): WsMessage {
@@ -63,12 +71,14 @@ class WebSocketMessageParser @Inject constructor(
         return WsPongMessage(id = id)
     }
 
-    private companion object {
+    companion object {
         const val TYPE_AUTH_REQUIRED = "auth_required"
         const val TYPE_AUTH_OK = "auth_ok"
+        const val TYPE_AUTH = "auth"
         const val TYPE_AUTH_INVALID = "auth_invalid"
         const val TYPE_RESULT = "result"
         const val TYPE_EVENT = "event"
         const val TYPE_PONG = "pong"
+        const val TYPE_PING = "ping"
     }
 }

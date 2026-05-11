@@ -1,6 +1,6 @@
 package com.anadolstudio.template.core.network
 
-import com.anadolstudio.template.core.websocket.WebSocketAuthRefresher
+import com.anadolstudio.template.core.websocket.connection.WebSocketAuthRefresher
 import javax.inject.Inject
 
 /**

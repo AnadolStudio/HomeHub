@@ -2,7 +2,7 @@ package com.anadolstudio.template.feature.home.data
 
 import ServiceDomainResponse
 import com.anadolstudio.template.core.websocket.WebSocketCore
-import com.anadolstudio.template.core.websocket.WsRequest
+import com.anadolstudio.template.core.websocket.message.WsRequest
 import com.anadolstudio.template.feature.home.data.model.CallServiceResult
 import com.anadolstudio.template.feature.home.data.model.EntityRegistryEntry
 import com.anadolstudio.template.feature.home.data.model.EntityRegistryListResult
