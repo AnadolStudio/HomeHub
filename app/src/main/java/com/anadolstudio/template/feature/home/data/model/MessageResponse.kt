@@ -1,6 +1,6 @@
-package com.anadolstudio.template.feature.homeAssistantAuth.data.api.model
+package com.anadolstudio.template.feature.home.data.model
 
-import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.Message
+import com.anadolstudio.template.feature.home.domain.model.Message
 import kotlinx.serialization.Serializable
 
 /** Общий ответ с полем message (используется в нескольких эндпоинтах). */

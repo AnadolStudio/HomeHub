@@ -1,4 +1,4 @@
-package com.anadolstudio.template.feature.homeAssistantAuth.domain.model
+package com.anadolstudio.template.feature.home.domain.model
 
 data class Event(
         val event: String,

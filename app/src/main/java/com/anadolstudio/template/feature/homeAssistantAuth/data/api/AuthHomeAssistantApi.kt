@@ -1,12 +1,12 @@
 package com.anadolstudio.template.feature.homeAssistantAuth.data.api
 
-import com.anadolstudio.template.feature.homeAssistantAuth.data.api.model.ApiStatusResponse
-import com.anadolstudio.template.feature.homeAssistantAuth.data.api.model.ConfigResponse
-import com.anadolstudio.template.feature.homeAssistantAuth.data.api.model.EventResponse
-import com.anadolstudio.template.feature.homeAssistantAuth.data.api.model.MessageResponse
-import com.anadolstudio.template.feature.homeAssistantAuth.data.api.model.ServiceDomainResponse
-import com.anadolstudio.template.feature.homeAssistantAuth.data.api.model.StateResponse
-import com.anadolstudio.template.feature.homeAssistantAuth.data.api.model.UpdateStateRequest
+import ServiceDomainResponse
+import com.anadolstudio.template.feature.home.data.model.ApiStatusResponse
+import com.anadolstudio.template.feature.home.data.model.ConfigResponse
+import com.anadolstudio.template.feature.home.data.model.EventResponse
+import com.anadolstudio.template.feature.home.data.model.MessageResponse
+import com.anadolstudio.template.feature.home.data.model.StateResponse
+import com.anadolstudio.template.feature.home.data.model.UpdateStateRequest
 import kotlinx.serialization.json.JsonObject
 import retrofit2.http.Body
 import retrofit2.http.DELETE

@@ -1,6 +1,6 @@
-package com.anadolstudio.template.feature.homeAssistantAuth.data.api.model
+package com.anadolstudio.template.feature.home.data.model
 
-import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.ApiStatus
+import com.anadolstudio.template.feature.home.domain.model.ApiStatus
 import kotlinx.serialization.Serializable
 
 /** GET /api/ — `{"message": "API running."}` */

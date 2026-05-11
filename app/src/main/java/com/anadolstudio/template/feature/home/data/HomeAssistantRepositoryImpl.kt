@@ -1,5 +1,6 @@
 package com.anadolstudio.template.feature.home.data
 
+import ServiceDomainResponse
 import com.anadolstudio.template.core.websocket.WebSocketCore
 import com.anadolstudio.template.core.websocket.WsRequest
 import com.anadolstudio.template.feature.home.data.model.CallServiceResult
@@ -8,16 +9,16 @@ import com.anadolstudio.template.feature.home.data.model.EntityRegistryListResul
 import com.anadolstudio.template.feature.home.data.model.ExtractFromTargetResult
 import com.anadolstudio.template.feature.home.data.model.ServiceDescription
 import com.anadolstudio.template.feature.home.data.model.ServiceTarget
+import com.anadolstudio.template.feature.home.data.model.UpdateStateRequest
 import com.anadolstudio.template.feature.home.domain.HomeAssistantRepository
+import com.anadolstudio.template.feature.home.domain.model.AllowedComponents
+import com.anadolstudio.template.feature.home.domain.model.ApiStatus
+import com.anadolstudio.template.feature.home.domain.model.Config
+import com.anadolstudio.template.feature.home.domain.model.Event
+import com.anadolstudio.template.feature.home.domain.model.Message
+import com.anadolstudio.template.feature.home.domain.model.State
+import com.anadolstudio.template.feature.home.domain.model.UpdateState
 import com.anadolstudio.template.feature.homeAssistantAuth.data.api.AuthHomeAssistantApi
-import com.anadolstudio.template.feature.homeAssistantAuth.data.api.model.UpdateStateRequest
-import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.ApiStatus
-import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.Config
-import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.Event
-import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.Message
-import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.ServiceDomain
-import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.State
-import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.UpdateState
 import javax.inject.Inject
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
@@ -43,9 +44,12 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
 
     override suspend fun getEvents(): List<Event> = api.getEvents().map { it.toDomain() }
 
-    override suspend fun getServices(): List<ServiceDomain> = api.getServices().map { it.toDomain() }
+    override suspend fun getServices(): List<ServiceDomainResponse> = api.getServices()/*.map { it.toDomain() }*/
 
-    override suspend fun getAllStates(): List<State> = api.getStates().map { it.toDomain() }
+    override suspend fun getAllStates(): List<State> = api
+            .getStates()
+            .map { it.toDomain() }
+            .filter { it.entityId.contains(AllowedComponents.getComponentsRegex()) }
 
     override suspend fun getState(entityId: String): State = api.getState(entityId).toDomain()
 

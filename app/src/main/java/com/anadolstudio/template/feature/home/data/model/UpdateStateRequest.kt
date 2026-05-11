@@ -1,6 +1,6 @@
-package com.anadolstudio.template.feature.homeAssistantAuth.data.api.model
+package com.anadolstudio.template.feature.home.data.model
 
-import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.UpdateState
+import com.anadolstudio.template.feature.home.domain.model.UpdateState
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 

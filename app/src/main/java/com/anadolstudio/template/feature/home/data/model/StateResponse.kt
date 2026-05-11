@@ -1,6 +1,6 @@
-package com.anadolstudio.template.feature.homeAssistantAuth.data.api.model
+package com.anadolstudio.template.feature.home.data.model
 
-import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.State
+import com.anadolstudio.template.feature.home.domain.model.State
 import java.time.OffsetDateTime
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -10,8 +10,8 @@ import kotlinx.serialization.json.JsonObject
 @Serializable
 data class StateResponse(
         @SerialName("entity_id") val entityId: String,
-        val state: String,
-        val attributes: JsonObject,
+        @SerialName("state") val state: String,
+        @SerialName("attributes") val attributes: JsonObject,
         @SerialName("last_changed") val lastChanged: String,
         @SerialName("last_updated") val lastUpdated: String? = null,
 ) {

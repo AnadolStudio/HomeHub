@@ -1,6 +1,6 @@
-package com.anadolstudio.template.feature.homeAssistantAuth.data.api.model
+package com.anadolstudio.template.feature.home.data.model
 
-import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.Config
+import com.anadolstudio.template.feature.home.domain.model.Config
 import java.time.ZoneId
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

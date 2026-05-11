@@ -1,4 +1,4 @@
-package com.anadolstudio.template.feature.homeAssistantAuth.data.api.model
+package com.anadolstudio.template.feature.home.data.model
 
 import kotlinx.serialization.Serializable
 

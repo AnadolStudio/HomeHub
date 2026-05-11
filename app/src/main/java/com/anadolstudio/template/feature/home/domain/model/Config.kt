@@ -1,6 +1,6 @@
-package com.anadolstudio.template.feature.homeAssistantAuth.domain.model
+package com.anadolstudio.template.feature.home.domain.model
 
-import com.anadolstudio.template.feature.homeAssistantAuth.data.api.model.UnitSystem
+import com.anadolstudio.template.feature.home.data.model.UnitSystem
 import java.time.ZoneId
 
 data class Config(

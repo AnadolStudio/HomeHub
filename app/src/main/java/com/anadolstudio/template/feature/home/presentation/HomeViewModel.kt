@@ -25,7 +25,12 @@ internal class HomeViewModel @Inject constructor(
     }
 
     override fun onTestButtonClicked() {
-        onGetApiStatusClicked()
+        viewModelScope.launch {
+            runCatching { homeAssistantRepository.getServices() }
+                    .onFailure { error ->
+                updateState { copy(progressState = ProgressState.Error(error)) }
+            }
+        }
     }
 
     private fun onGetApiStatusClicked() {

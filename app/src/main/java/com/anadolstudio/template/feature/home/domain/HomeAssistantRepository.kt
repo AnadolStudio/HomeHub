@@ -1,17 +1,17 @@
 package com.anadolstudio.template.feature.home.domain
 
+import ServiceDomainResponse
 import com.anadolstudio.template.feature.home.data.model.CallServiceResult
 import com.anadolstudio.template.feature.home.data.model.EntityRegistryEntry
 import com.anadolstudio.template.feature.home.data.model.ExtractFromTargetResult
 import com.anadolstudio.template.feature.home.data.model.ServiceDescription
 import com.anadolstudio.template.feature.home.data.model.ServiceTarget
-import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.ApiStatus
-import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.Config
-import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.Event
-import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.Message
-import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.ServiceDomain
-import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.State
-import com.anadolstudio.template.feature.homeAssistantAuth.domain.model.UpdateState
+import com.anadolstudio.template.feature.home.domain.model.ApiStatus
+import com.anadolstudio.template.feature.home.domain.model.Config
+import com.anadolstudio.template.feature.home.domain.model.Event
+import com.anadolstudio.template.feature.home.domain.model.Message
+import com.anadolstudio.template.feature.home.domain.model.State
+import com.anadolstudio.template.feature.home.domain.model.UpdateState
 import kotlinx.serialization.json.JsonObject
 
 interface HomeAssistantRepository {
@@ -31,7 +31,7 @@ interface HomeAssistantRepository {
     suspend fun getEvents(): List<Event>
 
     /** GET /api/services — доступные сервисы по доменам. */
-    suspend fun getServices(): List<ServiceDomain>
+    suspend fun getServices(): List<ServiceDomainResponse>
 
     /** GET /api/states — состояния всех сущностей. */
     suspend fun getAllStates(): List<State>
