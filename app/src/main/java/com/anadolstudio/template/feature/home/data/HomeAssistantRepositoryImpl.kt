@@ -2,11 +2,14 @@ package com.anadolstudio.template.feature.home.data
 
 import ServiceDomainResponse
 import com.anadolstudio.template.core.websocket.WebSocketCore
+import com.anadolstudio.template.core.websocket.connection.WebSocketConnectionState
 import com.anadolstudio.template.core.websocket.message.WsRequest
 import com.anadolstudio.template.feature.home.data.model.CallServiceResult
+import com.anadolstudio.template.feature.home.data.model.DeviceResponse
 import com.anadolstudio.template.feature.home.data.model.EntityRegistryEntry
 import com.anadolstudio.template.feature.home.data.model.EntityRegistryListResult
 import com.anadolstudio.template.feature.home.data.model.ExtractFromTargetResult
+import com.anadolstudio.template.feature.home.data.model.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.data.model.ServiceDescription
 import com.anadolstudio.template.feature.home.data.model.ServiceTarget
 import com.anadolstudio.template.feature.home.data.model.UpdateStateRequest
@@ -14,12 +17,15 @@ import com.anadolstudio.template.feature.home.domain.HomeAssistantRepository
 import com.anadolstudio.template.feature.home.domain.model.AllowedComponents
 import com.anadolstudio.template.feature.home.domain.model.ApiStatus
 import com.anadolstudio.template.feature.home.domain.model.Config
+import com.anadolstudio.template.feature.home.domain.model.Device
 import com.anadolstudio.template.feature.home.domain.model.Event
 import com.anadolstudio.template.feature.home.domain.model.Message
 import com.anadolstudio.template.feature.home.domain.model.State
 import com.anadolstudio.template.feature.home.domain.model.UpdateState
 import com.anadolstudio.template.feature.homeAssistantAuth.data.api.AuthHomeAssistantApi
 import javax.inject.Inject
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
@@ -36,6 +42,13 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
         private val json: Json,
 ) : HomeAssistantRepository {
 
+    override val webSocketConnectionState: StateFlow<WebSocketConnectionState>
+        get() = webSocketCore.connectionState
+
+    override fun startWebSocketConnection() = webSocketCore.resume()
+
+    override fun stopWebSocketConnection() = webSocketCore.pause()
+
     override suspend fun getApiStatus(): ApiStatus = api.getApiStatus().toDomain()
 
     override suspend fun getComponents(): List<String> = api.getComponents()
@@ -49,7 +62,7 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
     override suspend fun getAllStates(): List<State> = api
             .getStates()
             .map { it.toDomain() }
-            .filter { it.entityId.contains(AllowedComponents.getComponentsRegex()) }
+            .filter { it.entityId.contains(AllowedComponents.getAllComponentsRegex()) }
 
     override suspend fun getState(entityId: String): State = api.getState(entityId).toDomain()
 
@@ -156,12 +169,58 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
         )
     }
 
+    override suspend fun getDeviceList(): List<Device> {
+        val deviceMap = webSocketCore
+                .sendCommandForResult(
+                        request = WsRequest(type = COMMAND_DEVICE_REGISTRY_LIST),
+                        deserializer = ListSerializer(DeviceResponse.serializer()),
+                )
+                .associateBy { deviceResponse -> deviceResponse.id }
+
+        val serviceMap = getServiceList()
+
+        val regex = AllowedComponents.getZigbeeAndMatterComponentsRegex()
+
+        return getEntities()
+                .filter { regex.containsMatchIn(it.entityId) }
+                .groupBy(
+                        keySelector = { entityRegistryEntry -> entityRegistryEntry.deviceId.orEmpty() },
+                        valueTransform = { entityRegistryEntry -> entityRegistryEntry.entityId }
+                )
+                .mapValues { (_, entityList) ->
+                    entityList.map { entityId ->
+                        val domain: String = entityId.split(".").first()
+
+                        HomeAssistantEntity(
+                                id = entityId,
+                                services = serviceMap[domain].orEmpty().keys
+                        )
+                    }
+                }
+                .mapNotNull { (deviceId, entityList) ->
+                    // TODO должны быть правила фильтрации из вне
+                    val deviceResponse = deviceMap[deviceId] ?: return@mapNotNull null
+                    if (entityList.isEmpty() || deviceResponse.areaId.isNullOrBlank()) return@mapNotNull null
+
+                    return@mapNotNull Device(
+                            id = deviceResponse.id,
+                            name = deviceResponse.name.orEmpty(),
+                            model = deviceResponse.model.orEmpty(),
+                            areaId = deviceResponse.areaId,
+                            modelId = deviceResponse.modelId,
+                            manufacturer = deviceResponse.manufacturer,
+                            entityList = entityList,
+                    )
+                }
+    }
+
     private companion object {
-        const val COMMAND_ENTITY_REGISTRY_LIST_FOR_DISPLAY = "config/entity_registry/list_for_display"
         const val COMMAND_GET_STATES = "get_states"
         const val COMMAND_GET_SERVICES = "get_services"
         const val COMMAND_EXTRACT_FROM_TARGET = "extract_from_target"
         const val COMMAND_CALL_SERVICE = "call_service"
+        const val COMMAND_ENTITY_REGISTRY_LIST_FOR_DISPLAY = "config/entity_registry/list_for_display"
+        const val COMMAND_DEVICE_REGISTRY_LIST = "config/device_registry/list"
 
         /** HA-флаги для истории: параметр трактуется как "true" при любом непустом значении. */
         const val HISTORY_FLAG = "true"

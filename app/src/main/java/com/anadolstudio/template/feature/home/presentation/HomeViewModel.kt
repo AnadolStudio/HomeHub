@@ -2,11 +2,8 @@ package com.anadolstudio.template.feature.home.presentation
 
 import androidx.lifecycle.viewModelScope
 import com.anadolstudio.template.base.viewmodel.StatefulViewModel
-import com.anadolstudio.template.core.websocket.WebSocketCore
 import com.anadolstudio.template.core.websocket.connection.WebSocketConnectionState
-import com.anadolstudio.template.core.websocket.message.WsRequest
 import com.anadolstudio.template.feature.common.data.PreferencesStorage
-import com.anadolstudio.template.feature.home.data.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.data.model.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.HomeAssistantRepository
 import com.anadolstudio.utils.states.ProgressState
@@ -14,8 +11,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.launch
 
 internal class HomeViewModel @Inject constructor(
-        private val homeAssistantRepository: HomeAssistantRepository,
-        private val webSocketCore: WebSocketCore,
+        private val haRepository: HomeAssistantRepository,
         private val preferencesStorage: PreferencesStorage,
 ) : StatefulViewModel<HomeState>(HomeState()), HomeController {
 
@@ -25,28 +21,22 @@ internal class HomeViewModel @Inject constructor(
 
     override fun onStart() {
         super.onStart()
-        webSocketCore.resume()
+        haRepository.startWebSocketConnection()
     }
 
     override fun onStop() {
         super.onStop()
-        webSocketCore.pause()
+        haRepository.stopWebSocketConnection()
     }
 
     override fun onTestButtonClicked() {
-        viewModelScope.launch {
-            runCatching { webSocketCore.subscribe(WsRequest("s")) }
-                    .onFailure { error ->
-                updateState { copy(progressState = ProgressState.Error(error)) }
-            }
-        }
     }
 
     private fun onGetApiStatusClicked() {
         updateState { copy(progressState = ProgressState.Loading) }
 
         viewModelScope.launch {
-            runCatching { homeAssistantRepository.getApiStatus() }
+            runCatching { haRepository.getApiStatus() }
                     .onSuccess { apiStatus ->
                         updateState {
                             copy(
@@ -75,19 +65,10 @@ internal class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun connectWebSocket() {
-        viewModelScope.launch {
-            runCatching { webSocketCore.connect() }
-                    .onFailure { error ->
-                        updateState { copy(progressState = ProgressState.Error(error)) }
-                    }
-        }
-    }
-
     fun onToggleClicked(entity: HomeAssistantEntity) {
         viewModelScope.launch {
             runCatching {
-                homeAssistantRepository.callService(
+                haRepository.callService(
                         entityId = entity.id,
                         domain = entity.domain,
                         service = SERVICE_TOGGLE,
@@ -100,53 +81,26 @@ internal class HomeViewModel @Inject constructor(
 
     private fun observeConnectionState() {
         viewModelScope.launch {
-            webSocketCore.connectionState.collect { connectionState ->
+            haRepository.webSocketConnectionState.collect { connectionState ->
                 updateState { copy(connectionState = connectionState) }
                 if (connectionState is WebSocketConnectionState.ConnectedAuthenticated &&
-                        state.devices.isEmpty()
+                    state.deviceMap.isEmpty()
                 ) {
-                    loadSwitches()
+                    loadDevices()
                 }
             }
         }
     }
 
-    /**
-     * Загружает MQTT-свитчи: дёргает entity registry, фильтрует по prefix `switch.` + `pl == "mqtt"`,
-     * параллельно дёргает services и берёт services["switch"]. Группирует сущности по deviceId
-     * и складывает в [HomeAssistantDevice]. Для устройств без `deviceId` (если такие есть)
-     * группа складывается по entityId как fallback.
-     */
-    private fun loadSwitches() {
+    private fun loadDevices() {
         updateState { copy(progressState = ProgressState.Loading) }
 
         viewModelScope.launch {
-            runCatching {
-                val entities = homeAssistantRepository.getEntities()
-                        .filter { it.entityId.startsWith(SWITCH_PREFIX) && it.platform == PLATFORM_MQTT }
-                val services = homeAssistantRepository.getServiceList()
-                val switchServices = services[SWITCH_DOMAIN]?.keys.orEmpty().toSet()
-
-                entities
-                        .groupBy { it.deviceId ?: it.entityId }
-                        .map { (deviceId, deviceEntities) ->
-                            HomeAssistantDevice(
-                                    id = deviceId,
-                                    name = deviceEntities.firstOrNull()?.displayName,
-                                    list = deviceEntities.map { entity ->
-                                        HomeAssistantEntity(
-                                                id = entity.entityId,
-                                                domain = SWITCH_DOMAIN,
-                                                services = switchServices,
-                                        )
-                                    },
-                            )
-                        }
-                        .sortedBy { it.id }
-            }
+            runCatching { haRepository.getDeviceList() }
+                    .map { deviceList -> deviceList.groupBy { it.areaId.toString() } }
                     .onSuccess { devices ->
                         updateState {
-                            copy(progressState = ProgressState.Content, devices = devices)
+                            copy(progressState = ProgressState.Content, deviceMap = devices)
                         }
                     }
                     .onFailure { error ->
@@ -156,9 +110,6 @@ internal class HomeViewModel @Inject constructor(
     }
 
     private companion object {
-        const val SWITCH_PREFIX = "switch."
-        const val SWITCH_DOMAIN = "switch"
-        const val PLATFORM_MQTT = "mqtt"
         const val SERVICE_TOGGLE = "toggle"
     }
 }

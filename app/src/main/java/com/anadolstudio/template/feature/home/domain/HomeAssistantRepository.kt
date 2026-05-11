@@ -1,6 +1,7 @@
 package com.anadolstudio.template.feature.home.domain
 
 import ServiceDomainResponse
+import com.anadolstudio.template.core.websocket.connection.WebSocketConnectionState
 import com.anadolstudio.template.feature.home.data.model.CallServiceResult
 import com.anadolstudio.template.feature.home.data.model.EntityRegistryEntry
 import com.anadolstudio.template.feature.home.data.model.ExtractFromTargetResult
@@ -8,13 +9,21 @@ import com.anadolstudio.template.feature.home.data.model.ServiceDescription
 import com.anadolstudio.template.feature.home.data.model.ServiceTarget
 import com.anadolstudio.template.feature.home.domain.model.ApiStatus
 import com.anadolstudio.template.feature.home.domain.model.Config
+import com.anadolstudio.template.feature.home.domain.model.Device
 import com.anadolstudio.template.feature.home.domain.model.Event
 import com.anadolstudio.template.feature.home.domain.model.Message
 import com.anadolstudio.template.feature.home.domain.model.State
 import com.anadolstudio.template.feature.home.domain.model.UpdateState
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.json.JsonObject
 
 interface HomeAssistantRepository {
+
+    val webSocketConnectionState: StateFlow<WebSocketConnectionState>
+
+    fun startWebSocketConnection()
+
+    fun stopWebSocketConnection()
 
     // region AuthHomeAssistantApi (REST)
 
@@ -108,6 +117,8 @@ interface HomeAssistantRepository {
             domain: String,
             service: String,
     ): CallServiceResult
+
+    suspend fun getDeviceList(): List<Device>
 
     // endregion
 }

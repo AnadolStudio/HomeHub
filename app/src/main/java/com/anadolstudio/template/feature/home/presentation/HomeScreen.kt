@@ -1,6 +1,9 @@
 package com.anadolstudio.template.feature.home.presentation
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,39 +20,43 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChevronRight
-import androidx.compose.material.icons.outlined.Lightbulb
+import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.PowerSettingsNew
-import androidx.compose.material.icons.outlined.ToggleOn
-import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import coil.compose.rememberAsyncImagePainter
+import coil.imageLoader
+import coil.request.ImageRequest
 import com.anadolstudio.compose.ui.theme.AppTheme
 import com.anadolstudio.compose.ui.theme.Dimension
 import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
-import com.anadolstudio.compose.ui.view.button.FloatTextButton
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
 import com.anadolstudio.template.base.view.HomeHubLoader
 import com.anadolstudio.template.base.viewmodel.ObserveViewModelLifecycle
 import com.anadolstudio.template.di.viewmodel.daggerViewModel
 import com.anadolstudio.template.event.ObserveEvents
-import com.anadolstudio.template.feature.home.data.model.EntityRegistryEntry
-import com.anadolstudio.template.feature.home.data.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.data.model.HomeAssistantEntity
+import com.anadolstudio.template.feature.home.domain.model.Device
 import com.anadolstudio.template.feature.main.NavigationController
 import com.anadolstudio.utils.states.ProgressState
 
@@ -79,9 +86,44 @@ private fun HomeLayout(
         state: HomeState,
         controller: HomeController,
 ) {
-    val groups = remember(state.allEntities) { state.allEntities.toGroups() }
+    DevicesGrid(
+            deviceMap = state.deviceMap,
+            progressState = state.progressState,
+    )
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun DevicesGrid(
+        deviceMap: Map<String, List<Device>>,
+        progressState: ProgressState,
+) {
+    val entries = remember(deviceMap) { deviceMap.entries.toList() }
+    val gridState = rememberLazyGridState()
+
+    val context = LocalContext.current
+    val imageSizePx = with(LocalDensity.current) { DEVICE_IMAGE_SIZE.roundToPx() }
+    LaunchedEffect(deviceMap) {
+        val urls = deviceMap.values
+                .asSequence()
+                .flatten()
+                .mapNotNull { it.imageUrl }
+                .distinct()
+                .toList()
+        if (urls.isEmpty()) return@LaunchedEffect
+        val imageLoader = context.imageLoader
+        urls.forEach { url ->
+            imageLoader.enqueue(
+                    ImageRequest.Builder(context)
+                            .data(url)
+                            .size(imageSizePx)
+                            .build()
+            )
+        }
+    }
 
     LazyVerticalGrid(
+            state = gridState,
             columns = GridCells.Fixed(GRID_COLUMNS),
             modifier = Modifier
                     .background(color = AppTheme.colors.colorSecondary)
@@ -96,7 +138,10 @@ private fun HomeLayout(
             horizontalArrangement = Arrangement.spacedBy(Dimension.mediumMargin),
             verticalArrangement = Arrangement.spacedBy(Dimension.mediumMargin),
     ) {
-        item(span = { GridItemSpan(maxLineSpan) }) {
+        item(
+                span = { GridItemSpan(maxLineSpan) },
+                key = HOME_TITLE
+        ) {
             Text(
                     text = HOME_TITLE,
                     style = AppTheme.typography.textBook18,
@@ -106,15 +151,8 @@ private fun HomeLayout(
             )
         }
 
-        item {
-            FloatTextButton(
-                    text = "Test Button",
-                    onClick = { controller.onTestButtonClicked() },
-            )
-        }
 
-
-        if (state.progressState is ProgressState.Loading && state.allEntities.isEmpty()) {
+        if (progressState is ProgressState.Loading && entries.isEmpty()) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Box(
                         modifier = Modifier
@@ -127,43 +165,36 @@ private fun HomeLayout(
             }
         }
 
-        if (state.progressState is ProgressState.Error) {
+        if (progressState is ProgressState.Error) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Text(
-                        text = "Error: ${(state.progressState as ProgressState.Error).error?.message}",
+                        text = "Error: ${progressState.error?.message}",
                         color = AppTheme.colors.textSecondary,
                         style = AppTheme.typography.textBook14,
                 )
             }
         }
 
-        groups.forEach { group ->
-            item(span = { GridItemSpan(maxLineSpan) }, key = "header_${group.id}") {
-                GroupHeader(title = group.title, onClick = {})
+        entries.forEach { (areaId, deviceList) ->
+            item(span = { GridItemSpan(maxLineSpan) }, key = areaId) {
+                GroupHeader(title = areaId, onClick = { })
             }
 
-            items(group.entities, key = { entity -> "${group.id}/${entity.entityId}" }) { entity ->
-                EntityCard(
-                        entity = entity,
-                        onToggleClicked = { },
-                )
-            }
-        }
-
-        state.devices.forEach { device ->
-            item(span = { GridItemSpan(maxLineSpan) }, key = "device_${device.id}") {
-                GroupHeader(title = device.name ?: device.id, onClick = {})
-            }
-
-            items(device.list, key = { entity -> "${device.id}/${entity.id}" }) { entity ->
-                SwitchEntityCard(
-                        entity = entity,
+            items(
+                    items = deviceList,
+                    key = { device -> device.id },
+                    contentType = { DEVICE_CARD_CONTENT_TYPE },
+            ) { device ->
+                DeviceCard(
+                        device = device,
                         onToggleClicked = { /*onToggleClicked(entity)*/ },
                 )
             }
         }
     }
 }
+
+private const val DEVICE_CARD_CONTENT_TYPE = "device_card"
 
 @Composable
 private fun GroupHeader(title: String, onClick: () -> Unit) {
@@ -180,180 +211,109 @@ private fun GroupHeader(title: String, onClick: () -> Unit) {
                 fontWeight = FontWeight.SemiBold,
         )
         Spacer(modifier = Modifier.size(Dimension.extraSmallMargin))
-        IconButton(onClick = onClick, modifier = Modifier.size(20.dp)) {
-            Icon(
-                    imageVector = Icons.Outlined.ChevronRight,
-                    contentDescription = null,
-                    tint = AppTheme.colors.textSecondary,
-            )
-        }
+        Icon(
+                imageVector = Icons.Outlined.ChevronRight,
+                contentDescription = null,
+                tint = AppTheme.colors.textSecondary,
+                modifier = Modifier
+                        .size(20.dp)
+                        .clickable(onClick = onClick),
+        )
     }
 }
 
 @Composable
-private fun EntityCard(
-        entity: EntityRegistryEntry,
+private fun DeviceCard(
+        device: Device,
         onToggleClicked: () -> Unit,
 ) {
-    Card(
+    Column(
             modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .shadow(elevation = DEVICE_CARD_ELEVATION, shape = DEVICE_CARD_SHAPE)
+                    .background(color = AppTheme.colors.colorPrimary)
+                    .padding(Dimension.mediumMargin),
     ) {
-        Column(
-                modifier = Modifier
-                        .background(color = AppTheme.colors.colorPrimary)
-                        .padding(Dimension.mediumMargin)
+        Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top,
         ) {
-            Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.Top,
-            ) {
-                Icon(
-                        imageVector = entity.domainIcon(),
-                        contentDescription = null,
-                        modifier = Modifier.size(60.dp),
-                        tint = AppTheme.colors.textPrimary,
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                IconButton(
-                        onClick = onToggleClicked,
-                        modifier = Modifier.size(24.dp),
-                ) {
-                    Icon(
-                            imageVector = Icons.Outlined.PowerSettingsNew,
-                            contentDescription = "Toggle",
-                            tint = AppTheme.colors.colorAccent,
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(Dimension.smallMargin))
-
-            Text(
-                    text = entity.displayName,
-                    style = AppTheme.typography.captionMedium12,
-                    fontWeight = FontWeight.Bold,
-                    color = AppTheme.colors.colorAccent,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-            )
-
-            Spacer(modifier = Modifier.height(2.dp))
-
-            Text(
-                    text = entity.entityId,
-                    style = AppTheme.typography.captionMedium12,
-                    color = AppTheme.colors.colorAccent,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+            DeviceImage(device = device)
+            Spacer(modifier = Modifier.weight(1f))
+            Icon(
+                    imageVector = Icons.Outlined.PowerSettingsNew,
+                    contentDescription = "Toggle",
+                    tint = AppTheme.colors.colorAccent,
+                    modifier = Modifier
+                            .size(24.dp)
+                            .clickable(onClick = onToggleClicked),
             )
         }
-    }
-}
 
-private fun EntityRegistryEntry.domainIcon(): ImageVector = when (domain) {
-    "light" -> Icons.Outlined.Lightbulb
-    "switch", "input_boolean" -> Icons.Outlined.ToggleOn
-    else -> Icons.Outlined.PowerSettingsNew
+        Spacer(modifier = Modifier.height(Dimension.smallMargin))
+
+        Text(
+                text = device.name,
+                style = AppTheme.typography.captionMedium12,
+                fontWeight = FontWeight.Bold,
+                color = AppTheme.colors.colorAccent,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+        )
+
+        Spacer(modifier = Modifier.height(2.dp))
+
+        Text(
+                text = device.areaId.orEmpty(),
+                style = AppTheme.typography.captionMedium12,
+                color = AppTheme.colors.colorAccent,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+        )
+    }
 }
 
 @Composable
-private fun SwitchEntityCard(
-        entity: HomeAssistantEntity,
-        onToggleClicked: () -> Unit,
-) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(
-                modifier = Modifier
-                        .background(color = AppTheme.colors.colorPrimary)
-                        .padding(Dimension.mediumMargin),
-        ) {
-            Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.Top,
-            ) {
-                Icon(
-                        imageVector = Icons.Outlined.ToggleOn,
-                        contentDescription = null,
-                        modifier = Modifier.size(60.dp),
-                        tint = AppTheme.colors.textPrimary,
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                IconButton(
-                        onClick = onToggleClicked,
-                        modifier = Modifier.size(24.dp),
-                ) {
-                    Icon(
-                            imageVector = Icons.Outlined.PowerSettingsNew,
-                            contentDescription = "Toggle",
-                            tint = AppTheme.colors.colorAccent,
-                    )
-                }
-            }
+private fun DeviceImage(device: Device) {
+    val modifier = Modifier.size(DEVICE_IMAGE_SIZE)
+    val imageUrl = device.imageUrl
 
-            Spacer(modifier = Modifier.height(Dimension.smallMargin))
-
-            Text(
-                    text = entity.id,
-                    style = AppTheme.typography.captionMedium12,
-                    fontWeight = FontWeight.Bold,
-                    color = AppTheme.colors.colorAccent,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-            )
-
-            Spacer(modifier = Modifier.height(2.dp))
-
-            Text(
-                    text = entity.services.joinToString(", "),
-                    style = AppTheme.typography.captionMedium12,
-                    color = AppTheme.colors.colorAccent,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-            )
-        }
+    if (imageUrl == null) {
+        Icon(
+                imageVector = Icons.Outlined.HelpOutline,
+                contentDescription = null,
+                modifier = modifier,
+                tint = AppTheme.colors.textPrimary,
+        )
+        return
     }
+
+    val context = LocalContext.current
+    val sizePx = with(LocalDensity.current) { DEVICE_IMAGE_SIZE.roundToPx() }
+    val fallbackPainter = rememberVectorPainter(Icons.Outlined.HelpOutline)
+    val painter = rememberAsyncImagePainter(
+            model = remember(imageUrl, sizePx) {
+                ImageRequest.Builder(context)
+                        .data(imageUrl)
+                        .size(sizePx)
+                        .crossfade(false)
+                        .build()
+            },
+            placeholder = fallbackPainter,
+            error = fallbackPainter,
+    )
+    Image(
+            painter = painter,
+            contentDescription = null,
+            modifier = modifier,
+    )
 }
 
-private data class EntityGroupUi(
-        val id: String,
-        val title: String,
-        val entities: List<EntityRegistryEntry>,
-)
-
-private fun List<EntityRegistryEntry>.toGroups(): List<EntityGroupUi> =
-        groupBy { it.areaId ?: NO_AREA_ID }
-                .map { (areaId, entities) ->
-                    EntityGroupUi(
-                            id = areaId,
-                            title = if (areaId == NO_AREA_ID) NO_AREA_TITLE else areaId,
-                            entities = entities.sortedBy { it.displayName },
-                    )
-                }
-                .sortedBy { it.title }
+private val DEVICE_IMAGE_SIZE = 60.dp
+private val DEVICE_CARD_SHAPE = RoundedCornerShape(12.dp)
+private val DEVICE_CARD_ELEVATION = 4.dp
 
 // region Previews
-
-private fun previewEntity(
-        entityId: String,
-        name: String?,
-        areaId: String?,
-): EntityRegistryEntry = EntityRegistryEntry(
-        entityId = entityId,
-        platform = "mqtt",
-        name = name,
-        areaId = areaId,
-)
-
-private val previewEntities: List<EntityRegistryEntry> = listOf(
-        previewEntity("switch.zal_main", "Выключатель", "Зал"),
-        previewEntity("switch.zal_long", "Выключатель на длинном тексте", "Зал"),
-        previewEntity("switch.zal_extra", "Выключатель", "Зал"),
-        previewEntity("switch.kuhnia_1", "Выключатель", "Кухня"),
-        previewEntity("switch.kuhnia_2", "Выключатель на длинном тексте", "Кухня"),
-        previewEntity("switch.kuhnia_3", "Выключатель", "Кухня"),
-        previewEntity("light.bedroom", "Лампа", "Спальня"),
-)
 
 private fun createPreviewController(): HomeController = object : HomeController {
     override fun onTestButtonClicked() = Unit
@@ -365,7 +325,9 @@ private fun HomeScreenPreview(
         @PreviewParameter(ThemePreviewParameter::class) useDarkMode: Boolean,
 ) {
     AppTheme(useDarkMode) {
-        HomeLayout(state = HomeState(allEntities = previewEntities), controller = createPreviewController())
+        HomeLayout(
+                state = HomeState(deviceMap = previewDevices.groupBy { it.areaId.orEmpty() }),
+                controller = createPreviewController())
     }
 }
 
@@ -379,19 +341,6 @@ private fun HomeScreenLoadingPreview(
     }
 }
 
-@Preview(showBackground = true, widthDp = 140, heightDp = 140)
-@Composable
-private fun EntityCardPreview(
-        @PreviewParameter(ThemePreviewParameter::class) useDarkMode: Boolean,
-) {
-    AppTheme(useDarkMode) {
-        EntityCard(
-                entity = previewEntity("switch.zal_long", "Выключатель на длинном тексте", "Зал"),
-                onToggleClicked = {},
-        )
-    }
-}
-
 @Preview(showBackground = true)
 @Composable
 private fun GroupHeaderPreview(
@@ -402,30 +351,49 @@ private fun GroupHeaderPreview(
     }
 }
 
-private val previewDevices: List<HomeAssistantDevice> = listOf(
-        HomeAssistantDevice(
+private val previewDevices: List<Device> = listOf(
+        Device(
                 id = "4f745823d042948d34938086261e40d7",
                 name = "Выключатель Зал/Кухня",
-                list = listOf(
+                model = "Wall switch with 2 buttons",
+                areaId = "Зал",
+                modelId = "ZNCJMB14LM",
+                manufacturer = "Aqara",
+                entityList = listOf(
                         HomeAssistantEntity(
                                 id = "switch.vykliuchatel_zal_kukhnia_1",
-                                domain = "switch",
                                 services = setOf("turn_on", "turn_off", "toggle"),
                         ),
                         HomeAssistantEntity(
                                 id = "switch.vykliuchatel_zal_kukhnia_kukhnia",
-                                domain = "switch",
                                 services = setOf("turn_on", "turn_off", "toggle"),
                         ),
                 ),
         ),
-        HomeAssistantDevice(
+        Device(
                 id = "416f948a315f700d4ef3ea300f698d1e",
                 name = "Выключатель на балконе",
-                list = listOf(
+                model = "Smart wall switch",
+                areaId = "Балкон",
+                modelId = "QBKG11LM",
+                manufacturer = "Aqara",
+                entityList = listOf(
                         HomeAssistantEntity(
                                 id = "switch.0x603d61fffe758b32_1",
-                                domain = "switch",
+                                services = setOf("turn_on", "turn_off", "toggle"),
+                        ),
+                ),
+        ),
+        Device(
+                id = "8a1f7d29a04a4b3eb6c9e8410c7a6b22",
+                name = "Лампа в спальне",
+                model = "RGBW light bulb",
+                areaId = "Спальня",
+                modelId = "LED1624G9",
+                manufacturer = "IKEA",
+                entityList = listOf(
+                        HomeAssistantEntity(
+                                id = "light.bedroom_main",
                                 services = setOf("turn_on", "turn_off", "toggle"),
                         ),
                 ),
@@ -438,22 +406,21 @@ private fun HomeScreenDevicesPreview(
         @PreviewParameter(ThemePreviewParameter::class) useDarkMode: Boolean,
 ) {
     AppTheme(useDarkMode) {
-        HomeLayout(state = HomeState(devices = previewDevices), controller = createPreviewController())
+        HomeLayout(
+                state = HomeState(deviceMap = previewDevices.groupBy { it.areaId.orEmpty() }),
+                controller = createPreviewController(),
+        )
     }
 }
 
 @Preview(showBackground = true, widthDp = 140, heightDp = 140)
 @Composable
-private fun SwitchEntityCardPreview(
+private fun DeviceCardPreview(
         @PreviewParameter(ThemePreviewParameter::class) useDarkMode: Boolean,
 ) {
     AppTheme(useDarkMode) {
-        SwitchEntityCard(
-                entity = HomeAssistantEntity(
-                        id = "switch.vykliuchatel_zal_kukhnia_1",
-                        domain = "switch",
-                        services = setOf("turn_on", "turn_off", "toggle"),
-                ),
+        DeviceCard(
+                device = previewDevices.first(),
                 onToggleClicked = {},
         )
     }
