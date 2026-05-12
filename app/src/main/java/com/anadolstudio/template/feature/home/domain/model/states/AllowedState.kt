@@ -1,7 +1,9 @@
 package com.anadolstudio.template.feature.home.domain.model.states
 
 import androidx.core.text.isDigitsOnly
+import kotlinx.serialization.Serializable
 
+@Serializable
 sealed class AllowedState(val value: String) {
 
     object On : AllowedState(value = "on")
@@ -12,13 +14,16 @@ sealed class AllowedState(val value: String) {
     class DigitState(value: String) : AllowedState(value = value)
 
     class UnprocessedState(value: String) : AllowedState(value = value)
+
+    companion object {
+        fun getAllowedStateByName(name: String): AllowedState = when {
+            name == "on" -> On
+            name == "off" -> Off
+            name == "unavailable" -> Unavailable
+            name == "unknown" -> Unknown
+            name.isDigitsOnly() -> DigitState(name)
+            else -> UnprocessedState(name)
+        }
+    }
 }
 
-fun getAllowedStateByName(name: String): AllowedState = when  {
-    name == "on" -> AllowedState.On
-    name == "off" -> AllowedState.Off
-    name == "unavailable" -> AllowedState.Unavailable
-    name == "unknown" -> AllowedState.Unknown
-    name.isDigitsOnly() -> AllowedState.DigitState(name)
-    else -> AllowedState.UnprocessedState(name)
-}

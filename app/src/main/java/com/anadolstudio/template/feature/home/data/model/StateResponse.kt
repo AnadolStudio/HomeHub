@@ -1,8 +1,8 @@
 package com.anadolstudio.template.feature.home.data.model
 
+import com.anadolstudio.template.feature.home.domain.model.states.AllowedState.Companion.getAllowedStateByName
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 import com.anadolstudio.template.feature.home.domain.model.states.SimpleState
-import com.anadolstudio.template.feature.home.domain.model.states.getAllowedStateByName
 import java.time.OffsetDateTime
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

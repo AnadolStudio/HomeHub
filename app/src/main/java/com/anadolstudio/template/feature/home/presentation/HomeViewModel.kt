@@ -8,6 +8,7 @@ import com.anadolstudio.template.feature.common.data.PreferencesStorage
 import com.anadolstudio.template.feature.home.domain.HomeAssistantRepository
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantEntity
+import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
 import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistantService
 import com.anadolstudio.utils.states.ProgressState
 import javax.inject.Inject
@@ -20,82 +21,6 @@ internal class HomeViewModel @Inject constructor(
 
     init {
         observeConnectionState()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        haRepository.startWebSocketConnection()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        haRepository.stopWebSocketConnection()
-    }
-
-    override fun onTestButtonClicked() {
-    }
-
-    private fun onGetApiStatusClicked() {
-        updateState { copy(progressState = ProgressState.Loading) }
-
-        viewModelScope.launch {
-            runCatching { haRepository.getApiStatus() }
-                    .onSuccess { apiStatus ->
-                        updateState {
-                            copy(
-                                    progressState = ProgressState.Content,
-                                    apiStatusMessage = apiStatus.message,
-                            )
-                        }
-                    }
-                    .onFailure { error ->
-                        updateState { copy(progressState = ProgressState.Error(error)) }
-                    }
-        }
-    }
-
-    override fun onEntityClicked(entity: HomeAssistantEntity, service: HomeAssistantService) {
-        viewModelScope.launch {
-            runCatching {
-                haRepository.callService(
-                        entityId = entity.id,
-                        domain = entity.domain,
-                        service = service.toStringService(),
-                )
-            }
-        }
-    }
-
-    override fun onDeviceClicked(device: HomeAssistantDevice) {
-        showTodo()
-    }
-
-    fun onGetEntitiesClicked() {
-        updateState { copy(progressState = ProgressState.Loading) }
-
-        viewModelScope.launch {
-            runCatching {
-            }
-                    .onSuccess { entities ->
-                    }
-                    .onFailure { error ->
-                        updateState { copy(progressState = ProgressState.Error(error)) }
-                    }
-        }
-    }
-
-    fun onToggleClicked(entity: HomeAssistantEntity) {
-        viewModelScope.launch {
-            runCatching {
-                haRepository.callService(
-                        entityId = entity.id,
-                        domain = entity.domain,
-                        service = SERVICE_TOGGLE,
-                )
-            }.onFailure { error ->
-                updateState { copy(progressState = ProgressState.Error(error)) }
-            }
-        }
     }
 
     private fun observeConnectionState() {
@@ -117,12 +42,15 @@ internal class HomeViewModel @Inject constructor(
                     .map { deviceList ->
                         deviceList
                                 .filter { device -> device.isBindToArea }
-                                .groupBy { device -> requireNotNull(device.area).name }
+                                .toSortedSet(
+                                        Comparator.comparing { it.name }
+                                )
                     }
-                    .onSuccess { devices ->
-                        updateState {
-                            copy(progressState = ProgressState.Content, deviceMap = devices)
-                        }
+                    .onSuccess { devicesSet ->
+                        val deviceState = HomeScreenDeviceState(deviceSet = devicesSet)
+                        updateState { copy(progressState = ProgressState.Content, deviceState = deviceState) }
+
+                        subscribeToStateChangedEvents()
                     }
                     .onFailure { error ->
                         updateState { copy(progressState = ProgressState.Error(error)) }
@@ -130,7 +58,68 @@ internal class HomeViewModel @Inject constructor(
         }
     }
 
-    private companion object {
-        const val SERVICE_TOGGLE = "toggle"
+    override fun onStart() {
+        super.onStart()
+        haRepository.startWebSocketConnection()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        haRepository.stopWebSocketConnection()
+    }
+
+    override fun onTestButtonClicked() {
+    }
+
+    private fun subscribeToStateChangedEvents() {
+        updateState { copy(progressState = ProgressState.Loading) }
+
+        viewModelScope.launch {
+            haRepository.subscribeToStateChangedEvents().collect { stateChangedEvent ->
+                updateEntity(stateChangedEvent)
+            }
+        }
+    }
+
+    private fun updateEntity(stateChangedEvent: HomeAssistantStateChangedEvent) {
+        val entityId = stateChangedEvent.entityId
+        val newAllowedState = stateChangedEvent.allowedState
+
+        val changedDevice = state.deviceState.entityToDeviceMap[entityId] ?: return
+        val newEntityList = changedDevice.entitySet.map { entity ->
+            if (entity.entityId == entityId) {
+                entity.copy(allowedState = newAllowedState)
+            } else {
+                entity
+            }
+        }
+
+        val newDevice = changedDevice.copy(entitySet = newEntityList)
+        val newDeviceSet = state.deviceState.deviceSet.toMutableSet().apply {
+            remove(changedDevice)
+            add(newDevice)
+        }
+        updateState {
+            copy(
+                    progressState = ProgressState.Content,
+                    deviceState = deviceState.copy(deviceSet = newDeviceSet),
+            )
+        }
+    }
+
+    override fun onEntityClicked(entity: HomeAssistantEntity, service: HomeAssistantService) {
+        viewModelScope.launch {
+            runCatching {
+                haRepository.callService(
+                        entityId = entity.entityId,
+                        domain = entity.domain,
+                        service = service.toStringService(),
+                )
+            }
+        }
+    }
+
+    override fun onDeviceClicked(device: HomeAssistantDevice) {
+        showTodo()
     }
 }

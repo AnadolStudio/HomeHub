@@ -7,7 +7,6 @@ import com.anadolstudio.template.core.websocket.connection.WebSocketAuthRefreshe
 import com.anadolstudio.template.core.websocket.connection.WebSocketConnectionState
 import com.anadolstudio.template.core.websocket.message.HaWebSocketMessageController
 import com.anadolstudio.template.core.websocket.message.WsAuthInvalidMessage
-import com.anadolstudio.template.core.websocket.message.WsEventMessage
 import com.anadolstudio.template.core.websocket.message.WsMessage
 import com.anadolstudio.template.core.websocket.message.WsRequest
 import com.anadolstudio.template.core.websocket.message.WsResultMessage
@@ -163,15 +162,21 @@ class WebSocketCoreImpl @Inject constructor(
     override suspend fun <T> sendCommandForResult(
             request: WsRequest,
             deserializer: DeserializationStrategy<T>,
-    ): T {
-        return messageController.sendCommandForResult(requireNotNull(webSocket), request, deserializer)
-    }
+    ): T = messageController.sendCommandForResult(
+            webSocket = requireNotNull(webSocket),
+            request = request,
+            deserializer = deserializer
+    )
 
-    override fun subscribe(subscriptionRequest: WsRequest): Flow<WsEventMessage> {
-        webSocket?.close(NORMAL_CLOSURE_CODE, "Test")
-
-        return messageController.subscribe(requireNotNull(webSocket), scope, subscriptionRequest)
-    }
+    override fun <T> subscribe(
+            request: WsRequest,
+            deserializer: DeserializationStrategy<T>,
+    ): Flow<T> = messageController.subscribe(
+            webSocket = requireNotNull(webSocket),
+            scope = scope,
+            subscriptionRequest = request,
+            deserializer = deserializer
+    )
 
     private fun reconnect() {
         if (reconnectJob?.isActive == true || isPause.get()) return

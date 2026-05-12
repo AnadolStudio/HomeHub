@@ -1,7 +1,6 @@
 package com.anadolstudio.template.core.websocket
 
 import com.anadolstudio.template.core.websocket.connection.WebSocketConnectionState
-import com.anadolstudio.template.core.websocket.message.WsEventMessage
 import com.anadolstudio.template.core.websocket.message.WsRequest
 import com.anadolstudio.template.core.websocket.message.WsResultMessage
 import kotlinx.coroutines.flow.Flow
@@ -27,5 +26,8 @@ interface WebSocketCore {
             deserializer: DeserializationStrategy<T>,
     ): T
 
-    fun subscribe(subscriptionRequest: WsRequest): Flow<WsEventMessage>
+    fun <T> subscribe(
+            request: WsRequest,
+            deserializer: DeserializationStrategy<T>,
+    ): Flow<T>
 }

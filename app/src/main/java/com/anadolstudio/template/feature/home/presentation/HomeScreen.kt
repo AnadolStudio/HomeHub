@@ -83,7 +83,7 @@ private fun HomeLayout(
         controller: HomeController,
 ) {
     DevicesGrid(
-            deviceMap = state.deviceMap,
+            deviceMap = state.deviceState.areaToDeviceMap,
             progressState = state.progressState,
             controller = controller,
     )
@@ -200,7 +200,7 @@ private fun DeviceCard(device: HomeAssistantDevice, controller: HomeController) 
                     title = device.name,
                     description = null,
                     imageUrl = device.imageUrl,
-                    switchEntityList = device.entityList
+                    switchEntityList = device.entitySet
                             .filter { it.componentType == AllowedComponent.SWITCH },
                     onInnerEntityClicked = { controller.onEntityClicked(it, SwitchService.Toggle) },
                     onDeviceClicked = { controller.onDeviceClicked(device) },
@@ -261,7 +261,7 @@ private fun HomeScreenPreview(
 ) {
     AppTheme(useDarkMode) {
         HomeLayout(
-                state = HomeScreenState(deviceMap = PreviewUtils.previewDevices.groupBy { it.area?.name.orEmpty() }),
+                state = HomeScreenState(deviceState = HomeScreenDeviceState(deviceSet = PreviewUtils.previewDevices.toSet())),
                 controller = createPreviewController()
         )
     }
@@ -297,7 +297,7 @@ private fun HomeScreenDevicesPreview(
 ) {
     AppTheme(useDarkMode) {
         HomeLayout(
-                state = HomeScreenState(deviceMap = PreviewUtils.previewDevices.groupBy { it.area?.name.orEmpty() }),
+                state = HomeScreenState(deviceState = HomeScreenDeviceState(deviceSet = PreviewUtils.previewDevices.toSet())),
                 controller = createPreviewController(),
         )
     }

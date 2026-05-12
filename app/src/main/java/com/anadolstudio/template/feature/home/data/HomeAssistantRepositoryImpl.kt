@@ -10,27 +10,32 @@ import com.anadolstudio.template.feature.home.data.model.DeviceResponse
 import com.anadolstudio.template.feature.home.data.model.EntityRegistryEntry
 import com.anadolstudio.template.feature.home.data.model.EntityRegistryListResult
 import com.anadolstudio.template.feature.home.data.model.ExtractFromTargetResult
-import com.anadolstudio.template.feature.home.data.model.ServiceDescription
-import com.anadolstudio.template.feature.home.data.model.ServiceTarget
 import com.anadolstudio.template.feature.home.data.model.StateResponse
 import com.anadolstudio.template.feature.home.data.model.UpdateStateRequest
+import com.anadolstudio.template.feature.home.data.model.events.StateChangedEventResponse
+import com.anadolstudio.template.feature.home.data.model.services.ServiceDescription
+import com.anadolstudio.template.feature.home.data.model.services.ServiceTarget
 import com.anadolstudio.template.feature.home.data.model.toDomain
 import com.anadolstudio.template.feature.home.domain.HomeAssistantRepository
 import com.anadolstudio.template.feature.home.domain.model.AllowedComponent
 import com.anadolstudio.template.feature.home.domain.model.ApiStatus
 import com.anadolstudio.template.feature.home.domain.model.Area
 import com.anadolstudio.template.feature.home.domain.model.Config
-import com.anadolstudio.template.feature.home.domain.model.Event
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.Message
 import com.anadolstudio.template.feature.home.domain.model.UpdateState
+import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantEventType
+import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
+import com.anadolstudio.template.feature.home.domain.model.states.AllowedState
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 import com.anadolstudio.template.feature.home.domain.model.states.HomeState
 import com.anadolstudio.template.feature.home.domain.model.states.toHomeState
 import com.anadolstudio.template.feature.homeAssistantAuth.data.api.AuthHomeAssistantApi
 import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
@@ -61,7 +66,11 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
 
     override suspend fun getConfig(): Config = api.getConfig().toDomain()
 
-    override suspend fun getEvents(): List<Event> = api.getEvents().map { it.toDomain() }
+    override suspend fun getEvents(): Map<HomeAssistantEventType, Int> = api.getEvents()
+            .associateBy(
+                    keySelector = { event -> HomeAssistantEventType.fromValue(event.eventName) },
+                    valueTransform = { event -> event.listenerCount },
+            )
 
     override suspend fun getServices(): List<ServiceDomainResponse> = api.getServices()/*.map { it.toDomain() }*/
 
@@ -210,7 +219,12 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
                         val domain: String = entityId.split(".").first()
                         val services = serviceMap[domain].orEmpty().keys
 
-                        HomeAssistantEntity(id = entityId, services = services, stateData = state)
+                        HomeAssistantEntity(
+                                entityId = entityId,
+                                services = services,
+                                stateData = state,
+                                allowedState = state.state
+                        )
                     }
                 }
                 .mapNotNull { (deviceId, entityList) ->
@@ -223,10 +237,24 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
                             area = areaMap[deviceResponse.areaId],
                             modelId = deviceResponse.modelId,
                             manufacturer = deviceResponse.manufacturer,
-                            entityList = entityList,
+                            entitySet = entityList,
                     )
                 }
     }
+
+    override suspend fun subscribeToStateChangedEvents(): Flow<HomeAssistantStateChangedEvent> = webSocketCore
+            .subscribe(
+                    request = WsRequest(
+                            type = COMMAND_SUBSCRIBE_EVENTS,
+                            payload = buildJsonObject { put(PAYLOAD_EVENT_TYPE_KEY, PAYLOAD_EVENT_TYPE_VALUE) }
+                    ),
+                    deserializer = StateChangedEventResponse.serializer()
+            ).mapNotNull { stateChangedEventResponse ->
+                HomeAssistantStateChangedEvent(
+                        entityId = stateChangedEventResponse.entityId,
+                        allowedState = AllowedState.getAllowedStateByName(stateChangedEventResponse.newState.state)
+                )
+            }
 
     private companion object {
         const val COMMAND_GET_STATES = "get_states"
@@ -236,8 +264,11 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
         const val COMMAND_ENTITY_REGISTRY_LIST_FOR_DISPLAY = "config/entity_registry/list_for_display"
         const val COMMAND_DEVICE_REGISTRY_LIST = "config/device_registry/list"
         const val COMMAND_AREA_REGISTRY_LIST = "config/area_registry/list"
+        const val COMMAND_SUBSCRIBE_EVENTS = "subscribe_events"
 
         const val HOME_ENTITY_ID = "zone.home"
+        const val PAYLOAD_EVENT_TYPE_KEY = "event_type"
+        const val PAYLOAD_EVENT_TYPE_VALUE = "state_changed"
 
         /** HA-флаги для истории: параметр трактуется как "true" при любом непустом значении. */
         const val HISTORY_FLAG = "true"

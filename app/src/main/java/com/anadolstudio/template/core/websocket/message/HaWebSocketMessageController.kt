@@ -110,13 +110,13 @@ class HaWebSocketMessageController(
         }
     }
 
-    fun subscribe(
+    fun <T> subscribe(
             webSocket: WebSocket,
             scope: CoroutineScope,
             subscriptionRequest: WsRequest,
-    ): Flow<WsEventMessage> = callbackFlow {
+            deserializer: DeserializationStrategy<T>,
+    ): Flow<T> = callbackFlow {
         val subscriptionResult = sendCommand(webSocket, subscriptionRequest)
-        val subscriptionId = subscriptionResult.id
 
         if (!subscriptionResult.success) {
             val errorMsg = subscriptionResult.error?.let { "${it.code}: ${it.message}" } ?: "Unknown error"
@@ -128,8 +128,9 @@ class HaWebSocketMessageController(
             incomingMessagesFlow
                     .filterIsInstance<WsEventMessage>()
                     .collect { event ->
-                        if (event.id == subscriptionId) {
-                            trySend(event)
+                        if (event.eventType == subscriptionRequest.type) {
+                            val result = dependencies.json.decodeFromJsonElement(deserializer, event.eventData)
+                            trySend(result)
                         }
                     }
         }

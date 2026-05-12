@@ -8,7 +8,20 @@ import com.anadolstudio.utils.states.ProgressState
 @Immutable
 internal data class HomeScreenState(
         val progressState: ProgressState = ProgressState.Content,
-        val apiStatusMessage: String? = null,
         val connectionState: WebSocketConnectionState = WebSocketConnectionState.Disconnected,
-        val deviceMap: Map<String, List<HomeAssistantDevice>> = emptyMap(),
-)
+        val deviceState: HomeScreenDeviceState = HomeScreenDeviceState(),
+) {
+
+}
+
+@Immutable
+internal data class HomeScreenDeviceState(
+        val deviceSet: Set<HomeAssistantDevice> = emptySet(),
+) {
+    val areaToDeviceMap: Map<String, List<HomeAssistantDevice>> get() = deviceSet
+            .groupBy { device -> requireNotNull(device.area).name }
+
+    val entityToDeviceMap: Map<String, HomeAssistantDevice> get() = deviceSet
+            .flatMap { device -> device.entitySet.map { entity -> entity.entityId to device } }
+            .toMap()
+}

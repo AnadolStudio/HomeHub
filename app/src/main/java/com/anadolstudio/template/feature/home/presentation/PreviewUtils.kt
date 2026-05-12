@@ -28,8 +28,9 @@ internal object PreviewUtils {
     )
 
      fun previewEntity(entityId: String, state: AllowedState = AllowedState.Unknown): HomeAssistantEntity = HomeAssistantEntity(
-            id = entityId,
+            entityId = entityId,
             services = setOf("turn_on", "turn_off", "toggle"),
+            allowedState = state,
             stateData = previewState(entityId, state),
     )
 
@@ -41,7 +42,7 @@ internal object PreviewUtils {
                     modelId = "ZNCJMB14LM",
                     manufacturer = "Aqara",
                     area = previewArea("Зал"),
-                    entityList = listOf(
+                    entitySet = listOf(
                             previewEntity("switch.vykliuchatel_zal_kukhnia_1"),
                             previewEntity("switch.vykliuchatel_zal_kukhnia_kukhnia", AllowedState.On),
                     ),
@@ -53,7 +54,7 @@ internal object PreviewUtils {
                     modelId = "QBKG11LM",
                     manufacturer = "Aqara",
                     area = previewArea("Балкон"),
-                    entityList = listOf(
+                    entitySet = listOf(
                             previewEntity("switch.0x603d61fffe758b32_1"),
                     ),
             ),
@@ -64,7 +65,7 @@ internal object PreviewUtils {
                     modelId = "LED1624G9",
                     manufacturer = "IKEA",
                     area = previewArea("Спальня"),
-                    entityList = listOf(
+                    entitySet = listOf(
                             previewEntity("light.bedroom_main"),
                     ),
             ),

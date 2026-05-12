@@ -3,10 +3,10 @@ package com.anadolstudio.template.feature.homeAssistantAuth.data.api
 import ServiceDomainResponse
 import com.anadolstudio.template.feature.home.data.model.ApiStatusResponse
 import com.anadolstudio.template.feature.home.data.model.ConfigResponse
-import com.anadolstudio.template.feature.home.data.model.EventResponse
 import com.anadolstudio.template.feature.home.data.model.MessageResponse
 import com.anadolstudio.template.feature.home.data.model.StateResponse
 import com.anadolstudio.template.feature.home.data.model.UpdateStateRequest
+import com.anadolstudio.template.feature.home.data.model.events.EventListenerResponse
 import kotlinx.serialization.json.JsonObject
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -35,7 +35,7 @@ interface AuthHomeAssistantApi {
 
     /** GET /api/events — список активных событий и количество слушателей. */
     @GET("api/events")
-    suspend fun getEvents(): List<EventResponse>
+    suspend fun getEvents(): List<EventListenerResponse>
 
     /** GET /api/services — доступные сервисы по доменам. */
     @GET("api/services")

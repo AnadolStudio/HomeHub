@@ -5,16 +5,18 @@ import com.anadolstudio.template.core.websocket.connection.WebSocketConnectionSt
 import com.anadolstudio.template.feature.home.data.model.CallServiceResult
 import com.anadolstudio.template.feature.home.data.model.EntityRegistryEntry
 import com.anadolstudio.template.feature.home.data.model.ExtractFromTargetResult
-import com.anadolstudio.template.feature.home.data.model.ServiceDescription
-import com.anadolstudio.template.feature.home.data.model.ServiceTarget
+import com.anadolstudio.template.feature.home.data.model.services.ServiceDescription
+import com.anadolstudio.template.feature.home.data.model.services.ServiceTarget
 import com.anadolstudio.template.feature.home.domain.model.ApiStatus
 import com.anadolstudio.template.feature.home.domain.model.Area
 import com.anadolstudio.template.feature.home.domain.model.Config
-import com.anadolstudio.template.feature.home.domain.model.Event
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.Message
 import com.anadolstudio.template.feature.home.domain.model.UpdateState
+import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantEventType
+import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.json.JsonObject
 
@@ -38,7 +40,7 @@ interface HomeAssistantRepository {
     suspend fun getConfig(): Config
 
     /** GET /api/events — список активных событий и количество слушателей. */
-    suspend fun getEvents(): List<Event>
+    suspend fun getEvents(): Map<HomeAssistantEventType, Int>
 
     /** GET /api/services — доступные сервисы по доменам. */
     suspend fun getServices(): List<ServiceDomainResponse>
@@ -124,6 +126,8 @@ interface HomeAssistantRepository {
     suspend fun getAreaList(): List<Area>
 
     suspend fun getDeviceList(): List<HomeAssistantDevice>
+
+    suspend fun subscribeToStateChangedEvents() : Flow<HomeAssistantStateChangedEvent>
 
     // endregion
 }

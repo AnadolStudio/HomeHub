@@ -1,4 +1,4 @@
-package com.anadolstudio.template.feature.home.data.model
+package com.anadolstudio.template.feature.home.data.model.services
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

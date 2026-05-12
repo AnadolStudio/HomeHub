@@ -233,7 +233,7 @@ private fun BaseDeviceCardPreview(
                     title = device.name,
                     description = null,
                     imageUrl = device.imageUrl,
-                    switchEntityList = device.entityList,
+                    switchEntityList = device.entitySet,
                     onDeviceClicked = {},
                     onInnerEntityClicked = {}
             )
