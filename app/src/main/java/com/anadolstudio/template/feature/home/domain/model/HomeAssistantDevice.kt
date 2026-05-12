@@ -1,10 +1,9 @@
 package com.anadolstudio.template.feature.home.domain.model
 
 import androidx.compose.runtime.Immutable
-import com.anadolstudio.template.feature.home.data.model.HomeAssistantEntity
 
 @Immutable
-data class Device(
+data class HomeAssistantDevice(
         val id: String,
         val name: String,
         val model: String,
@@ -15,6 +14,7 @@ data class Device(
 ) {
 
     val isBindToArea: Boolean get() = area != null
+    val componentType: AllowedComponent? = entityList.firstOrNull()?.componentType
 
     val imageUrl: String?
         get() = modelId

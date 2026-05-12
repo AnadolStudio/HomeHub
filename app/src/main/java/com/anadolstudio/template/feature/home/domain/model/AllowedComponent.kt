@@ -1,6 +1,6 @@
 package com.anadolstudio.template.feature.home.domain.model
 
-enum class AllowedComponents(val prefix: String) {
+enum class AllowedComponent(val prefix: String) {
     SENSOR("sensor"),
     SWITCH("switch"),
     LIGHT("light"),
@@ -13,6 +13,8 @@ enum class AllowedComponents(val prefix: String) {
     BUTTON("button"); // bulb_gx53_color_identifikatsiia_2
 
     companion object {
+
+        fun getByName(name: String): AllowedComponent? = entries.firstOrNull { it.prefix == name.lowercase() }
 
         fun getAllComponentsRegex(): Regex {
             val regexString = entries.joinToString(

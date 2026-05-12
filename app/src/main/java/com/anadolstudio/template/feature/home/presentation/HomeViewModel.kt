@@ -3,9 +3,12 @@ package com.anadolstudio.template.feature.home.presentation
 import androidx.lifecycle.viewModelScope
 import com.anadolstudio.template.base.viewmodel.StatefulViewModel
 import com.anadolstudio.template.core.websocket.connection.WebSocketConnectionState
+import com.anadolstudio.template.event.showTodo
 import com.anadolstudio.template.feature.common.data.PreferencesStorage
-import com.anadolstudio.template.feature.home.data.model.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.HomeAssistantRepository
+import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
+import com.anadolstudio.template.feature.home.domain.model.HomeAssistantEntity
+import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistantService
 import com.anadolstudio.utils.states.ProgressState
 import javax.inject.Inject
 import kotlinx.coroutines.launch
@@ -13,7 +16,7 @@ import kotlinx.coroutines.launch
 internal class HomeViewModel @Inject constructor(
         private val haRepository: HomeAssistantRepository,
         private val preferencesStorage: PreferencesStorage,
-) : StatefulViewModel<HomeState>(HomeState()), HomeController {
+) : StatefulViewModel<HomeScreenState>(HomeScreenState()), HomeController {
 
     init {
         observeConnectionState()
@@ -51,6 +54,22 @@ internal class HomeViewModel @Inject constructor(
         }
     }
 
+    override fun onEntityClicked(entity: HomeAssistantEntity, service: HomeAssistantService) {
+        viewModelScope.launch {
+            runCatching {
+                haRepository.callService(
+                        entityId = entity.id,
+                        domain = entity.domain,
+                        service = service.toStringService(),
+                )
+            }
+        }
+    }
+
+    override fun onDeviceClicked(device: HomeAssistantDevice) {
+        showTodo()
+    }
+
     fun onGetEntitiesClicked() {
         updateState { copy(progressState = ProgressState.Loading) }
 
@@ -83,9 +102,7 @@ internal class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             haRepository.webSocketConnectionState.collect { connectionState ->
                 updateState { copy(connectionState = connectionState) }
-                if (connectionState is WebSocketConnectionState.ConnectedAuthenticated &&
-                    state.deviceMap.isEmpty()
-                ) {
+                if (connectionState is WebSocketConnectionState.ConnectedAuthenticated) {
                     loadDevices()
                 }
             }

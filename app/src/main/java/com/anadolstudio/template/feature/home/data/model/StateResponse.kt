@@ -1,6 +1,8 @@
 package com.anadolstudio.template.feature.home.data.model
 
-import com.anadolstudio.template.feature.home.domain.model.State
+import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
+import com.anadolstudio.template.feature.home.domain.model.states.SimpleState
+import com.anadolstudio.template.feature.home.domain.model.states.getAllowedStateByName
 import java.time.OffsetDateTime
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -15,10 +17,10 @@ data class StateResponse(
         @SerialName("last_changed") val lastChanged: String,
         @SerialName("last_updated") val lastUpdated: String? = null,
 ) {
-    fun toDomain(): State = State(
+    fun toDomain(): HomeAssistantState = SimpleState(
             entityId = entityId,
-            state = state,
-            attributes = attributes,
+            state = getAllowedStateByName(state),
+            jsonAttributes = attributes,
             lastChanged = OffsetDateTime.parse(lastChanged),
             lastUpdated = lastUpdated?.let { OffsetDateTime.parse(it) },
     )

@@ -27,7 +27,7 @@ internal object AppColor {
     internal val colorPrimaryLight: Color = Color(0xFFFAFAFA)
     internal val colorSecondaryLight: Color = Color(0xFFEBEBEB)
     internal val colorAccentLight: Color = Color(0xFF1B1B1B)
-    internal val colorDisableLight: Color = Color(0xFF7E7E7E)
+    internal val colorDisableLight: Color = Color(0xFFB7B7B7)
 
     internal val colorPrimaryDark: Color = Color(0xFF424242)
     internal val colorSecondaryDark: Color = Color(0xFF616161)

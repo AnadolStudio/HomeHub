@@ -10,11 +10,11 @@ import com.anadolstudio.template.feature.home.data.model.ServiceTarget
 import com.anadolstudio.template.feature.home.domain.model.ApiStatus
 import com.anadolstudio.template.feature.home.domain.model.Area
 import com.anadolstudio.template.feature.home.domain.model.Config
-import com.anadolstudio.template.feature.home.domain.model.Device
 import com.anadolstudio.template.feature.home.domain.model.Event
+import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.Message
-import com.anadolstudio.template.feature.home.domain.model.State
 import com.anadolstudio.template.feature.home.domain.model.UpdateState
+import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.json.JsonObject
 
@@ -44,10 +44,12 @@ interface HomeAssistantRepository {
     suspend fun getServices(): List<ServiceDomainResponse>
 
     /** GET /api/states — состояния всех сущностей. */
-    suspend fun getAllStates(): List<State>
+    suspend fun getAllStates(): List<HomeAssistantState>
 
     /** GET /api/states/{entity_id} — состояние конкретной сущности. */
-    suspend fun getState(entityId: String): State
+    suspend fun getState(entityId: String): HomeAssistantState
+
+    suspend fun getHomeOverview(): HomeAssistantState
 
     /** GET /api/error_log — лог ошибок текущей сессии. */
     suspend fun getErrorLog(): String
@@ -69,10 +71,10 @@ interface HomeAssistantRepository {
             minimalResponse: Boolean = false,
             noAttributes: Boolean = false,
             significantChangesOnly: Boolean = false,
-    ): List<List<State>>
+    ): List<List<HomeAssistantState>>
 
     /** POST /api/states/{entity_id} — создать или обновить состояние сущности. */
-    suspend fun updateState(entityId: String, update: UpdateState): State
+    suspend fun updateState(entityId: String, update: UpdateState): HomeAssistantState
 
     /** POST /api/events/{event_type} — отправить событие. */
     suspend fun fireEvent(eventType: String, eventData: JsonObject? = null): Message
@@ -86,7 +88,7 @@ interface HomeAssistantRepository {
             domain: String,
             service: String,
             serviceData: JsonObject? = null,
-    ): List<State>
+    ): List<HomeAssistantState>
 
     /** DELETE /api/states/{entity_id} — удалить сущность. */
     suspend fun deleteState(entityId: String): Message
@@ -97,7 +99,7 @@ interface HomeAssistantRepository {
 
     suspend fun getEntities(): List<EntityRegistryEntry>
 
-    suspend fun getStates(): List<EntityRegistryEntry>
+    suspend fun getStates(): List<HomeAssistantState>
 
     /**
      * `get_services` — возвращает реестр сервисов: `domain -> service -> описание`.
@@ -119,9 +121,9 @@ interface HomeAssistantRepository {
             service: String,
     ): CallServiceResult
 
-    suspend fun getDeviceList(): List<Device>
-
     suspend fun getAreaList(): List<Area>
+
+    suspend fun getDeviceList(): List<HomeAssistantDevice>
 
     // endregion
 }

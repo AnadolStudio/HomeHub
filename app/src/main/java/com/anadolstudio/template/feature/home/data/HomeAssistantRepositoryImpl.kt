@@ -10,21 +10,24 @@ import com.anadolstudio.template.feature.home.data.model.DeviceResponse
 import com.anadolstudio.template.feature.home.data.model.EntityRegistryEntry
 import com.anadolstudio.template.feature.home.data.model.EntityRegistryListResult
 import com.anadolstudio.template.feature.home.data.model.ExtractFromTargetResult
-import com.anadolstudio.template.feature.home.data.model.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.data.model.ServiceDescription
 import com.anadolstudio.template.feature.home.data.model.ServiceTarget
+import com.anadolstudio.template.feature.home.data.model.StateResponse
 import com.anadolstudio.template.feature.home.data.model.UpdateStateRequest
 import com.anadolstudio.template.feature.home.data.model.toDomain
 import com.anadolstudio.template.feature.home.domain.HomeAssistantRepository
-import com.anadolstudio.template.feature.home.domain.model.AllowedComponents
+import com.anadolstudio.template.feature.home.domain.model.AllowedComponent
 import com.anadolstudio.template.feature.home.domain.model.ApiStatus
 import com.anadolstudio.template.feature.home.domain.model.Area
 import com.anadolstudio.template.feature.home.domain.model.Config
-import com.anadolstudio.template.feature.home.domain.model.Device
 import com.anadolstudio.template.feature.home.domain.model.Event
+import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
+import com.anadolstudio.template.feature.home.domain.model.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.Message
-import com.anadolstudio.template.feature.home.domain.model.State
 import com.anadolstudio.template.feature.home.domain.model.UpdateState
+import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
+import com.anadolstudio.template.feature.home.domain.model.states.HomeState
+import com.anadolstudio.template.feature.home.domain.model.states.toHomeState
 import com.anadolstudio.template.feature.homeAssistantAuth.data.api.AuthHomeAssistantApi
 import javax.inject.Inject
 import kotlinx.coroutines.flow.StateFlow
@@ -62,12 +65,16 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
 
     override suspend fun getServices(): List<ServiceDomainResponse> = api.getServices()/*.map { it.toDomain() }*/
 
-    override suspend fun getAllStates(): List<State> = api
+    override suspend fun getAllStates(): List<HomeAssistantState> = api
             .getStates()
             .map { it.toDomain() }
-            .filter { it.entityId.contains(AllowedComponents.getAllComponentsRegex()) }
+            .filter { it.entityId.contains(AllowedComponent.getAllComponentsRegex()) }
 
-    override suspend fun getState(entityId: String): State = api.getState(entityId).toDomain()
+    override suspend fun getState(entityId: String): HomeAssistantState = api.getState(entityId).toDomain()
+
+    override suspend fun getHomeOverview(): HomeState = api.getState(HOME_ENTITY_ID)
+            .toDomain()
+            .toHomeState()
 
     override suspend fun getErrorLog(): String = api.getErrorLog()
 
@@ -78,7 +85,7 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
             minimalResponse: Boolean,
             noAttributes: Boolean,
             significantChangesOnly: Boolean,
-    ): List<List<State>> = api.getHistory(
+    ): List<List<HomeAssistantState>> = api.getHistory(
             timestamp = timestamp,
             filterEntityId = filterEntityId,
             endTime = endTime,
@@ -87,7 +94,7 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
             significantChangesOnly = HISTORY_FLAG.takeIf { significantChangesOnly },
     ).map { period -> period.map { it.toDomain() } }
 
-    override suspend fun updateState(entityId: String, update: UpdateState): State =
+    override suspend fun updateState(entityId: String, update: UpdateState): HomeAssistantState =
             api.updateState(entityId = entityId, body = UpdateStateRequest.from(update)).toDomain()
 
     override suspend fun fireEvent(eventType: String, eventData: JsonObject?): Message =
@@ -97,7 +104,7 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
             domain: String,
             service: String,
             serviceData: JsonObject?,
-    ): List<State> = api.callService(
+    ): List<HomeAssistantState> = api.callService(
             domain = domain,
             service = service,
             serviceData = serviceData,
@@ -114,13 +121,12 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
         return result.entities
     }
 
-    override suspend fun getStates(): List<EntityRegistryEntry> {
-        webSocketCore.sendCommandForResult(
-                request = WsRequest(type = COMMAND_GET_STATES),
-                deserializer = EntityRegistryListResult.serializer(),
-        )
-        return emptyList()
-    }
+    override suspend fun getStates(): List<HomeAssistantState> = webSocketCore
+            .sendCommandForResult(
+                    request = WsRequest(type = COMMAND_GET_STATES),
+                    deserializer = ListSerializer(StateResponse.serializer()),
+            )
+            .map { it.toDomain() }
 
     override suspend fun getServiceList(): Map<String, Map<String, ServiceDescription>> {
         return webSocketCore.sendCommandForResult(
@@ -179,7 +185,7 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
             )
             .map { it.toDomain() }
 
-    override suspend fun getDeviceList(): List<Device> {
+    override suspend fun getDeviceList(): List<HomeAssistantDevice> {
         val deviceMap = webSocketCore
                 .sendCommandForResult(
                         request = WsRequest(type = COMMAND_DEVICE_REGISTRY_LIST),
@@ -189,8 +195,9 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
 
         val serviceMap = getServiceList()
         val areaMap = getAreaList().associateBy { area -> area.areaId }
+        val stateMap = getStates().associateBy { states -> states.entityId }
 
-        val regex = AllowedComponents.getZigbeeAndMatterComponentsRegex()
+        val regex = AllowedComponent.getZigbeeAndMatterComponentsRegex()
         return getEntities()
                 .filter { regex.containsMatchIn(it.entityId) }
                 .groupBy(
@@ -198,19 +205,18 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
                         valueTransform = { entityRegistryEntry -> entityRegistryEntry.entityId }
                 )
                 .mapValues { (_, entityList) ->
-                    entityList.map { entityId ->
+                    entityList.mapNotNull { entityId ->
+                        val state = stateMap[entityId] ?: return@mapNotNull null
                         val domain: String = entityId.split(".").first()
+                        val services = serviceMap[domain].orEmpty().keys
 
-                        HomeAssistantEntity(
-                                id = entityId,
-                                services = serviceMap[domain].orEmpty().keys
-                        )
+                        HomeAssistantEntity(id = entityId, services = services, stateData = state)
                     }
                 }
                 .mapNotNull { (deviceId, entityList) ->
                     val deviceResponse = deviceMap[deviceId] ?: return@mapNotNull null
 
-                    return@mapNotNull Device(
+                    return@mapNotNull HomeAssistantDevice(
                             id = deviceResponse.id,
                             name = deviceResponse.name.orEmpty(),
                             model = deviceResponse.model.orEmpty(),
@@ -230,6 +236,8 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
         const val COMMAND_ENTITY_REGISTRY_LIST_FOR_DISPLAY = "config/entity_registry/list_for_display"
         const val COMMAND_DEVICE_REGISTRY_LIST = "config/device_registry/list"
         const val COMMAND_AREA_REGISTRY_LIST = "config/area_registry/list"
+
+        const val HOME_ENTITY_ID = "zone.home"
 
         /** HA-флаги для истории: параметр трактуется как "true" при любом непустом значении. */
         const val HISTORY_FLAG = "true"
