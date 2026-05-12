@@ -8,6 +8,7 @@ import com.anadolstudio.template.feature.home.data.model.ExtractFromTargetResult
 import com.anadolstudio.template.feature.home.data.model.ServiceDescription
 import com.anadolstudio.template.feature.home.data.model.ServiceTarget
 import com.anadolstudio.template.feature.home.domain.model.ApiStatus
+import com.anadolstudio.template.feature.home.domain.model.Area
 import com.anadolstudio.template.feature.home.domain.model.Config
 import com.anadolstudio.template.feature.home.domain.model.Device
 import com.anadolstudio.template.feature.home.domain.model.Event
@@ -119,6 +120,8 @@ interface HomeAssistantRepository {
     ): CallServiceResult
 
     suspend fun getDeviceList(): List<Device>
+
+    suspend fun getAreaList(): List<Area>
 
     // endregion
 }

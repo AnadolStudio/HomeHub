@@ -97,7 +97,11 @@ internal class HomeViewModel @Inject constructor(
 
         viewModelScope.launch {
             runCatching { haRepository.getDeviceList() }
-                    .map { deviceList -> deviceList.groupBy { it.areaId.toString() } }
+                    .map { deviceList ->
+                        deviceList
+                                .filter { device -> device.isBindToArea }
+                                .groupBy { device -> requireNotNull(device.area).name }
+                    }
                     .onSuccess { devices ->
                         updateState {
                             copy(progressState = ProgressState.Content, deviceMap = devices)

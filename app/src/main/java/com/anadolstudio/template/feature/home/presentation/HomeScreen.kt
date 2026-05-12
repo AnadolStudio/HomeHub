@@ -56,6 +56,7 @@ import com.anadolstudio.template.base.viewmodel.ObserveViewModelLifecycle
 import com.anadolstudio.template.di.viewmodel.daggerViewModel
 import com.anadolstudio.template.event.ObserveEvents
 import com.anadolstudio.template.feature.home.data.model.HomeAssistantEntity
+import com.anadolstudio.template.feature.home.domain.model.Area
 import com.anadolstudio.template.feature.home.domain.model.Device
 import com.anadolstudio.template.feature.main.NavigationController
 import com.anadolstudio.utils.states.ProgressState
@@ -103,6 +104,7 @@ private fun DevicesGrid(
 
     val context = LocalContext.current
     val imageSizePx = with(LocalDensity.current) { DEVICE_IMAGE_SIZE.roundToPx() }
+
     LaunchedEffect(deviceMap) {
         val urls = deviceMap.values
                 .asSequence()
@@ -175,9 +177,9 @@ private fun DevicesGrid(
             }
         }
 
-        entries.forEach { (areaId, deviceList) ->
-            item(span = { GridItemSpan(maxLineSpan) }, key = areaId) {
-                GroupHeader(title = areaId, onClick = { })
+        entries.forEach { (areaName, deviceList) ->
+            item(span = { GridItemSpan(maxLineSpan) }, key = areaName) {
+                GroupHeader(title = areaName, onClick = { })
             }
 
             items(
@@ -264,7 +266,7 @@ private fun DeviceCard(
         Spacer(modifier = Modifier.height(2.dp))
 
         Text(
-                text = device.areaId.orEmpty(),
+                text = device.area?.name.orEmpty(),
                 style = AppTheme.typography.captionMedium12,
                 color = AppTheme.colors.colorAccent,
                 maxLines = 1,
@@ -326,7 +328,7 @@ private fun HomeScreenPreview(
 ) {
     AppTheme(useDarkMode) {
         HomeLayout(
-                state = HomeState(deviceMap = previewDevices.groupBy { it.areaId.orEmpty() }),
+                state = HomeState(deviceMap = previewDevices.groupBy { it.area?.name.orEmpty() }),
                 controller = createPreviewController())
     }
 }
@@ -351,14 +353,22 @@ private fun GroupHeaderPreview(
     }
 }
 
+private fun previewArea(name: String): Area = Area(
+        areaId = name.lowercase(),
+        name = name,
+        humidityEntityIid = null,
+        temperatureEntityId = null,
+        aliases = emptyList(),
+)
+
 private val previewDevices: List<Device> = listOf(
         Device(
                 id = "4f745823d042948d34938086261e40d7",
                 name = "Выключатель Зал/Кухня",
                 model = "Wall switch with 2 buttons",
-                areaId = "Зал",
                 modelId = "ZNCJMB14LM",
                 manufacturer = "Aqara",
+                area = previewArea("Зал"),
                 entityList = listOf(
                         HomeAssistantEntity(
                                 id = "switch.vykliuchatel_zal_kukhnia_1",
@@ -374,9 +384,9 @@ private val previewDevices: List<Device> = listOf(
                 id = "416f948a315f700d4ef3ea300f698d1e",
                 name = "Выключатель на балконе",
                 model = "Smart wall switch",
-                areaId = "Балкон",
                 modelId = "QBKG11LM",
                 manufacturer = "Aqara",
+                area = previewArea("Балкон"),
                 entityList = listOf(
                         HomeAssistantEntity(
                                 id = "switch.0x603d61fffe758b32_1",
@@ -388,9 +398,9 @@ private val previewDevices: List<Device> = listOf(
                 id = "8a1f7d29a04a4b3eb6c9e8410c7a6b22",
                 name = "Лампа в спальне",
                 model = "RGBW light bulb",
-                areaId = "Спальня",
                 modelId = "LED1624G9",
                 manufacturer = "IKEA",
+                area = previewArea("Спальня"),
                 entityList = listOf(
                         HomeAssistantEntity(
                                 id = "light.bedroom_main",
@@ -407,7 +417,7 @@ private fun HomeScreenDevicesPreview(
 ) {
     AppTheme(useDarkMode) {
         HomeLayout(
-                state = HomeState(deviceMap = previewDevices.groupBy { it.areaId.orEmpty() }),
+                state = HomeState(deviceMap = previewDevices.groupBy { it.area?.name.orEmpty() }),
                 controller = createPreviewController(),
         )
     }

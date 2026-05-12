@@ -4,6 +4,7 @@ import ServiceDomainResponse
 import com.anadolstudio.template.core.websocket.WebSocketCore
 import com.anadolstudio.template.core.websocket.connection.WebSocketConnectionState
 import com.anadolstudio.template.core.websocket.message.WsRequest
+import com.anadolstudio.template.feature.home.data.model.AreaResponse
 import com.anadolstudio.template.feature.home.data.model.CallServiceResult
 import com.anadolstudio.template.feature.home.data.model.DeviceResponse
 import com.anadolstudio.template.feature.home.data.model.EntityRegistryEntry
@@ -13,9 +14,11 @@ import com.anadolstudio.template.feature.home.data.model.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.data.model.ServiceDescription
 import com.anadolstudio.template.feature.home.data.model.ServiceTarget
 import com.anadolstudio.template.feature.home.data.model.UpdateStateRequest
+import com.anadolstudio.template.feature.home.data.model.toDomain
 import com.anadolstudio.template.feature.home.domain.HomeAssistantRepository
 import com.anadolstudio.template.feature.home.domain.model.AllowedComponents
 import com.anadolstudio.template.feature.home.domain.model.ApiStatus
+import com.anadolstudio.template.feature.home.domain.model.Area
 import com.anadolstudio.template.feature.home.domain.model.Config
 import com.anadolstudio.template.feature.home.domain.model.Device
 import com.anadolstudio.template.feature.home.domain.model.Event
@@ -169,6 +172,13 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
         )
     }
 
+    override suspend fun getAreaList(): List<Area> = webSocketCore
+            .sendCommandForResult(
+                    request = WsRequest(type = COMMAND_AREA_REGISTRY_LIST),
+                    deserializer = ListSerializer(AreaResponse.serializer())
+            )
+            .map { it.toDomain() }
+
     override suspend fun getDeviceList(): List<Device> {
         val deviceMap = webSocketCore
                 .sendCommandForResult(
@@ -178,9 +188,9 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
                 .associateBy { deviceResponse -> deviceResponse.id }
 
         val serviceMap = getServiceList()
+        val areaMap = getAreaList().associateBy { area -> area.areaId }
 
         val regex = AllowedComponents.getZigbeeAndMatterComponentsRegex()
-
         return getEntities()
                 .filter { regex.containsMatchIn(it.entityId) }
                 .groupBy(
@@ -198,15 +208,13 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
                     }
                 }
                 .mapNotNull { (deviceId, entityList) ->
-                    // TODO должны быть правила фильтрации из вне
                     val deviceResponse = deviceMap[deviceId] ?: return@mapNotNull null
-                    if (entityList.isEmpty() || deviceResponse.areaId.isNullOrBlank()) return@mapNotNull null
 
                     return@mapNotNull Device(
                             id = deviceResponse.id,
                             name = deviceResponse.name.orEmpty(),
                             model = deviceResponse.model.orEmpty(),
-                            areaId = deviceResponse.areaId,
+                            area = areaMap[deviceResponse.areaId],
                             modelId = deviceResponse.modelId,
                             manufacturer = deviceResponse.manufacturer,
                             entityList = entityList,
@@ -221,6 +229,7 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
         const val COMMAND_CALL_SERVICE = "call_service"
         const val COMMAND_ENTITY_REGISTRY_LIST_FOR_DISPLAY = "config/entity_registry/list_for_display"
         const val COMMAND_DEVICE_REGISTRY_LIST = "config/device_registry/list"
+        const val COMMAND_AREA_REGISTRY_LIST = "config/area_registry/list"
 
         /** HA-флаги для истории: параметр трактуется как "true" при любом непустом значении. */
         const val HISTORY_FLAG = "true"

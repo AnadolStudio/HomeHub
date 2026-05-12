@@ -8,11 +8,14 @@ data class Device(
         val id: String,
         val name: String,
         val model: String,
-        val areaId: String?,
         val modelId: String?,
         val manufacturer: String?,
+        val area: Area?,
         val entityList: List<HomeAssistantEntity>,
 ) {
+
+    val isBindToArea: Boolean get() = area != null
+
     val imageUrl: String?
         get() = modelId
                 ?.takeIf { it.isNotBlank() }
