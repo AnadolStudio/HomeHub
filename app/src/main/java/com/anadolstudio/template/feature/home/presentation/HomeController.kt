@@ -6,7 +6,6 @@ import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistan
 
 interface HomeController {
 
-    fun onTestButtonClicked()
     fun onEntityClicked(entity: HomeAssistantEntity, service: HomeAssistantService)
     fun onDeviceClicked(device: HomeAssistantDevice)
 }

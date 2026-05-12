@@ -16,6 +16,7 @@ import com.anadolstudio.template.feature.home.domain.model.UpdateState
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantEventType
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
+import com.anadolstudio.template.feature.home.domain.model.states.HomeState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.json.JsonObject
@@ -51,7 +52,7 @@ interface HomeAssistantRepository {
     /** GET /api/states/{entity_id} — состояние конкретной сущности. */
     suspend fun getState(entityId: String): HomeAssistantState
 
-    suspend fun getHomeOverview(): HomeAssistantState
+    suspend fun getHomeOverview(): HomeState
 
     /** GET /api/error_log — лог ошибок текущей сессии. */
     suspend fun getErrorLog(): String

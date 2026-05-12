@@ -10,11 +10,11 @@ data class HomeAssistantDevice(
         val modelId: String?,
         val manufacturer: String?,
         val area: Area?,
-        val entitySet: List<HomeAssistantEntity>,
+        val entityList: List<HomeAssistantEntity>,
 ) {
 
     val isBindToArea: Boolean get() = area != null
-    val componentType: AllowedComponent? = entitySet.firstOrNull()?.componentType
+    val componentType: AllowedComponent? = entityList.firstOrNull()?.componentType
 
     val imageUrl: String?
         get() = modelId

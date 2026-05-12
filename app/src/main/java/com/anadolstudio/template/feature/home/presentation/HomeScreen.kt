@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -41,6 +42,7 @@ import com.anadolstudio.compose.ui.theme.AppTheme
 import com.anadolstudio.compose.ui.theme.Dimension
 import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
+import com.anadolstudio.compose.ui.view.stub.ErrorStub
 import com.anadolstudio.template.base.view.HomeHubLoader
 import com.anadolstudio.template.base.viewmodel.ObserveViewModelLifecycle
 import com.anadolstudio.template.di.viewmodel.daggerViewModel
@@ -55,10 +57,7 @@ import com.anadolstudio.template.feature.home.presentation.components.SwitchCard
 import com.anadolstudio.template.feature.main.NavigationController
 import com.anadolstudio.utils.states.ProgressState
 
-private const val HOME_TITLE = "Домостроительня улица 4, к.3, кв.11"
 private const val GRID_COLUMNS = 3
-private const val NO_AREA_ID = "__no_area__"
-private const val NO_AREA_TITLE = "Без комнаты"
 private val DEVICE_IMAGE_SIZE = 100.dp
 
 @Composable
@@ -82,20 +81,66 @@ private fun HomeLayout(
         state: HomeScreenState,
         controller: HomeController,
 ) {
-    DevicesGrid(
-            deviceMap = state.deviceState.areaToDeviceMap,
-            progressState = state.progressState,
-            controller = controller,
-    )
+    Column (
+            modifier = Modifier
+                    .systemBarsPadding()
+                    .fillMaxSize(),
+    ) {
+        val homeName = state.homeOverviewState.homeState?.attributes?.friendlyName.toString()
+        Text(
+                text = homeName,
+                style = AppTheme.typography.textBook18,
+                fontWeight = FontWeight.Bold,
+                color = AppTheme.colors.colorAccent,
+                modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(Dimension.mainMargin),
+        )
+
+        when (val progressState = state.progressState) {
+            ProgressState.Content -> HomeContent(state = state, controller = controller)
+            is ProgressState.Error -> HomeError(progressState)
+            ProgressState.Loading -> HomeLoading()
+            else -> Unit
+        }
+    }
+}
+
+@Composable
+private fun HomeLoading() {
+    Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+    ) {
+        HomeHubLoader(modifier = Modifier)
+    }
+}
+
+@Composable
+private fun HomeError(progressState: ProgressState.Error) {
+    Box(
+            modifier = Modifier
+                    .fillMaxSize(),
+            contentAlignment = Alignment.Center
+    ) {
+        ErrorStub(
+                errorTitle = "Заголовок ошибки",
+                errorMessage = progressState.error?.message.orEmpty(),
+                buttonTitle = "Название кнопки",
+                onRefreshClick = {},
+                fillMaxSize = false,
+        )
+    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun DevicesGrid(
-        deviceMap: Map<String, List<HomeAssistantDevice>>,
-        progressState: ProgressState,
+private fun HomeContent(
+        state: HomeScreenState,
         controller: HomeController,
 ) {
+    val deviceMap = state.deviceState.areaToDeviceMap
+
     val entries = remember(deviceMap) { deviceMap.entries.toList() }
     val gridState = rememberLazyGridState()
 
@@ -128,64 +173,22 @@ private fun DevicesGrid(
             columns = GridCells.Fixed(GRID_COLUMNS),
             modifier = Modifier
                     .background(color = AppTheme.colors.colorSecondary)
-                    .fillMaxSize()
-                    .systemBarsPadding(),
+                    .fillMaxSize(),
             contentPadding = PaddingValues(
                     start = Dimension.mainMargin,
                     end = Dimension.mainMargin,
-                    top = Dimension.mainMargin,
                     bottom = Dimension.largeMargin,
             ),
             horizontalArrangement = Arrangement.spacedBy(Dimension.mediumMargin),
             verticalArrangement = Arrangement.spacedBy(Dimension.mediumMargin),
     ) {
-        item(
-                span = { GridItemSpan(maxLineSpan) },
-                key = HOME_TITLE
-        ) {
-            Text(
-                    text = HOME_TITLE,
-                    style = AppTheme.typography.textBook18,
-                    fontWeight = FontWeight.Bold,
-                    color = AppTheme.colors.colorAccent,
-                    modifier = Modifier.fillMaxWidth(),
-            )
-        }
-
-
-        if (progressState is ProgressState.Loading && entries.isEmpty()) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                Box(
-                        modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = Dimension.extraLargeMargin),
-                        contentAlignment = Alignment.Center,
-                ) {
-                    HomeHubLoader(modifier = Modifier)
-                }
-            }
-        }
-
-        if (progressState is ProgressState.Error) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                Text(
-                        text = "Error: ${progressState.error?.message}",
-                        color = AppTheme.colors.textSecondary,
-                        style = AppTheme.typography.textBook14,
-                )
-            }
-        }
 
         entries.forEach { (areaName, deviceList) ->
             item(span = { GridItemSpan(maxLineSpan) }, key = areaName) {
                 GroupHeader(title = areaName, onClick = { })
             }
 
-            items(
-                    items = deviceList,
-                    key = { device -> device.id },
-                    contentType = { DEVICE_CARD_CONTENT_TYPE },
-            ) { device ->
+            items(items = deviceList, key = { device -> device.id }) { device ->
                 DeviceCard(device, controller)
             }
         }
@@ -200,7 +203,7 @@ private fun DeviceCard(device: HomeAssistantDevice, controller: HomeController) 
                     title = device.name,
                     description = null,
                     imageUrl = device.imageUrl,
-                    switchEntityList = device.entitySet
+                    switchEntityList = device.entityList
                             .filter { it.componentType == AllowedComponent.SWITCH },
                     onInnerEntityClicked = { controller.onEntityClicked(it, SwitchService.Toggle) },
                     onDeviceClicked = { controller.onDeviceClicked(device) },
@@ -249,7 +252,6 @@ private fun GroupHeader(title: String, onClick: () -> Unit) {
 // region Previews
 
 private fun createPreviewController(): HomeController = object : HomeController {
-    override fun onTestButtonClicked() = Unit
     override fun onEntityClicked(entity: HomeAssistantEntity, service: HomeAssistantService) = Unit
     override fun onDeviceClicked(device: HomeAssistantDevice) = Unit
 }
@@ -261,7 +263,7 @@ private fun HomeScreenPreview(
 ) {
     AppTheme(useDarkMode) {
         HomeLayout(
-                state = HomeScreenState(deviceState = HomeScreenDeviceState(deviceSet = PreviewUtils.previewDevices.toSet())),
+                state = HomeScreenState(deviceState = DeviceState(deviceSet = PreviewUtils.previewDevices.toSet())),
                 controller = createPreviewController()
         )
     }
@@ -274,7 +276,7 @@ private fun HomeScreenLoadingPreview(
 ) {
     AppTheme(useDarkMode) {
         HomeLayout(
-                state = HomeScreenState(progressState = ProgressState.Loading),
+                state = HomeScreenState(),
                 controller = createPreviewController()
         )
     }
@@ -297,7 +299,7 @@ private fun HomeScreenDevicesPreview(
 ) {
     AppTheme(useDarkMode) {
         HomeLayout(
-                state = HomeScreenState(deviceState = HomeScreenDeviceState(deviceSet = PreviewUtils.previewDevices.toSet())),
+                state = HomeScreenState(deviceState = DeviceState(deviceSet = PreviewUtils.previewDevices.toSet())),
                 controller = createPreviewController(),
         )
     }

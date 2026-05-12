@@ -87,7 +87,7 @@ fun SwitchCard(
         ) {
             repeat(min(MAX_SWITCH_ENTITY, size)) { index ->
                 val entity = switchEntityList[index]
-                val enable = when (entity.stateData.state) {
+                val enable = when (entity.allowedState) {
                     AllowedState.On -> true
                     AllowedState.Unavailable, AllowedState.Unknown, AllowedState.Off -> false
                     else -> return@repeat
@@ -233,7 +233,7 @@ private fun BaseDeviceCardPreview(
                     title = device.name,
                     description = null,
                     imageUrl = device.imageUrl,
-                    switchEntityList = device.entitySet,
+                    switchEntityList = device.entityList,
                     onDeviceClicked = {},
                     onInnerEntityClicked = {}
             )

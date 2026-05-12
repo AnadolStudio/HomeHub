@@ -4,58 +4,93 @@ import androidx.lifecycle.viewModelScope
 import com.anadolstudio.template.base.viewmodel.StatefulViewModel
 import com.anadolstudio.template.core.websocket.connection.WebSocketConnectionState
 import com.anadolstudio.template.event.showTodo
-import com.anadolstudio.template.feature.common.data.PreferencesStorage
 import com.anadolstudio.template.feature.home.domain.HomeAssistantRepository
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
 import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistantService
+import com.anadolstudio.utils.states.LoadingContext
 import com.anadolstudio.utils.states.ProgressState
+import com.anadolstudio.utils.states.lce.lceFlow
+import com.anadolstudio.utils.states.lce.lceStateFlow
+import com.anadolstudio.utils.states.lce.mapContent
+import com.anadolstudio.utils.states.lce.mapToLce
+import com.anadolstudio.utils.states.lce.onEachContent
+import com.anadolstudio.utils.states.lce.onEachError
+import com.anadolstudio.utils.states.lce.onEachProgressState
 import javax.inject.Inject
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.launch
 
 internal class HomeViewModel @Inject constructor(
         private val haRepository: HomeAssistantRepository,
-        private val preferencesStorage: PreferencesStorage,
 ) : StatefulViewModel<HomeScreenState>(HomeScreenState()), HomeController {
 
     init {
+        loadHomeName(loadingContext = LoadingContext.INIT_LOADING)
         observeConnectionState()
     }
 
     private fun observeConnectionState() {
-        viewModelScope.launch {
-            haRepository.webSocketConnectionState.collect { connectionState ->
-                updateState { copy(connectionState = connectionState) }
-                if (connectionState is WebSocketConnectionState.ConnectedAuthenticated) {
-                    loadDevices()
+        haRepository.webSocketConnectionState.mapToLce()
+                .onEachContent { connectionState ->
+                    updateState { copy(connectionState = connectionState) }
+
+                    if (connectionState is WebSocketConnectionState.ConnectedAuthenticated) {
+                        loadDevices(loadingContext = LoadingContext.INIT_LOADING)
+                    }
                 }
-            }
-        }
+                .launchIn(viewModelScope)
     }
 
-    private fun loadDevices() {
-        updateState { copy(progressState = ProgressState.Loading) }
+    private fun loadDevices(loadingContext: LoadingContext) {
+        lceFlow { haRepository.getDeviceList() }
+                .onEachProgressState(
+                        previousState = state.progressState,
+                        loadingContext = loadingContext,
+                        onNewProgressState = {
+                            updateState { copy(deviceState = deviceState.copy(progressState = it)) }
+                        }
+                )
+                .mapContent { deviceList ->
+                    deviceList
+                            .filter { device -> device.isBindToArea }
+                            .sortedBy { it.name }
+                            .toCollection(LinkedHashSet())
+                }
+                .onEachContent { devicesSet ->
+                    val deviceState = DeviceState(
+                            deviceSet = devicesSet,
+                            progressState = ProgressState.Content
+                    )
+                    updateState { copy(deviceState = deviceState) }
 
-        viewModelScope.launch {
-            runCatching { haRepository.getDeviceList() }
-                    .map { deviceList ->
-                        deviceList
-                                .filter { device -> device.isBindToArea }
-                                .toSortedSet(
-                                        Comparator.comparing { it.name }
-                                )
-                    }
-                    .onSuccess { devicesSet ->
-                        val deviceState = HomeScreenDeviceState(deviceSet = devicesSet)
-                        updateState { copy(progressState = ProgressState.Content, deviceState = deviceState) }
+                    subscribeToStateChangedEvents()
+                }
+                .onEachError { error ->
+                    updateState { copy(deviceState = deviceState.copy(progressState = ProgressState.Error(error))) }
+                }
+                .launchIn(viewModelScope)
+    }
 
-                        subscribeToStateChangedEvents()
+    private fun loadHomeName(loadingContext: LoadingContext) {
+        lceFlow { haRepository.getHomeOverview() }
+                .onEachProgressState(
+                        previousState = state.progressState,
+                        loadingContext = loadingContext,
+                        onNewProgressState = {
+                            updateState { copy(homeOverviewState = homeOverviewState.copy(progressState = it)) }
+                        }
+                )
+                .onEachContent { homeOverview ->
+                    updateState { copy(homeOverviewState = homeOverviewState.copy(homeState = homeOverview)) }
+                }
+                .onEachError { error ->
+                    updateState {
+                        copy(homeOverviewState = homeOverviewState.copy(progressState = ProgressState.Error(error)))
                     }
-                    .onFailure { error ->
-                        updateState { copy(progressState = ProgressState.Error(error)) }
-                    }
-        }
+                }
+                .launchIn(viewModelScope)
     }
 
     override fun onStart() {
@@ -68,16 +103,10 @@ internal class HomeViewModel @Inject constructor(
         haRepository.stopWebSocketConnection()
     }
 
-    override fun onTestButtonClicked() {
-    }
-
     private fun subscribeToStateChangedEvents() {
-        updateState { copy(progressState = ProgressState.Loading) }
-
         viewModelScope.launch {
-            haRepository.subscribeToStateChangedEvents().collect { stateChangedEvent ->
-                updateEntity(stateChangedEvent)
-            }
+            haRepository.subscribeToStateChangedEvents()
+                    .collect { stateChangedEvent -> updateEntity(stateChangedEvent) }
         }
     }
 
@@ -86,7 +115,7 @@ internal class HomeViewModel @Inject constructor(
         val newAllowedState = stateChangedEvent.allowedState
 
         val changedDevice = state.deviceState.entityToDeviceMap[entityId] ?: return
-        val newEntityList = changedDevice.entitySet.map { entity ->
+        val newEntityList = changedDevice.entityList.map { entity ->
             if (entity.entityId == entityId) {
                 entity.copy(allowedState = newAllowedState)
             } else {
@@ -94,29 +123,25 @@ internal class HomeViewModel @Inject constructor(
             }
         }
 
-        val newDevice = changedDevice.copy(entitySet = newEntityList)
-        val newDeviceSet = state.deviceState.deviceSet.toMutableSet().apply {
-            remove(changedDevice)
-            add(newDevice)
-        }
-        updateState {
-            copy(
-                    progressState = ProgressState.Content,
-                    deviceState = deviceState.copy(deviceSet = newDeviceSet),
-            )
-        }
+        val newDevice = changedDevice.copy(entityList = newEntityList)
+        val newDeviceSet = state.deviceState.deviceSet.toMutableSet()
+                .apply {
+                    remove(changedDevice)
+                    add(newDevice)
+                }
+                .sortedBy { it.name }
+                .toCollection(LinkedHashSet())
+        updateState { copy(deviceState = deviceState.copy(deviceSet = newDeviceSet)) }
     }
 
     override fun onEntityClicked(entity: HomeAssistantEntity, service: HomeAssistantService) {
-        viewModelScope.launch {
-            runCatching {
-                haRepository.callService(
-                        entityId = entity.entityId,
-                        domain = entity.domain,
-                        service = service.toStringService(),
-                )
-            }
-        }
+        lceStateFlow {
+            haRepository.callService(
+                    entityId = entity.entityId,
+                    domain = entity.domain,
+                    service = service.toStringService(),
+            )
+        }.launchIn(viewModelScope)
     }
 
     override fun onDeviceClicked(device: HomeAssistantDevice) {

@@ -237,7 +237,7 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
                             area = areaMap[deviceResponse.areaId],
                             modelId = deviceResponse.modelId,
                             manufacturer = deviceResponse.manufacturer,
-                            entitySet = entityList,
+                            entityList = entityList,
                     )
                 }
     }

@@ -42,7 +42,7 @@ internal object PreviewUtils {
                     modelId = "ZNCJMB14LM",
                     manufacturer = "Aqara",
                     area = previewArea("Зал"),
-                    entitySet = listOf(
+                    entityList = listOf(
                             previewEntity("switch.vykliuchatel_zal_kukhnia_1"),
                             previewEntity("switch.vykliuchatel_zal_kukhnia_kukhnia", AllowedState.On),
                     ),
@@ -54,7 +54,7 @@ internal object PreviewUtils {
                     modelId = "QBKG11LM",
                     manufacturer = "Aqara",
                     area = previewArea("Балкон"),
-                    entitySet = listOf(
+                    entityList = listOf(
                             previewEntity("switch.0x603d61fffe758b32_1"),
                     ),
             ),
@@ -65,7 +65,7 @@ internal object PreviewUtils {
                     modelId = "LED1624G9",
                     manufacturer = "IKEA",
                     area = previewArea("Спальня"),
-                    entitySet = listOf(
+                    entityList = listOf(
                             previewEntity("light.bedroom_main"),
                     ),
             ),
