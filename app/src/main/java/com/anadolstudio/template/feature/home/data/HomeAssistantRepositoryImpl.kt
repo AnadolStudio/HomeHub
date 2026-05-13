@@ -214,18 +214,20 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
                         valueTransform = { entityRegistryEntry -> entityRegistryEntry.entityId }
                 )
                 .mapValues { (_, entityList) ->
-                    entityList.mapNotNull { entityId ->
-                        val state = stateMap[entityId] ?: return@mapNotNull null
-                        val domain: String = entityId.split(".").first()
-                        val services = serviceMap[domain].orEmpty().keys
+                    entityList
+                            .mapNotNull { entityId ->
+                                val state = stateMap[entityId] ?: return@mapNotNull null
+                                val domain: String = entityId.split(".").first()
+                                val services = serviceMap[domain].orEmpty().keys
 
-                        HomeAssistantEntity(
-                                entityId = entityId,
-                                services = services,
-                                stateData = state,
-                                allowedState = state.state
-                        )
-                    }
+                                HomeAssistantEntity(
+                                        entityId = entityId,
+                                        services = services,
+                                        stateData = state,
+                                        allowedState = state.state
+                                )
+                            }
+                            .sortedBy { it.entityId }
                 }
                 .mapNotNull { (deviceId, entityList) ->
                     val deviceResponse = deviceMap[deviceId] ?: return@mapNotNull null

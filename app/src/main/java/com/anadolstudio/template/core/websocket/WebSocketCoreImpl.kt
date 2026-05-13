@@ -18,6 +18,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -89,6 +90,7 @@ class WebSocketCoreImpl @Inject constructor(
     }
 
     private fun updateTokenAndReconnect() {
+        releaseScope()
         scope.launch {
             val newToken = authRefresher.refresh()
             if (newToken == null) {
@@ -97,6 +99,11 @@ class WebSocketCoreImpl @Inject constructor(
             }
             reconnect()
         }
+    }
+
+    private fun releaseScope() {
+        scope.cancel()
+        scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     }
 
     /**
@@ -142,7 +149,7 @@ class WebSocketCoreImpl @Inject constructor(
     private fun close(closeMessage: String) {
         reconnectJob?.cancel()
         reconnectJob = null
-
+        releaseScope()
         closeWebSocket(closeMessage)
     }
 
@@ -189,8 +196,12 @@ class WebSocketCoreImpl @Inject constructor(
 
                 delay(delayMs)
 
-                connectionMutex.withLock { tryConnect() }
-                        ?.let { return@launch }
+                connectionMutex
+                        .withLock { tryConnect() }
+                        ?.let {
+                            webSocket = it
+                            return@launch
+                        }
 
                 delayMs = (delayMs * dependencies.config.reconnect.backoffMultiplier)
                         .toLong()

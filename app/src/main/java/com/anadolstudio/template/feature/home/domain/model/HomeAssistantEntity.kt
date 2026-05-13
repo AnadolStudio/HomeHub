@@ -11,8 +11,8 @@ data class HomeAssistantEntity(
         val entityId: String,
         val services: Set<String>,
         val allowedState: AllowedState,
-        val stateData: HomeAssistantState // TODO неприятно обновлять внутренние данные
+        val stateData: HomeAssistantState, // TODO неприятно обновлять внутренние данные
 ) {
     val domain: String = entityId.split(".").first()
-    val componentType: AllowedComponent? = AllowedComponent.getByName(domain)
+    val componentType: AllowedComponent? get() = AllowedComponent.getByName(domain)
 }

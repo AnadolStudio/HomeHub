@@ -12,10 +12,14 @@ internal data class HomeScreenState(
         val homeOverviewState: HomeOverviewState = HomeOverviewState(),
         val deviceState: DeviceState = DeviceState(),
 ) {
-    private val progressStateList = listOf(
+    private val progressStateList get() = listOf(
             homeOverviewState.progressState,
             deviceState.progressState,
     )
+
+    private val isLoading: Boolean
+        get() = connectionState != WebSocketConnectionState.ConnectedAuthenticated ||
+                progressStateList.any { it is ProgressState.Loading }
 
     val progressState: ProgressState
         get() = when {
@@ -25,6 +29,7 @@ internal data class HomeScreenState(
                 val errorProgressState = progressStateList
                         .firstOrNull { it is ProgressState.Error }
                         as? ProgressState.Error
+
                 ProgressState.Error(errorProgressState?.error)
             }
 

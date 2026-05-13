@@ -81,6 +81,8 @@ private fun HomeLayout(
         state: HomeScreenState,
         controller: HomeController,
 ) {
+    val progressState = remember(state) { state.progressState }
+
     Column (
             modifier = Modifier
                     .systemBarsPadding()
@@ -97,7 +99,7 @@ private fun HomeLayout(
                         .padding(Dimension.mainMargin),
         )
 
-        when (val progressState = state.progressState) {
+        when (progressState) {
             ProgressState.Content -> HomeContent(state = state, controller = controller)
             is ProgressState.Error -> HomeError(progressState)
             ProgressState.Loading -> HomeLoading()
@@ -220,8 +222,6 @@ private fun DeviceCard(device: HomeAssistantDevice, controller: HomeController) 
         }
     }
 }
-
-private const val DEVICE_CARD_CONTENT_TYPE = "device_card"
 
 @Composable
 private fun GroupHeader(title: String, onClick: () -> Unit) {

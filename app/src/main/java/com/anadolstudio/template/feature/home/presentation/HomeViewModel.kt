@@ -10,13 +10,11 @@ import com.anadolstudio.template.feature.home.domain.model.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
 import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistantService
 import com.anadolstudio.utils.states.LoadingContext
-import com.anadolstudio.utils.states.ProgressState
 import com.anadolstudio.utils.states.lce.lceFlow
 import com.anadolstudio.utils.states.lce.lceStateFlow
 import com.anadolstudio.utils.states.lce.mapContent
 import com.anadolstudio.utils.states.lce.mapToLce
 import com.anadolstudio.utils.states.lce.onEachContent
-import com.anadolstudio.utils.states.lce.onEachError
 import com.anadolstudio.utils.states.lce.onEachProgressState
 import javax.inject.Inject
 import kotlinx.coroutines.flow.launchIn
@@ -58,17 +56,10 @@ internal class HomeViewModel @Inject constructor(
                             .sortedBy { it.name }
                             .toCollection(LinkedHashSet())
                 }
-                .onEachContent { devicesSet ->
-                    val deviceState = DeviceState(
-                            deviceSet = devicesSet,
-                            progressState = ProgressState.Content
-                    )
-                    updateState { copy(deviceState = deviceState) }
+                .onEachContent { deviceSet ->
+                    updateState { copy(deviceState = deviceState.copy(deviceSet = deviceSet)) }
 
                     subscribeToStateChangedEvents()
-                }
-                .onEachError { error ->
-                    updateState { copy(deviceState = deviceState.copy(progressState = ProgressState.Error(error))) }
                 }
                 .launchIn(viewModelScope)
     }
@@ -84,11 +75,6 @@ internal class HomeViewModel @Inject constructor(
                 )
                 .onEachContent { homeOverview ->
                     updateState { copy(homeOverviewState = homeOverviewState.copy(homeState = homeOverview)) }
-                }
-                .onEachError { error ->
-                    updateState {
-                        copy(homeOverviewState = homeOverviewState.copy(progressState = ProgressState.Error(error)))
-                    }
                 }
                 .launchIn(viewModelScope)
     }

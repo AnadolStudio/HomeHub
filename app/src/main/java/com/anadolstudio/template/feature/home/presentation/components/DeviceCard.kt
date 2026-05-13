@@ -67,7 +67,6 @@ fun SwitchCard(
         onInnerEntityClicked: (entity: HomeAssistantEntity) -> Unit,
         onDeviceClicked: () -> Unit,
 ) {
-
     BaseDeviceCard(
             title = title,
             description = description,

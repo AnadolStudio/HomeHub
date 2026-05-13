@@ -9,7 +9,7 @@ data class WebSocketConfig(
 )
 
 data class ReconnectConfig(
-    val initialDelayMs: Long = 1_000L,
+    val initialDelayMs: Long = 250L,
     val maxDelayMs: Long = 15_000L,
     val backoffMultiplier: Double = 2.0,
 )

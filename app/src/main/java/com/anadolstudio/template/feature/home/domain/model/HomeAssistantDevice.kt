@@ -14,7 +14,7 @@ data class HomeAssistantDevice(
 ) {
 
     val isBindToArea: Boolean get() = area != null
-    val componentType: AllowedComponent? = entityList.firstOrNull()?.componentType
+    val componentType: AllowedComponent? = entityList.firstOrNull()?.componentType // TODO некорректный подход по определение типа device на основании типов entity
 
     val imageUrl: String?
         get() = modelId
