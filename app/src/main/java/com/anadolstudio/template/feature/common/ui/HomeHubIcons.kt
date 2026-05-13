@@ -11,4 +11,5 @@ object HomeHubIcons {
     val VerticalMore: Painter @Composable get() = painterResource(R.drawable.icon_vertical_more)
     val Search: Painter @Composable get() = painterResource(R.drawable.icon_search)
     val Host: Painter @Composable get() = painterResource(R.drawable.ic_host)
+    val History: Painter @Composable get() = painterResource(R.drawable.ic_host)
 }

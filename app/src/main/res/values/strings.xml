@@ -11,4 +11,7 @@
 
     <string name="home_assistant_auth_error_generic">Could not connect to the server. Check the address and your network connection.</string>
     <string name="home_assistant_auth_retry">Retry</string>
+
+
+    <string name="scene_button">Scenes</string>
 </resources>

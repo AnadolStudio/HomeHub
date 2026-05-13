@@ -10,6 +10,7 @@ import com.anadolstudio.template.feature.home.domain.model.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
 import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistantService
 import com.anadolstudio.utils.states.LoadingContext
+import com.anadolstudio.utils.states.ProgressState
 import com.anadolstudio.utils.states.lce.lceFlow
 import com.anadolstudio.utils.states.lce.lceStateFlow
 import com.anadolstudio.utils.states.lce.mapContent
@@ -34,8 +35,15 @@ internal class HomeViewModel @Inject constructor(
                 .onEachContent { connectionState ->
                     updateState { copy(connectionState = connectionState) }
 
-                    if (connectionState is WebSocketConnectionState.ConnectedAuthenticated) {
-                        loadDevices(loadingContext = LoadingContext.INIT_LOADING)
+                    if (connectionState !is WebSocketConnectionState.ConnectedAuthenticated) return@onEachContent
+
+                    val isContent = state.progressState is ProgressState.Content
+                    val hasData = state.deviceState.deviceSet.isNotEmpty()
+
+                    when {
+                        isContent && hasData -> loadDevices(LoadingContext.REFRESH)
+                        isContent && !hasData -> loadDevices(LoadingContext.RETRY)
+                        else -> loadDevices(LoadingContext.INIT_LOADING)
                     }
                 }
                 .launchIn(viewModelScope)
@@ -131,6 +139,18 @@ internal class HomeViewModel @Inject constructor(
     }
 
     override fun onDeviceClicked(device: HomeAssistantDevice) {
+        showTodo()
+    }
+
+    override fun onSceneClicked() {
+        showTodo()
+    }
+
+    override fun onAddDeviceClicked() {
+        showTodo()
+    }
+
+    override fun onHistoryClicked() {
         showTodo()
     }
 }
