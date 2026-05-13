@@ -25,10 +25,6 @@ interface HomeAssistantRepository {
 
     val webSocketConnectionState: StateFlow<WebSocketConnectionState>
 
-    fun startWebSocketConnection()
-
-    fun stopWebSocketConnection()
-
     // region AuthHomeAssistantApi (REST)
 
     /** GET /api/ — проверка, что API запущен и доступен. */

@@ -9,6 +9,9 @@ import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
 import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistantService
+import com.anadolstudio.template.feature.main.MainGraph.navigateToAddDevice
+import com.anadolstudio.template.feature.main.MainGraph.navigateToHistory
+import com.anadolstudio.template.feature.main.MainGraph.navigateToSceneList
 import com.anadolstudio.utils.states.LoadingContext
 import com.anadolstudio.utils.states.ProgressState
 import com.anadolstudio.utils.states.lce.lceFlow
@@ -87,16 +90,6 @@ internal class HomeViewModel @Inject constructor(
                 .launchIn(viewModelScope)
     }
 
-    override fun onStart() {
-        super.onStart()
-        haRepository.startWebSocketConnection()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        haRepository.stopWebSocketConnection()
-    }
-
     private fun subscribeToStateChangedEvents() {
         viewModelScope.launch {
             haRepository.subscribeToStateChangedEvents()
@@ -142,15 +135,9 @@ internal class HomeViewModel @Inject constructor(
         showTodo()
     }
 
-    override fun onSceneClicked() {
-        showTodo()
-    }
+    override fun onSceneClicked() = navigateToSceneList()
 
-    override fun onAddDeviceClicked() {
-        showTodo()
-    }
+    override fun onAddDeviceClicked() = navigateToAddDevice()
 
-    override fun onHistoryClicked() {
-        showTodo()
-    }
+    override fun onHistoryClicked() = navigateToHistory()
 }

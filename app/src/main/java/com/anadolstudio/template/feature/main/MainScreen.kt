@@ -33,6 +33,7 @@ import com.anadolstudio.compose.ui.theme.shape
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHost
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
 import com.anadolstudio.compose.ui.view.snackbar.rememberSnackbarHostState
+import com.anadolstudio.template.base.viewmodel.ObserveViewModelLifecycle
 import com.anadolstudio.template.di.viewmodel.daggerViewModel
 import com.anadolstudio.template.event.ObserveEvents
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
@@ -47,6 +48,7 @@ internal fun MainScreen(
     val snackbarHostState = rememberSnackbarHostState(scaffoldState.snackbarHostState)
 
     ObserveEvents(viewModel.events, snackbarHostState, navigator)
+    ObserveViewModelLifecycle(viewModel)
 
     val state by viewModel.stateFlow.collectAsState()
     MainLayout(navigator, state, viewModel)

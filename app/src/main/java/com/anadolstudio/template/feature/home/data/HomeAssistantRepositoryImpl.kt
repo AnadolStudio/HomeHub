@@ -56,10 +56,6 @@ internal class HomeAssistantRepositoryImpl @Inject constructor(
     override val webSocketConnectionState: StateFlow<WebSocketConnectionState>
         get() = webSocketCore.connectionState
 
-    override fun startWebSocketConnection() = webSocketCore.resume()
-
-    override fun stopWebSocketConnection() = webSocketCore.pause()
-
     override suspend fun getApiStatus(): ApiStatus = api.getApiStatus().toDomain()
 
     override suspend fun getComponents(): List<String> = api.getComponents()

@@ -5,13 +5,20 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
 import com.anadolstudio.template.event.navigateTo
+import com.anadolstudio.template.feature.addDevice.presentation.AddDeviceScreen
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.model.HomeAssistantInstance
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.presetnation.AutoSetupHomeAssistantUrlScreen
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.presetnation.AutoSetupHomeAssistantUrlViewModel
+import com.anadolstudio.template.feature.history.presentation.HistoryScreen
 import com.anadolstudio.template.feature.home.presentation.HomeScreen
 import com.anadolstudio.template.feature.home.presentation.HomeViewModel
 import com.anadolstudio.template.feature.homeAssistantAuth.presetnation.HomeAssistantAuthScreen
 import com.anadolstudio.template.feature.manualSetupHomeAssistantUrl.presetnation.ManualSetupHomeAssistantUrlScreen
+import com.anadolstudio.template.feature.registerUser.presentation.RegisterUserScreen
+import com.anadolstudio.template.feature.registerUser.presentation.RegisterUserViewModel
+import com.anadolstudio.template.feature.sceneDetail.presentation.SceneDetailScreen
+import com.anadolstudio.template.feature.sceneList.presentation.SceneListScreen
+import com.anadolstudio.template.feature.sceneList.presentation.SceneListViewModel
 import com.anadolstudio.template.feature.splash.SplashScreen
 import com.anadolstudio.template.feature.splash.SplashViewModel
 import com.anadolstudio.template.navigation.NavGraphContract
@@ -32,6 +39,16 @@ internal object MainGraph : NavGraphContract() {
     private fun home() = route { "home" }
 
     private fun manualSetupHomeAssistantUrl() = route { "manualSetupHomeAssistantUrl" }
+
+    private fun addDevice() = route { "addDevice" }
+
+    private fun history() = route { "history" }
+
+    private fun sceneList() = route { "sceneList" }
+
+    private fun sceneDetail() = route { "sceneDetail" }
+
+    private fun registerUser() = route { "registerUser" }
 
     fun NavGraphBuilder.mainGraph(
             route: String,
@@ -61,6 +78,21 @@ internal object MainGraph : NavGraphContract() {
         composable(manualSetupHomeAssistantUrl()) {
             ManualSetupHomeAssistantUrlScreen(navigator = navigator, snackbarHostState = snackbarHostState)
         }
+        composable(addDevice()) {
+            AddDeviceScreen(navigator = navigator, snackbarHostState = snackbarHostState)
+        }
+        composable(history()) {
+            HistoryScreen(navigator = navigator, snackbarHostState = snackbarHostState)
+        }
+        composable(sceneList()) {
+            SceneListScreen(navigator = navigator, snackbarHostState = snackbarHostState)
+        }
+        composable(sceneDetail()) {
+            SceneDetailScreen(navigator = navigator, snackbarHostState = snackbarHostState)
+        }
+        composable(registerUser()) {
+            RegisterUserScreen(navigator = navigator, snackbarHostState = snackbarHostState)
+        }
     }
 
     fun SplashViewModel.navigateToAutoSetupHomeAssistantUrl() = navigateFromRoot(autoSetupHomeAssistantUrl())
@@ -75,8 +107,26 @@ internal object MainGraph : NavGraphContract() {
     fun AutoSetupHomeAssistantUrlViewModel.navigateToManualSetupHomeAssistantUrl() =
             navigateTo(manualSetupHomeAssistantUrl())
 
+    fun HomeViewModel.navigateToAddDevice() = navigateTo(addDevice())
+
+    fun HomeViewModel.navigateToHistory() = navigateTo(history())
+
+    fun HomeViewModel.navigateToSceneList() = navigateTo(sceneList())
+
+    fun SceneListViewModel.navigateToSceneDetail() = navigateTo(sceneDetail())
+
+    fun RegisterUserViewModel.navigateToHome() = navigateFromRoot(home())
+
+    fun SplashViewModel.navigateToRegisterUser() = navigateFromRoot(registerUser())
+
     fun navigateToHome(navigator: NavigationController) {
         navigator.navigate(home()) {
+            popUpTo(0)
+        }
+    }
+
+    fun navigateToRegisterUser(navigator: NavigationController) {
+        navigator.navigate(registerUser()) {
             popUpTo(0)
         }
     }

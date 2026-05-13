@@ -21,6 +21,9 @@ internal class HomeAssistantAuthViewModel @AssistedInject constructor(
         HomeAssistantAuthState(url = url),
 ), HomeAssistantAuthController {
 
+    val isRegisterUserShown: Boolean
+        get() = preferencesStorage.isRegisterUserShown
+
     init {
         viewModelScope.launch {
             val isInternal = checkInternalUrlUseCase.isInternalUrl(url)

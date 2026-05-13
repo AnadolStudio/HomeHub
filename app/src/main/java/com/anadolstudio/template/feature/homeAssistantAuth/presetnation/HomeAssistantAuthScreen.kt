@@ -63,7 +63,8 @@ internal fun HomeAssistantAuthScreen(
             }
 
             is HomeAssistantAuthEvent.Authenticated -> {
-                MainGraph.navigateToHome(navigator)
+                MainGraph.navigateToRegisterUser(navigator)
+
                 true
             }
 
