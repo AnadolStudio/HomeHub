@@ -10,6 +10,16 @@ data class WsRequest(
         val id: Long? = null,
         val payload: JsonObject? = null,
 ) {
+    constructor(
+            command: Command,
+            id: Long? = null,
+            payload: JsonObject? = null,
+    ) : this(
+            type = command.value,
+            id = id,
+            payload = payload,
+    )
+
     fun toJsonString(json: Json): String {
         val merged = buildJsonObject {
             put("type", type)

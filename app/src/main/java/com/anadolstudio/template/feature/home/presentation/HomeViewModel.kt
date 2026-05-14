@@ -4,7 +4,8 @@ import androidx.lifecycle.viewModelScope
 import com.anadolstudio.template.base.viewmodel.StatefulViewModel
 import com.anadolstudio.template.core.websocket.connection.WebSocketConnectionState
 import com.anadolstudio.template.event.showTodo
-import com.anadolstudio.template.feature.home.domain.HomeAssistantRepository
+import com.anadolstudio.template.feature.home.domain.HARestRepository
+import com.anadolstudio.template.feature.home.domain.HAWebsocketRepository
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
@@ -25,7 +26,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.launch
 
 internal class HomeViewModel @Inject constructor(
-        private val haRepository: HomeAssistantRepository,
+        private val restRepository: HARestRepository,
+        private val websocketRepository: HAWebsocketRepository,
 ) : StatefulViewModel<HomeScreenState>(HomeScreenState()), HomeController {
 
     init {
@@ -34,7 +36,7 @@ internal class HomeViewModel @Inject constructor(
     }
 
     private fun observeConnectionState() {
-        haRepository.webSocketConnectionState.mapToLce()
+        this@HomeViewModel.websocketRepository.webSocketConnectionState.mapToLce()
                 .onEachContent { connectionState ->
                     updateState { copy(connectionState = connectionState) }
 
@@ -53,7 +55,7 @@ internal class HomeViewModel @Inject constructor(
     }
 
     private fun loadDevices(loadingContext: LoadingContext) {
-        lceFlow { haRepository.getDeviceList() }
+        lceFlow { websocketRepository.getDeviceList() }
                 .onEachProgressState(
                         previousState = state.progressState,
                         loadingContext = loadingContext,
@@ -76,7 +78,7 @@ internal class HomeViewModel @Inject constructor(
     }
 
     private fun loadHomeName(loadingContext: LoadingContext) {
-        lceFlow { haRepository.getHomeOverview() }
+        lceFlow { restRepository.getHomeOverview() }
                 .onEachProgressState(
                         previousState = state.progressState,
                         loadingContext = loadingContext,
@@ -92,7 +94,7 @@ internal class HomeViewModel @Inject constructor(
 
     private fun subscribeToStateChangedEvents() {
         viewModelScope.launch {
-            haRepository.subscribeToStateChangedEvents()
+            websocketRepository.subscribeToStateChangedEvents()
                     .collect { stateChangedEvent -> updateEntity(stateChangedEvent) }
         }
     }
@@ -123,7 +125,7 @@ internal class HomeViewModel @Inject constructor(
 
     override fun onEntityClicked(entity: HomeAssistantEntity, service: HomeAssistantService) {
         lceStateFlow {
-            haRepository.callService(
+            websocketRepository.callService(
                     entityId = entity.entityId,
                     domain = entity.domain,
                     service = service.toStringService(),

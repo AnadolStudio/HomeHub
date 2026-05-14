@@ -80,8 +80,8 @@ private val DEVICE_IMAGE_SIZE = 100.dp
 private val HEADER_MAX_HEIGHT = 320.dp
 private val BADGE_HEIGHT = 56.dp
 private val BADGE_BOTTOM_INSET = 12.dp
-private val CONTENT_HEADER_OVERLAP = 16.dp
-private val CONTENT_CORNER_RADIUS = 16.dp
+private val CONTENT_CORNER_RADIUS = 32.dp
+private val CONTENT_HEADER_OVERLAP = CONTENT_CORNER_RADIUS
 
 @Composable
 internal fun HomeScreen(
@@ -182,7 +182,7 @@ private fun HomeLayout(
                         },
         ) {
             Badge(
-                    text = stringResource(R.string.scene_button),
+                    text = stringResource(R.string.automation_button),
                     onClick = { controller.onSceneClicked() }
             )
             Badge(

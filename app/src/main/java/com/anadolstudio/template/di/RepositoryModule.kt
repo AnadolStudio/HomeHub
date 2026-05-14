@@ -13,9 +13,11 @@ import com.anadolstudio.template.feature.common.data.ResourceRepositoryImpl
 import com.anadolstudio.template.feature.common.domain.NightModeRepository
 import com.anadolstudio.template.feature.common.domain.PreferenceRepository
 import com.anadolstudio.template.feature.common.domain.ResourceRepository
+import com.anadolstudio.template.feature.home.data.HARestRepositoryImpl
+import com.anadolstudio.template.feature.home.data.HAWebsocketRepositoryImpl
 import com.anadolstudio.template.feature.home.data.HomeAssistantDevicesUseCase
-import com.anadolstudio.template.feature.home.data.HomeAssistantRepositoryImpl
-import com.anadolstudio.template.feature.home.domain.HomeAssistantRepository
+import com.anadolstudio.template.feature.home.domain.HARestRepository
+import com.anadolstudio.template.feature.home.domain.HAWebsocketRepository
 import com.anadolstudio.template.feature.homeAssistantAuth.data.api.AuthHomeAssistantApi
 import dagger.Module
 import dagger.Provides
@@ -60,12 +62,20 @@ internal class RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideHomeAssistantRepositoryImpl(
+    fun provideHARestRepository(
             api: AuthHomeAssistantApi,
+            json: Json,
+    ): HARestRepository = HARestRepositoryImpl(
+            api = api,
+            json = json,
+    )
+
+    @Provides
+    @Singleton
+    fun provideHAWebsocketRepository(
             webSocketCore: WebSocketCore,
             json: Json,
-    ): HomeAssistantRepository = HomeAssistantRepositoryImpl(
-            api = api,
+    ): HAWebsocketRepository = HAWebsocketRepositoryImpl(
             webSocketCore = webSocketCore,
             json = json,
     )
@@ -73,7 +83,7 @@ internal class RepositoryModule {
     @Provides
     @Singleton
     fun homeAssistantDevicesUseCase(
-            repository: HomeAssistantRepository
+            repository: HARestRepository,
     ): HomeAssistantDevicesUseCase = HomeAssistantDevicesUseCase(repository)
 
     private companion object {

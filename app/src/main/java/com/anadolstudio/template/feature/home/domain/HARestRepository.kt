@@ -1,29 +1,17 @@
 package com.anadolstudio.template.feature.home.domain
 
 import ServiceDomainResponse
-import com.anadolstudio.template.core.websocket.connection.WebSocketConnectionState
-import com.anadolstudio.template.feature.home.data.model.CallServiceResult
-import com.anadolstudio.template.feature.home.data.model.EntityRegistryEntry
-import com.anadolstudio.template.feature.home.data.model.ExtractFromTargetResult
-import com.anadolstudio.template.feature.home.data.model.services.ServiceDescription
-import com.anadolstudio.template.feature.home.data.model.services.ServiceTarget
 import com.anadolstudio.template.feature.home.domain.model.ApiStatus
-import com.anadolstudio.template.feature.home.domain.model.Area
 import com.anadolstudio.template.feature.home.domain.model.Config
-import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.Message
 import com.anadolstudio.template.feature.home.domain.model.UpdateState
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantEventType
-import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 import com.anadolstudio.template.feature.home.domain.model.states.HomeState
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.json.JsonObject
 
-interface HomeAssistantRepository {
+interface HARestRepository {
 
-    val webSocketConnectionState: StateFlow<WebSocketConnectionState>
 
     // region AuthHomeAssistantApi (REST)
 
@@ -92,39 +80,4 @@ interface HomeAssistantRepository {
     /** DELETE /api/states/{entity_id} — удалить сущность. */
     suspend fun deleteState(entityId: String): Message
 
-    // endregion
-
-    // region WebSocket
-
-    suspend fun getEntities(): List<EntityRegistryEntry>
-
-    suspend fun getStates(): List<HomeAssistantState>
-
-    /**
-     * `get_services` — возвращает реестр сервисов: `domain -> service -> описание`.
-     */
-    suspend fun getServiceList(): Map<String, Map<String, ServiceDescription>>
-
-    /**
-     * `extract_from_target` — раскрывает target (devices/areas/labels/floors)
-     * в плоские списки entity_id/device_id/area_id.
-     */
-    suspend fun extractFromTarget(
-            target: ServiceTarget,
-            expandGroup: Boolean = false,
-    ): ExtractFromTargetResult
-
-    suspend fun callService(
-            entityId: String,
-            domain: String,
-            service: String,
-    ): CallServiceResult
-
-    suspend fun getAreaList(): List<Area>
-
-    suspend fun getDeviceList(): List<HomeAssistantDevice>
-
-    suspend fun subscribeToStateChangedEvents() : Flow<HomeAssistantStateChangedEvent>
-
-    // endregion
 }

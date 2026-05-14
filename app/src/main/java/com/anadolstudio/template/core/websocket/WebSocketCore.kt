@@ -15,9 +15,9 @@ interface WebSocketCore {
 
     suspend fun disconnect()
 
-    fun pause()
+    fun onStopWebsocket()
 
-    fun resume()
+    fun onStartWebsocket()
 
     suspend fun sendCommand(request: WsRequest): WsResultMessage
 

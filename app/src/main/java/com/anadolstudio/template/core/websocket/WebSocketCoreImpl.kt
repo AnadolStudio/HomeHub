@@ -132,12 +132,12 @@ class WebSocketCoreImpl @Inject constructor(
         close(closeMessage = "Disconnected by client")
     }
 
-    override fun pause() {
+    override fun onStopWebsocket() {
         if (!isPause.compareAndSet(false, true)) return
         close("App backgrounded")
     }
 
-    override fun resume() {
+    override fun onStartWebsocket() {
         isPause.set(false)
         if (webSocket != null || reconnectJob?.isActive == true) return
 
