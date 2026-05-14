@@ -183,7 +183,7 @@ private fun HomeLayout(
         ) {
             Badge(
                     text = stringResource(R.string.automation_button),
-                    onClick = { controller.onSceneClicked() }
+                    onClick = { controller.onAutomationClicked() }
             )
             Badge(
                     vector = Icons.Outlined.History,
@@ -205,7 +205,7 @@ private fun HomeLayout(
 
             Text(
                     text = homeName,
-                    style = AppTheme.typography.textBook24,
+                    style = AppTheme.typography.textBook23,
                     fontWeight = FontWeight.Bold,
                     color = AppTheme.colors.colorAccent,
                     modifier = Modifier
@@ -254,7 +254,7 @@ private fun Badge(
                     .clip(RoundedCornerShape(12.dp))
                     .clickable(onClick = onClick)
                     .background(AppTheme.colors.colorPrimary)
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = Dimension.mediumMargin),
             contentAlignment = Alignment.Center,
     ) {
         vector?.let {
@@ -422,7 +422,7 @@ private fun GroupHeader(title: String, onClick: () -> Unit) {
 private fun createPreviewController(): HomeController = object : HomeController {
     override fun onEntityClicked(entity: HomeAssistantEntity, service: HomeAssistantService) = Unit
     override fun onDeviceClicked(device: HomeAssistantDevice) = Unit
-    override fun onSceneClicked() = Unit
+    override fun onAutomationClicked() = Unit
     override fun onAddDeviceClicked() = Unit
     override fun onHistoryClicked() = Unit
 }

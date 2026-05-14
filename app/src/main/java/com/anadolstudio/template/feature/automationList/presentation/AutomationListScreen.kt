@@ -1,4 +1,4 @@
-package com.anadolstudio.template.feature.sceneList.presentation
+package com.anadolstudio.template.feature.automationList.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,7 +27,7 @@ import com.anadolstudio.template.di.viewmodel.daggerViewModel
 import com.anadolstudio.template.event.ObserveEvents
 import com.anadolstudio.template.feature.main.NavigationController
 
-private val SCENE_PLACEHOLDER_LIST = listOf(
+private val AUTOMATION_PLACEHOLDER_LIST = listOf(
         "Утро",
         "Уход из дома",
         "Тихий вечер",
@@ -36,21 +36,21 @@ private val SCENE_PLACEHOLDER_LIST = listOf(
 )
 
 @Composable
-internal fun SceneListScreen(
+internal fun AutomationListScreen(
         navigator: NavigationController,
         snackbarHostState: SnackbarHostState,
-        viewModel: SceneListViewModel = daggerViewModel(),
+        viewModel: AutomationListViewModel = daggerViewModel(),
 ) {
     val state by viewModel.stateFlow.collectAsState()
     ObserveEvents(viewModel.events, snackbarHostState, navigator)
 
-    SceneListLayout(state = state, controller = viewModel)
+    AutomationListLayout(state = state, controller = viewModel)
 }
 
 @Composable
-private fun SceneListLayout(
-        @Suppress("UNUSED_PARAMETER") state: SceneListScreenState,
-        controller: SceneListController,
+private fun AutomationListLayout(
+        @Suppress("UNUSED_PARAMETER") state: AutomationListScreenState,
+        controller: AutomationListController,
 ) {
     LazyColumn(
             modifier = Modifier
@@ -62,24 +62,24 @@ private fun SceneListLayout(
     ) {
         item {
             Text(
-                    text = "Сценарии (заглушка)",
+                    text = "Автоматизации (заглушка)",
                     style = AppTheme.typography.textBook18,
                     fontWeight = FontWeight.Bold,
                     color = AppTheme.colors.colorAccent,
             )
         }
 
-        items(SCENE_PLACEHOLDER_LIST) { sceneName ->
-            ScenePlaceholderRow(
-                    title = sceneName,
-                    onClick = { controller.onSceneItemClicked() },
+        items(AUTOMATION_PLACEHOLDER_LIST) { automationName ->
+            AutomationPlaceholderRow(
+                    title = automationName,
+                    onClick = { controller.onAutomationItemClicked() },
             )
         }
     }
 }
 
 @Composable
-private fun ScenePlaceholderRow(
+private fun AutomationPlaceholderRow(
         title: String,
         onClick: () -> Unit,
 ) {

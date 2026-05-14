@@ -1,4 +1,4 @@
-package com.anadolstudio.template.feature.sceneDetail.presentation
+package com.anadolstudio.template.feature.automationDetail.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -17,21 +17,21 @@ import com.anadolstudio.template.event.ObserveEvents
 import com.anadolstudio.template.feature.main.NavigationController
 
 @Composable
-internal fun SceneDetailScreen(
+internal fun AutomationDetailScreen(
         navigator: NavigationController,
         snackbarHostState: SnackbarHostState,
-        viewModel: SceneDetailViewModel = daggerViewModel(),
+        viewModel: AutomationDetailViewModel = daggerViewModel(),
 ) {
     val state by viewModel.stateFlow.collectAsState()
     ObserveEvents(viewModel.events, snackbarHostState, navigator)
 
-    SceneDetailLayout(state = state, controller = viewModel)
+    AutomationDetailLayout(state = state, controller = viewModel)
 }
 
 @Composable
-private fun SceneDetailLayout(
-        @Suppress("UNUSED_PARAMETER") state: SceneDetailScreenState,
-        @Suppress("UNUSED_PARAMETER") controller: SceneDetailController,
+private fun AutomationDetailLayout(
+        @Suppress("UNUSED_PARAMETER") state: AutomationDetailScreenState,
+        @Suppress("UNUSED_PARAMETER") controller: AutomationDetailController,
 ) {
     Box(
             modifier = Modifier
@@ -41,7 +41,7 @@ private fun SceneDetailLayout(
             contentAlignment = Alignment.Center,
     ) {
         Text(
-                text = "SceneDetail screen (заглушка)",
+                text = "AutomationDetail screen (заглушка)",
                 style = AppTheme.typography.textBook18,
                 color = AppTheme.colors.colorAccent,
         )

@@ -8,7 +8,7 @@ interface HomeController {
 
     fun onEntityClicked(entity: HomeAssistantEntity, service: HomeAssistantService)
     fun onDeviceClicked(device: HomeAssistantDevice)
-    fun onSceneClicked()
+    fun onAutomationClicked()
     fun onAddDeviceClicked()
     fun onHistoryClicked()
 }

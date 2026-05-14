@@ -13,6 +13,6 @@
     <string name="home_assistant_auth_error_generic">Не удалось подключиться к серверу. Проверьте адрес и сетевое подключение.</string>
     <string name="home_assistant_auth_retry">Повторить</string>
 
-    <string name="scene_button">Сценарии</string>
+    <string name="automation_button">Автоматизации</string>
 
 </resources>

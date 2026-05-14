@@ -6,13 +6,13 @@ import com.anadolstudio.template.core.network.SessionExpiredNotifier
 import com.anadolstudio.template.di.viewmodel.ViewModelsInjector
 import com.anadolstudio.template.feature.addDevice.di.AddDeviceModule
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.di.AutoSetupHomeAssistantUrlModule
+import com.anadolstudio.template.feature.automationDetail.di.AutomationDetailModule
+import com.anadolstudio.template.feature.automationList.di.AutomationListModule
 import com.anadolstudio.template.feature.history.di.HistoryModule
 import com.anadolstudio.template.feature.home.di.HomeModule
 import com.anadolstudio.template.feature.homeAssistantAuth.di.HomeAssistantAuthModule
 import com.anadolstudio.template.feature.manualSetupHomeAssistantUrl.di.ManualSetupHomeAssistantUrlModule
 import com.anadolstudio.template.feature.registerUser.di.RegisterUserModule
-import com.anadolstudio.template.feature.sceneDetail.di.SceneDetailModule
-import com.anadolstudio.template.feature.sceneList.di.SceneListModule
 import com.anadolstudio.template.feature.splash.di.SplashModule
 import dagger.BindsInstance
 import dagger.Component
@@ -25,14 +25,14 @@ import javax.inject.Singleton
         NetworkModule::class,
         WebSocketModule::class,
         AddDeviceModule::class,
+        AutomationDetailModule::class,
+        AutomationListModule::class,
         AutoSetupHomeAssistantUrlModule::class,
         HistoryModule::class,
         HomeAssistantAuthModule::class,
         HomeModule::class,
         ManualSetupHomeAssistantUrlModule::class,
         RegisterUserModule::class,
-        SceneDetailModule::class,
-        SceneListModule::class,
         SplashModule::class,
     ]
 )

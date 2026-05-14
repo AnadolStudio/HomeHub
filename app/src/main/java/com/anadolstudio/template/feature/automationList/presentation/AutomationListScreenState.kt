@@ -1,9 +1,9 @@
-package com.anadolstudio.template.feature.sceneList.presentation
+package com.anadolstudio.template.feature.automationList.presentation
 
 import androidx.compose.runtime.Immutable
 import com.anadolstudio.utils.states.ProgressState
 
 @Immutable
-internal data class SceneListScreenState(
+internal data class AutomationListScreenState(
         val progressState: ProgressState = ProgressState.Content,
 )
