@@ -45,7 +45,8 @@ import com.anadolstudio.compose.ui.theme.Dimension
 import com.anadolstudio.compose.ui.theme.Shapes
 import com.anadolstudio.compose.ui.theme.image
 import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
-import com.anadolstudio.template.feature.home.domain.model.HomeAssistantEntity
+import com.anadolstudio.template.feature.home.domain.model.AllowedComponent
+import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.states.AllowedState
 import com.anadolstudio.template.feature.home.presentation.PreviewUtils
 import kotlin.math.min
@@ -232,7 +233,7 @@ private fun BaseDeviceCardPreview(
                     title = device.name,
                     description = null,
                     imageUrl = device.imageUrl,
-                    switchEntityList = device.entityList,
+                    switchEntityList = device.controlEntityList.filter { it.componentType == AllowedComponent.SWITCH },
                     onDeviceClicked = {},
                     onInnerEntityClicked = {}
             )

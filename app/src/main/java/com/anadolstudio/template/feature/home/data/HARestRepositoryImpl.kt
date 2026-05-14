@@ -36,10 +36,14 @@ internal class HARestRepositoryImpl @Inject constructor(
 
     override suspend fun getServices(): List<ServiceDomainResponse> = api.getServices()/*.map { it.toDomain() }*/
 
-    override suspend fun getAllStates(): List<HomeAssistantState> = api
-            .getStates()
-            .map { it.toDomain() }
-            .filter { it.entityId.contains(AllowedComponent.getAllComponentsRegex()) }
+    override suspend fun getAllStates(): List<HomeAssistantState> {
+        val regex = AllowedComponent.getAllComponentsRegex()
+
+        return api
+                .getStates()
+                .map { it.toDomain() }
+                .filter { it.entityId.contains(regex) }
+    }
 
     override suspend fun getState(entityId: String): HomeAssistantState = api.getState(entityId).toDomain()
 

@@ -67,7 +67,7 @@ import com.anadolstudio.template.di.viewmodel.daggerViewModel
 import com.anadolstudio.template.event.ObserveEvents
 import com.anadolstudio.template.feature.home.domain.model.AllowedComponent
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
-import com.anadolstudio.template.feature.home.domain.model.HomeAssistantEntity
+import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistantService
 import com.anadolstudio.template.feature.home.domain.model.services.SwitchService
 import com.anadolstudio.template.feature.home.presentation.components.BaseDeviceCard
@@ -373,8 +373,7 @@ private fun DeviceCard(device: HomeAssistantDevice, controller: HomeController) 
                     title = device.name,
                     description = null,
                     imageUrl = device.imageUrl,
-                    switchEntityList = device.entityList
-                            .filter { it.componentType == AllowedComponent.SWITCH },
+                    switchEntityList = device.controlEntityList.filter { it.componentType == AllowedComponent.SWITCH },
                     onInnerEntityClicked = { controller.onEntityClicked(it, SwitchService.Toggle) },
                     onDeviceClicked = { controller.onDeviceClicked(device) },
             )

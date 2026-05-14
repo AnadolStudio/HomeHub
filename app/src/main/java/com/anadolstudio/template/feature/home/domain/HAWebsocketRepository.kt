@@ -2,7 +2,7 @@ package com.anadolstudio.template.feature.home.domain
 
 import com.anadolstudio.template.core.websocket.connection.WebSocketConnectionState
 import com.anadolstudio.template.feature.home.data.model.CallServiceResult
-import com.anadolstudio.template.feature.home.data.model.EntityRegistryEntry
+import com.anadolstudio.template.feature.home.data.model.EntityRegistryListResult
 import com.anadolstudio.template.feature.home.data.model.ExtractFromTargetResult
 import com.anadolstudio.template.feature.home.data.model.services.ServiceDescription
 import com.anadolstudio.template.feature.home.data.model.services.ServiceTarget
@@ -21,8 +21,8 @@ interface HAWebsocketRepository {
 
     fun onStopWebsocket()
 
-    suspend fun getEntities(): List<EntityRegistryEntry>
-    suspend fun getStates(): List<HomeAssistantState>
+    suspend fun getEntityRegistryListResult(): EntityRegistryListResult
+    suspend fun getAllStates(): List<HomeAssistantState>
     suspend fun getServiceList(): Map<String, Map<String, ServiceDescription>>
     suspend fun extractFromTarget(target: ServiceTarget, expandGroup: Boolean): ExtractFromTargetResult
     suspend fun callService(entityId: String, domain: String, service: String): CallServiceResult

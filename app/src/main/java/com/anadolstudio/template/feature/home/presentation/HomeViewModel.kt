@@ -7,7 +7,7 @@ import com.anadolstudio.template.event.showTodo
 import com.anadolstudio.template.feature.home.domain.HARestRepository
 import com.anadolstudio.template.feature.home.domain.HAWebsocketRepository
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
-import com.anadolstudio.template.feature.home.domain.model.HomeAssistantEntity
+import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
 import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistantService
 import com.anadolstudio.template.feature.main.MainGraph.navigateToAddDevice
@@ -104,15 +104,17 @@ internal class HomeViewModel @Inject constructor(
         val newAllowedState = stateChangedEvent.allowedState
 
         val changedDevice = state.deviceState.entityToDeviceMap[entityId] ?: return
-        val newEntityList = changedDevice.entityList.map { entity ->
-            if (entity.entityId == entityId) {
-                entity.copy(allowedState = newAllowedState)
-            } else {
-                entity
+        val newEntityList = changedDevice.entityMap.mapValues { (_, entityList) ->
+            entityList.map { entity ->
+                if (entity.entityId == entityId) {
+                    entity.copy(allowedState = newAllowedState)
+                } else {
+                    entity
+                }
             }
         }
 
-        val newDevice = changedDevice.copy(entityList = newEntityList)
+        val newDevice = changedDevice.copy(entityMap = newEntityList)
         val newDeviceSet = state.deviceState.deviceSet.toMutableSet()
                 .apply {
                     remove(changedDevice)

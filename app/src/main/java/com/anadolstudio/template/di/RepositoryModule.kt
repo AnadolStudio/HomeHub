@@ -15,7 +15,6 @@ import com.anadolstudio.template.feature.common.domain.PreferenceRepository
 import com.anadolstudio.template.feature.common.domain.ResourceRepository
 import com.anadolstudio.template.feature.home.data.HARestRepositoryImpl
 import com.anadolstudio.template.feature.home.data.HAWebsocketRepositoryImpl
-import com.anadolstudio.template.feature.home.data.HomeAssistantDevicesUseCase
 import com.anadolstudio.template.feature.home.domain.HARestRepository
 import com.anadolstudio.template.feature.home.domain.HAWebsocketRepository
 import com.anadolstudio.template.feature.homeAssistantAuth.data.api.AuthHomeAssistantApi
@@ -79,12 +78,6 @@ internal class RepositoryModule {
             webSocketCore = webSocketCore,
             json = json,
     )
-
-    @Provides
-    @Singleton
-    fun homeAssistantDevicesUseCase(
-            repository: HARestRepository,
-    ): HomeAssistantDevicesUseCase = HomeAssistantDevicesUseCase(repository)
 
     private companion object {
         const val PREFS_FILE_NAME = "home_hub_encrypted_prefs"

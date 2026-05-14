@@ -29,13 +29,6 @@ data class EntityRegistryEntry(
 
 @Serializable
 data class EntityRegistryListResult(
+    @SerialName("entity_categories") val categoryMap: Map<Int, String> = emptyMap(),
     @SerialName("entities") val entities: List<EntityRegistryEntry> = emptyList(),
 )
-
-enum class EntityDomain(val prefix: String, val label: String) {
-    LIGHT("light", "Light"),
-    SWITCH("switch", "Switch"),
-    SENSOR("sensor", "Sensor"),
-    CLIMATE("climate", "Climate"),
-    BINARY_SENSOR("binary_sensor", "Binary sensor"),
-}

@@ -7,7 +7,6 @@ import com.anadolstudio.template.core.websocket.message.WsRequest
 import com.anadolstudio.template.feature.home.data.model.AreaResponse
 import com.anadolstudio.template.feature.home.data.model.CallServiceResult
 import com.anadolstudio.template.feature.home.data.model.DeviceResponse
-import com.anadolstudio.template.feature.home.data.model.EntityRegistryEntry
 import com.anadolstudio.template.feature.home.data.model.EntityRegistryListResult
 import com.anadolstudio.template.feature.home.data.model.ExtractFromTargetResult
 import com.anadolstudio.template.feature.home.data.model.StateResponse
@@ -19,7 +18,8 @@ import com.anadolstudio.template.feature.home.domain.HAWebsocketRepository
 import com.anadolstudio.template.feature.home.domain.model.AllowedComponent
 import com.anadolstudio.template.feature.home.domain.model.Area
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
-import com.anadolstudio.template.feature.home.domain.model.HomeAssistantEntity
+import com.anadolstudio.template.feature.home.domain.model.entity.EntityCategory
+import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
 import com.anadolstudio.template.feature.home.domain.model.states.AllowedState
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
@@ -49,20 +49,24 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
 
     override fun onStopWebsocket() = webSocketCore.onStopWebsocket()
 
-    override suspend fun getEntities(): List<EntityRegistryEntry> {
-        val result = webSocketCore.sendCommandForResult(
+    override suspend fun getEntityRegistryListResult(): EntityRegistryListResult {
+        return webSocketCore.sendCommandForResult(
                 request = WsRequest(command = Command.ENTITY_REGISTRY_LIST_FOR_DISPLAY),
                 deserializer = EntityRegistryListResult.serializer(),
         )
-        return result.entities
     }
 
-    override suspend fun getStates(): List<HomeAssistantState> = webSocketCore
-            .sendCommandForResult(
-                    request = WsRequest(command = Command.GET_STATES),
-                    deserializer = ListSerializer(StateResponse.serializer()),
-            )
-            .map { it.toDomain() }
+    override suspend fun getAllStates(): List<HomeAssistantState> {
+        val regex = AllowedComponent.getAllComponentsRegex()
+
+        return webSocketCore
+                .sendCommandForResult(
+                        request = WsRequest(command = Command.GET_STATES),
+                        deserializer = ListSerializer(StateResponse.serializer()),
+                )
+                .map { it.toDomain() }
+                .filter { it.entityId.contains(regex) }
+    }
 
     override suspend fun getServiceList(): Map<String, Map<String, ServiceDescription>> {
         return webSocketCore.sendCommandForResult(
@@ -131,30 +135,34 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
 
         val serviceMap = getServiceList()
         val areaMap = getAreaList().associateBy { area -> area.areaId }
-        val stateMap = getStates().associateBy { states -> states.entityId }
+        val stateMap = getAllStates().associateBy { states -> states.entityId }
 
         val regex = AllowedComponent.getZigbeeAndMatterComponentsRegex()
-        return getEntities()
+        val entityRegistryListResult = getEntityRegistryListResult()
+        val categoryMap = entityRegistryListResult.categoryMap
+
+        return entityRegistryListResult.entities
                 .filter { regex.containsMatchIn(it.entityId) }
                 .groupBy(
                         keySelector = { entityRegistryEntry -> entityRegistryEntry.deviceId.orEmpty() },
-                        valueTransform = { entityRegistryEntry -> entityRegistryEntry.entityId }
+                        valueTransform = { entityRegistryEntry -> entityRegistryEntry }
                 )
                 .mapValues { (_, entityList) ->
                     entityList
-                            .mapNotNull { entityId ->
-                                val state = stateMap[entityId] ?: return@mapNotNull null
-                                val domain: String = entityId.split(".").first()
+                            .mapNotNull { entity ->
+                                val state = stateMap[entity.entityId] ?: return@mapNotNull null
+                                val domain: String = entity.entityId.split(".").first()
                                 val services = serviceMap[domain].orEmpty().keys
+                                val entityCategory = entity.entityCategory.let { categoryMap[it] }
 
                                 HomeAssistantEntity(
-                                        entityId = entityId,
+                                        entityId = entity.entityId,
                                         services = services,
                                         stateData = state,
+                                        entityCategory = EntityCategory.fromString(entityCategory),
                                         allowedState = state.state
                                 )
                             }
-                            .sortedBy { it.entityId }
                 }
                 .mapNotNull { (deviceId, entityList) ->
                     val deviceResponse = deviceMap[deviceId] ?: return@mapNotNull null
@@ -166,7 +174,7 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
                             area = areaMap[deviceResponse.areaId],
                             modelId = deviceResponse.modelId,
                             manufacturer = deviceResponse.manufacturer,
-                            entityList = entityList,
+                            entityMap = entityList.groupBy { it.entityCategory },
                     )
                 }
     }
@@ -185,7 +193,6 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
                 )
             }
 
-
     private companion object {
 
         const val PAYLOAD_EVENT_TYPE_KEY = "event_type"
@@ -193,5 +200,4 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
 
         /** HA-флаги для истории: параметр трактуется как "true" при любом непустом значении. */
     }
-
 }

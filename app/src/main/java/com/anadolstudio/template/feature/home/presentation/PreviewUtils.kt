@@ -2,7 +2,8 @@ package com.anadolstudio.template.feature.home.presentation
 
 import com.anadolstudio.template.feature.home.domain.model.Area
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
-import com.anadolstudio.template.feature.home.domain.model.HomeAssistantEntity
+import com.anadolstudio.template.feature.home.domain.model.entity.EntityCategory
+import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.states.AllowedState
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 import com.anadolstudio.template.feature.home.domain.model.states.SimpleState
@@ -11,7 +12,7 @@ import kotlinx.serialization.json.JsonObject
 
 internal object PreviewUtils {
 
-     fun previewArea(name: String): Area = Area(
+    fun previewArea(name: String): Area = Area(
             areaId = name.lowercase(),
             name = name,
             humidityEntityIid = null,
@@ -19,7 +20,7 @@ internal object PreviewUtils {
             aliases = emptyList(),
     )
 
-     fun previewState(entityId: String, state: AllowedState): HomeAssistantState = SimpleState(
+    fun previewState(entityId: String, state: AllowedState): HomeAssistantState = SimpleState(
             entityId = entityId,
             state = state,
             jsonAttributes = JsonObject(emptyMap()),
@@ -27,14 +28,16 @@ internal object PreviewUtils {
             lastUpdated = null,
     )
 
-     fun previewEntity(entityId: String, state: AllowedState = AllowedState.Unknown): HomeAssistantEntity = HomeAssistantEntity(
-            entityId = entityId,
-            services = setOf("turn_on", "turn_off", "toggle"),
-            allowedState = state,
-            stateData = previewState(entityId, state),
-    )
+    fun previewEntity(entityId: String, state: AllowedState = AllowedState.Unknown): HomeAssistantEntity =
+            HomeAssistantEntity(
+                    entityId = entityId,
+                    services = setOf("turn_on", "turn_off", "toggle"),
+                    allowedState = state,
+                    entityCategory = EntityCategory.CONTROL,
+                    stateData = previewState(entityId, state),
+            )
 
-     val previewDevices: List<HomeAssistantDevice> = listOf(
+    val previewDevices: List<HomeAssistantDevice> = listOf(
             HomeAssistantDevice(
                     id = "4f745823d042948d34938086261e40d7",
                     name = "Выключатель Зал/Кухня",
@@ -42,9 +45,9 @@ internal object PreviewUtils {
                     modelId = "ZNCJMB14LM",
                     manufacturer = "Aqara",
                     area = previewArea("Зал"),
-                    entityList = listOf(
-                            previewEntity("switch.vykliuchatel_zal_kukhnia_1"),
-                            previewEntity("switch.vykliuchatel_zal_kukhnia_kukhnia", AllowedState.On),
+                    entityMap = mapOf(
+                            EntityCategory.CONTROL to listOf(previewEntity("switch.name_1")),
+                            EntityCategory.CONTROL to listOf(previewEntity("switch.name_2", AllowedState.On)),
                     ),
             ),
             HomeAssistantDevice(
@@ -54,8 +57,8 @@ internal object PreviewUtils {
                     modelId = "QBKG11LM",
                     manufacturer = "Aqara",
                     area = previewArea("Балкон"),
-                    entityList = listOf(
-                            previewEntity("switch.0x603d61fffe758b32_1"),
+                    entityMap = mapOf(
+                            EntityCategory.DIAGNOSTIC to listOf(previewEntity("switch.name_1")),
                     ),
             ),
             HomeAssistantDevice(
@@ -65,8 +68,8 @@ internal object PreviewUtils {
                     modelId = "LED1624G9",
                     manufacturer = "IKEA",
                     area = previewArea("Спальня"),
-                    entityList = listOf(
-                            previewEntity("light.bedroom_main"),
+                    entityMap = mapOf(
+                            EntityCategory.CONFIG to listOf(previewEntity("switch.name_1")),
                     ),
             ),
     )

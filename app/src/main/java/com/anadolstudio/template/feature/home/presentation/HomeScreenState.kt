@@ -49,7 +49,7 @@ internal data class DeviceState(
 
     val entityToDeviceMap: Map<String, HomeAssistantDevice>
         get() = deviceSet
-                .flatMap { device -> device.entityList.map { entity -> entity.entityId to device } }
+                .flatMap { device -> device.allEntityList.map { entity -> entity.entityId to device } }
                 .toMap()
 }
 

@@ -1,6 +1,7 @@
-package com.anadolstudio.template.feature.home.domain.model
+package com.anadolstudio.template.feature.home.domain.model.entity
 
 import androidx.compose.runtime.Immutable
+import com.anadolstudio.template.feature.home.domain.model.AllowedComponent
 import com.anadolstudio.template.feature.home.domain.model.states.AllowedState
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 import kotlinx.serialization.Serializable
@@ -10,9 +11,10 @@ import kotlinx.serialization.Serializable
 data class HomeAssistantEntity(
         val entityId: String,
         val services: Set<String>,
+        val entityCategory: EntityCategory,
         val allowedState: AllowedState,
         val stateData: HomeAssistantState, // TODO неприятно обновлять внутренние данные
 ) {
     val domain: String = entityId.split(".").first()
-    val componentType: AllowedComponent? get() = AllowedComponent.getByName(domain)
+    val componentType: AllowedComponent? get() = AllowedComponent.Companion.getByName(domain)
 }
