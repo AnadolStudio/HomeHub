@@ -3,7 +3,8 @@ package com.anadolstudio.template.feature.home.presentation
 import androidx.compose.runtime.Immutable
 import com.anadolstudio.template.core.websocket.connection.WebSocketConnectionState
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
-import com.anadolstudio.template.feature.home.domain.model.states.HomeState
+import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
+import com.anadolstudio.template.feature.home.domain.model.states.HomeAttributes
 import com.anadolstudio.utils.states.ProgressState
 
 @Immutable
@@ -56,5 +57,5 @@ internal data class DeviceState(
 @Immutable
 internal data class HomeOverviewState(
         val progressState: ProgressState = ProgressState.Loading,
-        val homeState: HomeState? = null,
+        val homeState: HomeAssistantState<HomeAttributes>? = null,
 )

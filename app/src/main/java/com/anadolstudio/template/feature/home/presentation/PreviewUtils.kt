@@ -5,9 +5,11 @@ import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.entity.EntityCategory
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.states.AllowedState
+import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
-import com.anadolstudio.template.feature.home.domain.model.states.SimpleState
+import com.anadolstudio.template.feature.home.domain.model.states.toSimple
 import java.time.OffsetDateTime
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 
 internal object PreviewUtils {
@@ -20,21 +22,25 @@ internal object PreviewUtils {
             aliases = emptyList(),
     )
 
-    fun previewState(entityId: String, state: AllowedState): HomeAssistantState = SimpleState(
-            entityId = entityId,
-            state = state,
-            jsonAttributes = JsonObject(emptyMap()),
-            lastChanged = OffsetDateTime.MIN,
-            lastUpdated = null,
-    )
+    fun previewState(entityId: String, state: AllowedState): HomeAssistantState<HomeAssistantAttribute> =
+            HomeAssistantState(
+                    entityId = entityId,
+                    attributes = JsonObject(emptyMap()).toSimple(Json),
+                    lastChanged = OffsetDateTime.MIN,
+                    allowedState = state,
+                    lastUpdated = null,
+            )
 
-    fun previewEntity(entityId: String, state: AllowedState = AllowedState.Unknown): HomeAssistantEntity =
+    fun previewEntity(
+            entityId: String,
+            state: AllowedState = AllowedState.Unknown,
+    ): HomeAssistantEntity<HomeAssistantAttribute> =
             HomeAssistantEntity(
                     entityId = entityId,
+                    deviceId = "someId",
                     services = setOf("turn_on", "turn_off", "toggle"),
-                    allowedState = state,
                     entityCategory = EntityCategory.CONTROL,
-                    stateData = previewState(entityId, state),
+                    state = previewState(entityId, state),
             )
 
     val previewDevices: List<HomeAssistantDevice> = listOf(

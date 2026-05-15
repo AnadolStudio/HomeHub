@@ -1,6 +1,6 @@
 package com.anadolstudio.template.feature.home.domain.model
 
-enum class AllowedComponent(val prefix: String) {
+enum class AllowedDomain(val prefix: String) {
     SENSOR("sensor"),
     SWITCH("switch"),
     LIGHT("light"),
@@ -14,9 +14,9 @@ enum class AllowedComponent(val prefix: String) {
 
     companion object {
 
-        fun getByName(name: String): AllowedComponent? = entries.firstOrNull { it.prefix == name.lowercase() }
+        fun getByName(name: String): AllowedDomain? = entries.firstOrNull { it.prefix == name.lowercase() }
 
-        fun getAllComponentsRegex(): Regex {
+        fun getRegex(): Regex {
             val regexString = entries.joinToString(
                     separator = "|",
                     transform = { component -> component.prefix }

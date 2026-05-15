@@ -45,9 +45,10 @@ import com.anadolstudio.compose.ui.theme.Dimension
 import com.anadolstudio.compose.ui.theme.Shapes
 import com.anadolstudio.compose.ui.theme.image
 import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
-import com.anadolstudio.template.feature.home.domain.model.AllowedComponent
+import com.anadolstudio.template.feature.home.domain.model.AllowedDomain
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.states.AllowedState
+import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.presentation.PreviewUtils
 import kotlin.math.min
 
@@ -64,8 +65,8 @@ fun SwitchCard(
         title: String,
         description: String?,
         imageUrl: String?,
-        switchEntityList: List<HomeAssistantEntity>,
-        onInnerEntityClicked: (entity: HomeAssistantEntity) -> Unit,
+        switchEntityList: List<HomeAssistantEntity<HomeAssistantAttribute>>,
+        onInnerEntityClicked: (entity: HomeAssistantEntity<HomeAssistantAttribute>) -> Unit,
         onDeviceClicked: () -> Unit,
 ) {
     BaseDeviceCard(
@@ -87,7 +88,7 @@ fun SwitchCard(
         ) {
             repeat(min(MAX_SWITCH_ENTITY, size)) { index ->
                 val entity = switchEntityList[index]
-                val enable = when (entity.allowedState) {
+                val enable = when (entity.state.allowedState) {
                     AllowedState.On -> true
                     AllowedState.Unavailable, AllowedState.Unknown, AllowedState.Off -> false
                     else -> return@repeat
@@ -233,7 +234,7 @@ private fun BaseDeviceCardPreview(
                     title = device.name,
                     description = null,
                     imageUrl = device.imageUrl,
-                    switchEntityList = device.controlEntityList.filter { it.componentType == AllowedComponent.SWITCH },
+                    switchEntityList = device.controlEntityList.filter { it.allowedDomain == AllowedDomain.SWITCH },
                     onDeviceClicked = {},
                     onInnerEntityClicked = {}
             )

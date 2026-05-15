@@ -6,12 +6,12 @@ import com.anadolstudio.template.feature.home.domain.model.Config
 import com.anadolstudio.template.feature.home.domain.model.Message
 import com.anadolstudio.template.feature.home.domain.model.UpdateState
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantEventType
+import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
-import com.anadolstudio.template.feature.home.domain.model.states.HomeState
+import com.anadolstudio.template.feature.home.domain.model.states.HomeAttributes
 import kotlinx.serialization.json.JsonObject
 
 interface HARestRepository {
-
 
     // region AuthHomeAssistantApi (REST)
 
@@ -31,12 +31,12 @@ interface HARestRepository {
     suspend fun getServices(): List<ServiceDomainResponse>
 
     /** GET /api/states — состояния всех сущностей. */
-    suspend fun getAllStates(): List<HomeAssistantState>
+    suspend fun getAllStates(): List<HomeAssistantState<HomeAssistantAttribute>>
 
     /** GET /api/states/{entity_id} — состояние конкретной сущности. */
-    suspend fun getState(entityId: String): HomeAssistantState
+    suspend fun getState(entityId: String): HomeAssistantState<HomeAssistantAttribute>
 
-    suspend fun getHomeOverview(): HomeState
+    suspend fun getHomeOverview(): HomeAssistantState<HomeAttributes>
 
     /** GET /api/error_log — лог ошибок текущей сессии. */
     suspend fun getErrorLog(): String
@@ -58,10 +58,10 @@ interface HARestRepository {
             minimalResponse: Boolean = false,
             noAttributes: Boolean = false,
             significantChangesOnly: Boolean = false,
-    ): List<List<HomeAssistantState>>
+    ): List<List<HomeAssistantState<HomeAssistantAttribute>>>
 
     /** POST /api/states/{entity_id} — создать или обновить состояние сущности. */
-    suspend fun updateState(entityId: String, update: UpdateState): HomeAssistantState
+    suspend fun updateState(entityId: String, update: UpdateState): HomeAssistantState<HomeAssistantAttribute>
 
     /** POST /api/events/{event_type} — отправить событие. */
     suspend fun fireEvent(eventType: String, eventData: JsonObject? = null): Message
@@ -75,9 +75,8 @@ interface HARestRepository {
             domain: String,
             service: String,
             serviceData: JsonObject? = null,
-    ): List<HomeAssistantState>
+    ): List<HomeAssistantState<HomeAssistantAttribute>>
 
     /** DELETE /api/states/{entity_id} — удалить сущность. */
     suspend fun deleteState(entityId: String): Message
-
 }

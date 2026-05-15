@@ -11,9 +11,9 @@ import kotlinx.serialization.Serializable
 data class AreaResponse(
         @SerialName("area_id") val areaId: String,
         @SerialName("name") val name: String,
-        @SerialName("humidity_entity_id") val humidityEntityIid: String?,
-        @SerialName("temperature_entity_id") val temperatureEntityId: String?,
-        @SerialName("aliases") val aliases: List<String>?,
+        @SerialName("humidity_entity_id") val humidityEntityIid: String? = null,
+        @SerialName("temperature_entity_id") val temperatureEntityId: String? = null,
+        @SerialName("aliases") val aliases: List<String>? = null,
 )
 
 fun AreaResponse.toDomain() = Area(

@@ -2,40 +2,114 @@ package com.anadolstudio.template.feature.automationList.presentation
 
 import androidx.lifecycle.viewModelScope
 import com.anadolstudio.template.base.viewmodel.StatefulViewModel
+import com.anadolstudio.template.event.showError
 import com.anadolstudio.template.feature.home.domain.HAWebsocketRepository
+import com.anadolstudio.template.feature.home.domain.model.AllowedDomain.AUTOMATION
+import com.anadolstudio.template.feature.home.domain.model.AllowedDomain.SCENE
+import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
+import com.anadolstudio.template.feature.home.domain.model.entity.mapAttributes
+import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
+import com.anadolstudio.template.feature.home.domain.model.services.SwitchService
+import com.anadolstudio.template.feature.home.domain.model.states.AutomationAttributes
+import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
+import com.anadolstudio.template.feature.home.domain.model.states.SceneAttributes
+import com.anadolstudio.template.feature.home.domain.model.states.toAutomation
+import com.anadolstudio.template.feature.home.domain.model.states.toScene
 import com.anadolstudio.template.feature.main.MainGraph.navigateToAutomationDetail
+import com.anadolstudio.template.util.mapIfContains
 import com.anadolstudio.utils.states.LoadingContext
 import com.anadolstudio.utils.states.lce.lceFlow
+import com.anadolstudio.utils.states.lce.lceStateFlow
 import com.anadolstudio.utils.states.lce.onEachContent
+import com.anadolstudio.utils.states.lce.onEachError
 import com.anadolstudio.utils.states.lce.onEachProgressState
 import javax.inject.Inject
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.serialization.json.Json
 
 internal class AutomationListViewModel @Inject constructor(
         private val websocketRepository: HAWebsocketRepository,
+        private val json: Json,
 ) : StatefulViewModel<AutomationListScreenState>(AutomationListScreenState()),
     AutomationListController {
 
     init {
         loadAutomationStates(LoadingContext.INIT_LOADING)
+        subscribeToStateChangedEvents()
     }
 
     private fun loadAutomationStates(loadingContext: LoadingContext) {
-        lceFlow { websocketRepository.getAllStates() }
+        lceFlow {
+            val sceneList = mutableListOf<HomeAssistantEntity<SceneAttributes>>()
+            val automationList = mutableListOf<HomeAssistantEntity<AutomationAttributes>>()
+            websocketRepository.getEntityList().forEach { entity ->
+                if (entity.allowedDomain != SCENE && entity.allowedDomain != AUTOMATION) return@forEach
+
+                when (entity.allowedDomain) {
+                    AUTOMATION -> automationList.add(entity.mapAttributes { it.toAutomation(json) })
+                    SCENE -> sceneList.add(entity.mapAttributes { it.toScene(json) })
+                    else -> Unit
+                }
+            }
+            sceneList to automationList
+        }
                 .onEachProgressState(
                         previousState = state.progressState,
                         loadingContext = loadingContext,
-                        onNewProgressState = {
-                            updateState { copy(progressState = it) }
-                        }
+                        onNewProgressState = { updateState { copy(progressState = it) } }
                 )
-                .onEachContent { homeOverview ->
-//                    updateState { copy(homeOverviewState = homeOverviewState.copy(homeState = homeOverview)) }
+                .onEachContent { (sceneList, automationList) ->
+
+                    updateState { copy(sceneList = sceneList, automationList = automationList) }
                 }
+                .onEachError { showError(it) }
                 .launchIn(viewModelScope)
+    }
+
+    private fun subscribeToStateChangedEvents() {
+        lceFlow {
+            websocketRepository.subscribeToStateChangedEvents().collect { stateChangedEvent ->
+                updateEntity(stateChangedEvent)
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun updateEntity(stateChangedEvent: HomeAssistantStateChangedEvent) {
+        val entityId = stateChangedEvent.entityId
+        val newAllowedState = stateChangedEvent.allowedState
+
+        when (stateChangedEvent.allowedDomain) {
+            AUTOMATION -> updateState {
+                val newList = automationList.mapIfContains(
+                        condition = { it.entityId == entityId },
+                        provideNewElement = { entity -> entity.copy(state = entity.state.copy(allowedState = newAllowedState)) }
+                )
+                copy(automationList = newList)
+            }
+
+            SCENE -> updateState {
+                val newList = sceneList.mapIfContains(
+                        condition = { it.entityId == entityId },
+                        provideNewElement = { entity -> entity.copy(state = entity.state.copy(allowedState = newAllowedState)) }
+                )
+                copy(sceneList = newList)
+            }
+
+            else -> return
+        }
     }
 
     override fun onAutomationItemClicked() {
         navigateToAutomationDetail()
+    }
+
+    override fun onAutomationItemEnableChanged(entity: HomeAssistantEntity<HomeAssistantAttribute>) {
+        lceStateFlow {
+            websocketRepository.callService(
+                    entityId = entity.entityId,
+                    domain = entity.domain,
+                    service = SwitchService.Toggle.toStringService(),
+            )
+        }.launchIn(viewModelScope)
     }
 }

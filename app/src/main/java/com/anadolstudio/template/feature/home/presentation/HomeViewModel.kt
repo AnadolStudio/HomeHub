@@ -10,9 +10,11 @@ import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
 import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistantService
+import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.main.MainGraph.navigateToAddDevice
 import com.anadolstudio.template.feature.main.MainGraph.navigateToAutomationList
 import com.anadolstudio.template.feature.main.MainGraph.navigateToHistory
+import com.anadolstudio.template.util.mapIfContains
 import com.anadolstudio.utils.states.LoadingContext
 import com.anadolstudio.utils.states.ProgressState
 import com.anadolstudio.utils.states.lce.lceFlow
@@ -33,6 +35,7 @@ internal class HomeViewModel @Inject constructor(
     init {
         loadHomeName(loadingContext = LoadingContext.INIT_LOADING)
         observeConnectionState()
+        subscribeToStateChangedEvents()
     }
 
     private fun observeConnectionState() {
@@ -71,8 +74,6 @@ internal class HomeViewModel @Inject constructor(
                 }
                 .onEachContent { deviceSet ->
                     updateState { copy(deviceState = deviceState.copy(deviceSet = deviceSet)) }
-
-                    subscribeToStateChangedEvents()
                 }
                 .launchIn(viewModelScope)
     }
@@ -105,13 +106,12 @@ internal class HomeViewModel @Inject constructor(
 
         val changedDevice = state.deviceState.entityToDeviceMap[entityId] ?: return
         val newEntityList = changedDevice.entityMap.mapValues { (_, entityList) ->
-            entityList.map { entity ->
-                if (entity.entityId == entityId) {
-                    entity.copy(allowedState = newAllowedState)
-                } else {
-                    entity
-                }
-            }
+            entityList.mapIfContains(
+                    condition = { it.entityId == entityId },
+                    provideNewElement = { entity ->
+                        entity.copy(state = entity.state.copy(allowedState = newAllowedState))
+                    }
+            )
         }
 
         val newDevice = changedDevice.copy(entityMap = newEntityList)
@@ -125,7 +125,7 @@ internal class HomeViewModel @Inject constructor(
         updateState { copy(deviceState = deviceState.copy(deviceSet = newDeviceSet)) }
     }
 
-    override fun onEntityClicked(entity: HomeAssistantEntity, service: HomeAssistantService) {
+    override fun onEntityClicked(entity: HomeAssistantEntity<HomeAssistantAttribute>, service: HomeAssistantService) {
         lceStateFlow {
             websocketRepository.callService(
                     entityId = entity.entityId,

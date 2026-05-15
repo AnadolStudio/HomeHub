@@ -12,19 +12,22 @@ import com.anadolstudio.template.feature.home.data.model.ExtractFromTargetResult
 import com.anadolstudio.template.feature.home.data.model.StateResponse
 import com.anadolstudio.template.feature.home.data.model.events.StateChangedEventResponse
 import com.anadolstudio.template.feature.home.data.model.services.ServiceDescription
+import com.anadolstudio.template.feature.home.data.model.services.ServiceResponse
 import com.anadolstudio.template.feature.home.data.model.services.ServiceTarget
 import com.anadolstudio.template.feature.home.data.model.toDomain
 import com.anadolstudio.template.feature.home.domain.HAWebsocketRepository
-import com.anadolstudio.template.feature.home.domain.model.AllowedComponent
+import com.anadolstudio.template.feature.home.domain.model.AllowedDomain
 import com.anadolstudio.template.feature.home.domain.model.Area
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.entity.EntityCategory
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
 import com.anadolstudio.template.feature.home.domain.model.states.AllowedState
+import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.serialization.builtins.ListSerializer
@@ -42,6 +45,8 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
         private val json: Json,
 ) : HAWebsocketRepository {
 
+    private val serviceStateFlow = MutableStateFlow<Map<String, ServiceResponse>>(emptyMap())
+
     override val webSocketConnectionState: StateFlow<WebSocketConnectionState>
         get() = webSocketCore.connectionState
 
@@ -49,34 +54,63 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
 
     override fun onStopWebsocket() = webSocketCore.onStopWebsocket()
 
-    override suspend fun getEntityRegistryListResult(): EntityRegistryListResult {
-        return webSocketCore.sendCommandForResult(
+    override suspend fun getEntityList(): List<HomeAssistantEntity<HomeAssistantAttribute>> {
+        val entityRegistryListResult = webSocketCore.sendCommandForResult(
                 request = WsRequest(command = Command.ENTITY_REGISTRY_LIST_FOR_DISPLAY),
                 deserializer = EntityRegistryListResult.serializer(),
         )
+
+        val categoryMap = entityRegistryListResult.categoryMap
+        val serviceMap = getServiceMap()
+        val stateMap = getAllStates().associateBy { states -> states.entityId }
+        val regex = AllowedDomain.getRegex()
+
+        return entityRegistryListResult.entities
+                .filter { entity -> entity.entityId.contains(regex) }
+                .mapNotNull { entity ->
+                    val state = stateMap[entity.entityId] ?: return@mapNotNull null
+                    val services = serviceMap[entity.domain]?.services.orEmpty().keys
+                    val entityCategory = entity.entityCategory.let { categoryMap[it] }
+
+                    HomeAssistantEntity(
+                            entityId = entity.entityId,
+                            deviceId = entity.deviceId.orEmpty(),
+                            services = services,
+                            state = state,
+                            entityCategory = EntityCategory.fromString(entityCategory),
+                    )
+                }
     }
 
-    override suspend fun getAllStates(): List<HomeAssistantState> {
-        val regex = AllowedComponent.getAllComponentsRegex()
+    override suspend fun getAllStates(): List<HomeAssistantState<HomeAssistantAttribute>> {
+        val regex = AllowedDomain.getRegex()
 
         return webSocketCore
                 .sendCommandForResult(
                         request = WsRequest(command = Command.GET_STATES),
                         deserializer = ListSerializer(StateResponse.serializer()),
                 )
-                .map { it.toDomain() }
+                .map { it.toDomain(json) }
                 .filter { it.entityId.contains(regex) }
     }
 
-    override suspend fun getServiceList(): Map<String, Map<String, ServiceDescription>> {
-        return webSocketCore.sendCommandForResult(
-                request = WsRequest(command = Command.GET_SERVICES),
-                deserializer = MapSerializer(
-                        String.serializer(),
-                        MapSerializer(String.serializer(), ServiceDescription.serializer()),
-                ),
-        )
-    }
+    override suspend fun getServiceMap(useCache: Boolean): Map<String, ServiceResponse> =
+            if (useCache && serviceStateFlow.value.isNotEmpty()) {
+                serviceStateFlow.value
+            } else {
+                webSocketCore
+                        .sendCommandForResult(
+                                request = WsRequest(command = Command.GET_SERVICES),
+                                deserializer = MapSerializer(
+                                        String.serializer(),
+                                        MapSerializer(String.serializer(), ServiceDescription.serializer()),
+                                ),
+                        )
+                        .mapValues { (domain, services) ->
+                            ServiceResponse(domain = domain, services = services)
+                        }
+                        .also { serviceStateFlow.value = it }
+            }
 
     override suspend fun extractFromTarget(
             target: ServiceTarget,
@@ -133,37 +167,13 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
                 )
                 .associateBy { deviceResponse -> deviceResponse.id }
 
-        val serviceMap = getServiceList()
         val areaMap = getAreaList().associateBy { area -> area.areaId }
-        val stateMap = getAllStates().associateBy { states -> states.entityId }
 
-        val regex = AllowedComponent.getZigbeeAndMatterComponentsRegex()
-        val entityRegistryListResult = getEntityRegistryListResult()
-        val categoryMap = entityRegistryListResult.categoryMap
+        val regex = AllowedDomain.getZigbeeAndMatterComponentsRegex()
 
-        return entityRegistryListResult.entities
+        return getEntityList()
                 .filter { regex.containsMatchIn(it.entityId) }
-                .groupBy(
-                        keySelector = { entityRegistryEntry -> entityRegistryEntry.deviceId.orEmpty() },
-                        valueTransform = { entityRegistryEntry -> entityRegistryEntry }
-                )
-                .mapValues { (_, entityList) ->
-                    entityList
-                            .mapNotNull { entity ->
-                                val state = stateMap[entity.entityId] ?: return@mapNotNull null
-                                val domain: String = entity.entityId.split(".").first()
-                                val services = serviceMap[domain].orEmpty().keys
-                                val entityCategory = entity.entityCategory.let { categoryMap[it] }
-
-                                HomeAssistantEntity(
-                                        entityId = entity.entityId,
-                                        services = services,
-                                        stateData = state,
-                                        entityCategory = EntityCategory.fromString(entityCategory),
-                                        allowedState = state.state
-                                )
-                            }
-                }
+                .groupBy(keySelector = { entity -> entity.deviceId }, valueTransform = { entity -> entity })
                 .mapNotNull { (deviceId, entityList) ->
                     val deviceResponse = deviceMap[deviceId] ?: return@mapNotNull null
 

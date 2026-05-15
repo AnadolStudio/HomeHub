@@ -65,11 +65,12 @@ import com.anadolstudio.template.base.view.HomeHubLoader
 import com.anadolstudio.template.base.viewmodel.ObserveViewModelLifecycle
 import com.anadolstudio.template.di.viewmodel.daggerViewModel
 import com.anadolstudio.template.event.ObserveEvents
-import com.anadolstudio.template.feature.home.domain.model.AllowedComponent
+import com.anadolstudio.template.feature.home.domain.model.AllowedDomain
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistantService
 import com.anadolstudio.template.feature.home.domain.model.services.SwitchService
+import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.presentation.components.BaseDeviceCard
 import com.anadolstudio.template.feature.home.presentation.components.SwitchCard
 import com.anadolstudio.template.feature.main.NavigationController
@@ -368,12 +369,12 @@ private fun HomeContent(
 @Composable
 private fun DeviceCard(device: HomeAssistantDevice, controller: HomeController) {
     when (device.componentType) {
-        AllowedComponent.SWITCH -> {
+        AllowedDomain.SWITCH -> {
             SwitchCard(
                     title = device.name,
                     description = null,
                     imageUrl = device.imageUrl,
-                    switchEntityList = device.controlEntityList.filter { it.componentType == AllowedComponent.SWITCH },
+                    switchEntityList = device.controlEntityList.filter { it.allowedDomain == AllowedDomain.SWITCH },
                     onInnerEntityClicked = { controller.onEntityClicked(it, SwitchService.Toggle) },
                     onDeviceClicked = { controller.onDeviceClicked(device) },
             )
@@ -419,7 +420,7 @@ private fun GroupHeader(title: String, onClick: () -> Unit) {
 // region Previews
 
 private fun createPreviewController(): HomeController = object : HomeController {
-    override fun onEntityClicked(entity: HomeAssistantEntity, service: HomeAssistantService) = Unit
+    override fun onEntityClicked(entity: HomeAssistantEntity<HomeAssistantAttribute>, service: HomeAssistantService) = Unit
     override fun onDeviceClicked(device: HomeAssistantDevice) = Unit
     override fun onAutomationClicked() = Unit
     override fun onAddDeviceClicked() = Unit

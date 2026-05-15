@@ -5,13 +5,16 @@ import com.anadolstudio.template.core.network.AuthInterceptor
 import com.anadolstudio.template.core.network.HomeHubAuthenticator
 import com.anadolstudio.template.feature.common.data.PreferencesStorage
 import com.anadolstudio.template.feature.homeAssistantAuth.data.api.AuthHomeAssistantApi
+import com.anadolstudio.template.util.serializer.OffsetDateTimeSerializer
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
+import java.time.OffsetDateTime
 import java.util.concurrent.TimeUnit
 import javax.inject.Qualifier
 import javax.inject.Singleton
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -27,7 +30,12 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideJson(): Json = Json { ignoreUnknownKeys = true }
+    fun provideJson(): Json = Json {
+        ignoreUnknownKeys = true
+        serializersModule = SerializersModule {
+            contextual(OffsetDateTime::class, OffsetDateTimeSerializer)
+        }
+    }
 
     @Provides
     @Singleton

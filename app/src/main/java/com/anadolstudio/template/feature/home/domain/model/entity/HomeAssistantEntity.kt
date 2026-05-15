@@ -1,20 +1,29 @@
 package com.anadolstudio.template.feature.home.domain.model.entity
 
 import androidx.compose.runtime.Immutable
-import com.anadolstudio.template.feature.home.domain.model.AllowedComponent
-import com.anadolstudio.template.feature.home.domain.model.states.AllowedState
+import com.anadolstudio.template.feature.home.domain.model.domain.DomainParser
+import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
+import com.anadolstudio.template.feature.home.domain.model.states.mapAttributes
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
 
 @Immutable
 @Serializable
-data class HomeAssistantEntity(
-        val entityId: String,
+data class HomeAssistantEntity<out Attribute : HomeAssistantAttribute>(
+        override val entityId: String,
+        val deviceId: String,
         val services: Set<String>,
         val entityCategory: EntityCategory,
-        val allowedState: AllowedState,
-        val stateData: HomeAssistantState, // TODO неприятно обновлять внутренние данные
-) {
-    val domain: String = entityId.split(".").first()
-    val componentType: AllowedComponent? get() = AllowedComponent.Companion.getByName(domain)
-}
+        val state: HomeAssistantState<Attribute>,
+) : DomainParser
+
+fun <E : HomeAssistantAttribute, T : HomeAssistantAttribute> HomeAssistantEntity<E>.mapAttributes(
+        block: (JsonObject) -> T,
+): HomeAssistantEntity<T> = HomeAssistantEntity(
+        entityId = entityId,
+        deviceId = deviceId,
+        services = services,
+        entityCategory = entityCategory,
+        state = state.mapAttributes(block)
+)

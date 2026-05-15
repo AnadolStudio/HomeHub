@@ -13,7 +13,13 @@ sealed class AllowedState(val value: String) {
 
     class DigitState(value: String) : AllowedState(value = value)
 
-    class UnprocessedState(value: String) : AllowedState(value = value)
+    class UnprocessedState(value: String) : AllowedState(value = value);
+
+    fun toBooleanOrNull(): Boolean? = when (this) {
+        is On -> true
+        is Off -> false
+        else -> null
+    }
 
     companion object {
         fun getAllowedStateByName(name: String): AllowedState = when {

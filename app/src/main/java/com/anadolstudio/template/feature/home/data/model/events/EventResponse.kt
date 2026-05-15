@@ -7,5 +7,5 @@ import kotlinx.serialization.json.JsonObject
 @Serializable
 data class EventResponse(
         @SerialName("event_type") val type: String,
-        @SerialName("data") val data: JsonObject?,
+        @SerialName("data") val data: JsonObject? = null,
 )
