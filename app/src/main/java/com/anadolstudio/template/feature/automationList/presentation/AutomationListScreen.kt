@@ -3,23 +3,32 @@ package com.anadolstudio.template.feature.automationList.presentation
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DeviceHub
+import androidx.compose.material.icons.outlined.Movie
 import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,37 +55,103 @@ internal fun AutomationListScreen(
     AutomationListLayout(state = state, controller = viewModel)
 }
 
+private enum class AutomationTab(
+        val title: String,
+        val icon: ImageVector,
+) {
+    AUTOMATIONS(title = "Автоматизации", icon = Icons.Outlined.DeviceHub),
+    SCENES(title = "Сценарии", icon = Icons.Outlined.Movie),
+}
+
 @Composable
 private fun AutomationListLayout(
-        @Suppress("UNUSED_PARAMETER") state: AutomationListScreenState,
+        state: AutomationListScreenState,
         controller: AutomationListController,
 ) {
-    LazyColumn(
+    var selectedTab by remember { mutableIntStateOf(0) }
+    val tabs = AutomationTab.entries
+
+    Column(
             modifier = Modifier
                     .fillMaxSize()
                     .background(AppTheme.colors.colorSecondary)
-                    .systemBarsPadding(),
-            contentPadding = PaddingValues(Dimension.mainMargin),
-            verticalArrangement = Arrangement.spacedBy(Dimension.mediumMargin),
+                    .statusBarsPadding(),
     ) {
-        item {
-            Text(
-                    text = "Автоматизации (заглушка)",
-                    style = AppTheme.typography.textBook18,
-                    fontWeight = FontWeight.Bold,
-                    color = AppTheme.colors.colorAccent,
-            )
+        LazyColumn(
+                modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                contentPadding = PaddingValues(Dimension.mainMargin),
+                verticalArrangement = Arrangement.spacedBy(Dimension.mediumMargin),
+        ) {
+            when (tabs[selectedTab]) {
+                AutomationTab.AUTOMATIONS -> automationItems(state, controller)
+                AutomationTab.SCENES -> sceneItems(state, controller)
+            }
         }
 
-        items(state.automationList) { automation ->
-            AutomationItem(
-                    title = automation.state.attributes.friendlyName,
-                    icon = Icons.Outlined.DeviceHub, // TODO temp
-                    isEnable = automation.state.allowedState.toBooleanOrNull(),
-                    onClicked = { controller.onAutomationItemClicked() },
-                    onEnableClicked = { controller.onAutomationItemEnableChanged(automation) }
-            )
+        NavigationBar(
+                containerColor = AppTheme.colors.colorPrimary,
+                contentColor = AppTheme.colors.colorAccent,
+        ) {
+            tabs.forEachIndexed { index, tab ->
+                NavigationBarItem(
+                        selected = selectedTab == index,
+                        onClick = { selectedTab = index },
+                        icon = {
+                            Icon(
+                                    imageVector = tab.icon,
+                                    contentDescription = tab.title,
+                            )
+                        },
+                        label = {
+                            Text(
+                                    text = tab.title,
+                                    style = AppTheme.typography.textBook14,
+                                    fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal,
+                            )
+                        },
+                        alwaysShowLabel = true,
+                        colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = AppTheme.colors.colorAccent,
+                                selectedTextColor = AppTheme.colors.colorAccent,
+                                unselectedIconColor = AppTheme.colors.textSecondary,
+                                unselectedTextColor = AppTheme.colors.textSecondary,
+                                indicatorColor = AppTheme.colors.colorSecondary,
+                        ),
+                )
+            }
         }
+    }
+}
+
+private fun LazyListScope.automationItems(
+        state: AutomationListScreenState,
+        controller: AutomationListController,
+) {
+    items(state.automationList) { automation ->
+        AutomationItem(
+                title = automation.state.attributes.friendlyName,
+                icon = Icons.Outlined.DeviceHub, // TODO temp
+                isEnable = automation.state.allowedState.toBooleanOrNull(),
+                onClicked = { controller.onAutomationItemClicked() },
+                onEnableClicked = { controller.onAutomationItemEnableChanged(automation) },
+        )
+    }
+}
+
+private fun LazyListScope.sceneItems(
+        state: AutomationListScreenState,
+        controller: AutomationListController,
+) {
+    items(state.sceneList) { scene ->
+        AutomationItem(
+                title = scene.state.attributes.friendlyName,
+                icon = Icons.Outlined.Movie, // TODO temp
+                isEnable = null,
+                onClicked = { controller.onAutomationItemClicked() },
+                onEnableClicked = {},
+        )
     }
 }
 

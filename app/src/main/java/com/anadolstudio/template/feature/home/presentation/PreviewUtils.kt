@@ -7,9 +7,8 @@ import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantE
 import com.anadolstudio.template.feature.home.domain.model.states.AllowedState
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
-import com.anadolstudio.template.feature.home.domain.model.states.toSimple
+import com.anadolstudio.template.feature.home.domain.model.states.SimpleAttribute
 import java.time.OffsetDateTime
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 
 internal object PreviewUtils {
@@ -25,7 +24,10 @@ internal object PreviewUtils {
     fun previewState(entityId: String, state: AllowedState): HomeAssistantState<HomeAssistantAttribute> =
             HomeAssistantState(
                     entityId = entityId,
-                    attributes = JsonObject(emptyMap()).toSimple(Json),
+                    attributes = SimpleAttribute(
+                            jsonAttributes = JsonObject(emptyMap()),
+                            friendlyName = entityId,
+                    ),
                     lastChanged = OffsetDateTime.MIN,
                     allowedState = state,
                     lastUpdated = null,
@@ -52,8 +54,10 @@ internal object PreviewUtils {
                     manufacturer = "Aqara",
                     area = previewArea("Зал"),
                     entityMap = mapOf(
-                            EntityCategory.CONTROL to listOf(previewEntity("switch.name_1")),
-                            EntityCategory.CONTROL to listOf(previewEntity("switch.name_2", AllowedState.On)),
+                            EntityCategory.CONTROL to listOf(
+                                    previewEntity("switch.name_1"),
+                                    previewEntity("switch.name_2", AllowedState.On),
+                            ),
                     ),
             ),
             HomeAssistantDevice(

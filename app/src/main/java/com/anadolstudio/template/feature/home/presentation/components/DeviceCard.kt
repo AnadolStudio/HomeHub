@@ -7,16 +7,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowColumn
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.HelpOutline
@@ -24,12 +24,15 @@ import androidx.compose.material.icons.outlined.PowerSettingsNew
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -38,6 +41,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.anadolstudio.compose.ui.theme.AppTheme
@@ -52,7 +56,7 @@ import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantA
 import com.anadolstudio.template.feature.home.presentation.PreviewUtils
 import kotlin.math.min
 
-private val DEVICE_IMAGE_MAX_SIZE = 60.dp
+private val DEVICE_IMAGE_MAX_SIZE = 80.dp
 private val DEVICE_IMAGE_MIN_SIZE = 48.dp
 private val DEVICE_CARD_SHAPE = RoundedCornerShape(12.dp)
 private val DEVICE_CARD_ELEVATION = 4.dp
@@ -114,38 +118,30 @@ fun BaseDeviceCard(
         description: String?,
         imageUrl: String?,
         onDeviceClicked: () -> Unit,
-        entityActionRow: (@Composable RowScope.() -> Unit)? = null,
+        entityInformationRow: (@Composable RowScope.() -> Unit)? = null,
 ) {
     Column(
             modifier = Modifier
-                    .fillMaxWidth()
+                    .width(IntrinsicSize.Min)
                     .shadow(elevation = DEVICE_CARD_ELEVATION, shape = DEVICE_CARD_SHAPE)
                     .background(color = AppTheme.colors.colorPrimary)
                     .clickable(onClick = { onDeviceClicked.invoke() })
-                    .padding(Dimension.mediumMargin),
+                    .padding(Dimension.smallMargin),
     ) {
         Row(
                 modifier = Modifier
-                        .fillMaxWidth()
                         .heightIn(min = DEVICE_IMAGE_MAX_SIZE)
                         .clipToBounds(),
                 verticalAlignment = Alignment.Top,
         ) {
-            val hasActions = entityActionRow != null
             DeviceImage(
                     modifier = Modifier
-                            .sizeIn(
-                                    minWidth = DEVICE_IMAGE_MIN_SIZE,
-                                    maxWidth = DEVICE_IMAGE_MAX_SIZE,
-                                    minHeight = DEVICE_IMAGE_MIN_SIZE,
-                                    maxHeight = DEVICE_IMAGE_MAX_SIZE,
-                            )
-                            .weight(1f, hasActions)
+                            .heightIn(max = DEVICE_IMAGE_MAX_SIZE)
                             .aspectRatio(1f),
                     imageUrl = imageUrl
             )
 
-            entityActionRow?.invoke(this@Row)
+            entityInformationRow?.invoke(this@Row)
         }
 
         Spacer(modifier = Modifier.height(Dimension.smallMargin))
@@ -203,14 +199,29 @@ private fun DeviceImage(
             error = fallbackPainter,
     )
 
+    // Тинт применяется только когда отрисовывается fallback (placeholder/error/empty),
+    // чтобы не закрашивать реальный PNG устройства после успешной загрузки.
+    val fallbackTint = AppTheme.colors.colorAccent
+    val colorFilter by remember(painter, fallbackTint) {
+        derivedStateOf {
+            when (painter.state) {
+                is AsyncImagePainter.State.Empty,
+                is AsyncImagePainter.State.Loading,
+                is AsyncImagePainter.State.Error -> ColorFilter.tint(fallbackTint)
+                is AsyncImagePainter.State.Success -> null
+            }
+        }
+    }
+
     Image(
             painter = painter,
             contentDescription = null,
             modifier = modifier,
+            colorFilter = colorFilter,
     )
 }
 
-@Preview(showBackground = true, widthDp = 140)
+@Preview(showBackground = true, widthDp = 200)
 @Composable
 private fun BaseDeviceCardPreview(
         @PreviewParameter(ThemePreviewParameter::class) useDarkMode: Boolean,

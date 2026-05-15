@@ -24,6 +24,7 @@ import com.anadolstudio.utils.states.lce.mapToLce
 import com.anadolstudio.utils.states.lce.onEachContent
 import com.anadolstudio.utils.states.lce.onEachProgressState
 import javax.inject.Inject
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.launch
 
@@ -31,6 +32,8 @@ internal class HomeViewModel @Inject constructor(
         private val restRepository: HARestRepository,
         private val websocketRepository: HAWebsocketRepository,
 ) : StatefulViewModel<HomeScreenState>(HomeScreenState()), HomeController {
+
+    private var subscribeJob: Job? = null
 
     init {
         loadHomeName(loadingContext = LoadingContext.INIT_LOADING)
@@ -74,6 +77,7 @@ internal class HomeViewModel @Inject constructor(
                 }
                 .onEachContent { deviceSet ->
                     updateState { copy(deviceState = deviceState.copy(deviceSet = deviceSet)) }
+                    subscribeToStateChangedEvents()
                 }
                 .launchIn(viewModelScope)
     }
@@ -94,7 +98,8 @@ internal class HomeViewModel @Inject constructor(
     }
 
     private fun subscribeToStateChangedEvents() {
-        viewModelScope.launch {
+        subscribeJob?.cancel()
+        subscribeJob = viewModelScope.launch {
             websocketRepository.subscribeToStateChangedEvents()
                     .collect { stateChangedEvent -> updateEntity(stateChangedEvent) }
         }

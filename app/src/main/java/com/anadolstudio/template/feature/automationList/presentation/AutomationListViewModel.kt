@@ -35,7 +35,6 @@ internal class AutomationListViewModel @Inject constructor(
 
     init {
         loadAutomationStates(LoadingContext.INIT_LOADING)
-        subscribeToStateChangedEvents()
     }
 
     private fun loadAutomationStates(loadingContext: LoadingContext) {
@@ -59,8 +58,9 @@ internal class AutomationListViewModel @Inject constructor(
                         onNewProgressState = { updateState { copy(progressState = it) } }
                 )
                 .onEachContent { (sceneList, automationList) ->
-
                     updateState { copy(sceneList = sceneList, automationList = automationList) }
+
+                    subscribeToStateChangedEvents()
                 }
                 .onEachError { showError(it) }
                 .launchIn(viewModelScope)

@@ -6,6 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,11 +18,8 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
@@ -76,7 +75,6 @@ import com.anadolstudio.template.feature.home.presentation.components.SwitchCard
 import com.anadolstudio.template.feature.main.NavigationController
 import com.anadolstudio.utils.states.ProgressState
 
-private const val GRID_COLUMNS = 3
 private val DEVICE_IMAGE_SIZE = 100.dp
 private val HEADER_MAX_HEIGHT = 320.dp
 private val BADGE_HEIGHT = 56.dp
@@ -314,7 +312,7 @@ private fun HomeContent(
     val deviceMap = state.deviceState.areaToDeviceMap
 
     val entries = remember(deviceMap) { deviceMap.entries.toList() }
-    val gridState = rememberLazyGridState()
+    val listState = rememberLazyListState()
 
     val context = LocalContext.current
     val imageSizePx = with(LocalDensity.current) { DEVICE_IMAGE_SIZE.roundToPx() }
@@ -340,27 +338,49 @@ private fun HomeContent(
         }
     }
 
-    LazyVerticalGrid(
-            state = gridState,
-            columns = GridCells.Fixed(GRID_COLUMNS),
-            modifier = Modifier
-                    .fillMaxSize(),
-            contentPadding = PaddingValues(
-                    start = Dimension.mainMargin,
-                    end = Dimension.mainMargin,
-                    bottom = Dimension.largeMargin,
-            ),
-            horizontalArrangement = Arrangement.spacedBy(Dimension.mediumMargin),
+    LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = Dimension.largeMargin),
             verticalArrangement = Arrangement.spacedBy(Dimension.mediumMargin),
     ) {
-
         entries.forEach { (areaName, deviceList) ->
-            item(span = { GridItemSpan(maxLineSpan) }, key = areaName) {
-                GroupHeader(title = areaName, onClick = { })
+            item(key = areaName) {
+                AreaSection(
+                        areaName = areaName,
+                        deviceList = deviceList,
+                        controller = controller,
+                )
             }
+        }
+    }
+}
 
-            items(items = deviceList, key = { device -> device.id }) { device ->
-                DeviceCard(device, controller)
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun AreaSection(
+        areaName: String,
+        deviceList: List<HomeAssistantDevice>,
+        controller: HomeController,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(Dimension.smallMargin)) {
+        GroupHeader(
+                title = areaName,
+                onClick = { },
+                modifier = Modifier.padding(horizontal = Dimension.mainMargin),
+        )
+
+        FlowRow(
+                modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = Dimension.mainMargin),
+                horizontalArrangement = Arrangement.spacedBy(Dimension.smallMargin),
+                verticalArrangement = Arrangement.spacedBy(Dimension.mediumMargin),
+        ) {
+            deviceList.forEach { device ->
+                Box(modifier = Modifier) {
+                    DeviceCard(device, controller)
+                }
             }
         }
     }
@@ -392,10 +412,14 @@ private fun DeviceCard(device: HomeAssistantDevice, controller: HomeController) 
 }
 
 @Composable
-private fun GroupHeader(title: String, onClick: () -> Unit) {
+private fun GroupHeader(
+        title: String,
+        onClick: () -> Unit,
+        modifier: Modifier = Modifier,
+) {
     Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
+            modifier = modifier
                     .fillMaxWidth()
                     .padding(top = Dimension.smallMargin),
     ) {
@@ -420,7 +444,9 @@ private fun GroupHeader(title: String, onClick: () -> Unit) {
 // region Previews
 
 private fun createPreviewController(): HomeController = object : HomeController {
-    override fun onEntityClicked(entity: HomeAssistantEntity<HomeAssistantAttribute>, service: HomeAssistantService) = Unit
+    override fun onEntityClicked(entity: HomeAssistantEntity<HomeAssistantAttribute>, service: HomeAssistantService) =
+            Unit
+
     override fun onDeviceClicked(device: HomeAssistantDevice) = Unit
     override fun onAutomationClicked() = Unit
     override fun onAddDeviceClicked() = Unit
