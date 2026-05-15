@@ -96,6 +96,7 @@ android {
 dependencies {
     implementation(project(":core:compose-ui"))
     implementation(project(":core:utils"))
+    implementation(project(":ha_resources"))
 
     implementation(libs.bundles.android.ui)
     annotationProcessor(libs.lifecycle.compiler)
