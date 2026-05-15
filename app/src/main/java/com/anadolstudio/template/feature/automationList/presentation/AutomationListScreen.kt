@@ -26,9 +26,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,21 +52,11 @@ internal fun AutomationListScreen(
     AutomationListLayout(state = state, controller = viewModel)
 }
 
-private enum class AutomationTab(
-        val title: String,
-        val icon: ImageVector,
-) {
-    AUTOMATIONS(title = "Автоматизации", icon = Icons.Outlined.DeviceHub),
-    SCENES(title = "Сценарии", icon = Icons.Outlined.Movie),
-}
-
 @Composable
 private fun AutomationListLayout(
         state: AutomationListScreenState,
         controller: AutomationListController,
 ) {
-    var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = AutomationTab.entries
 
     Column(
             modifier = Modifier
@@ -84,7 +71,7 @@ private fun AutomationListLayout(
                 contentPadding = PaddingValues(Dimension.mainMargin),
                 verticalArrangement = Arrangement.spacedBy(Dimension.mediumMargin),
         ) {
-            when (tabs[selectedTab]) {
+            when (state.currentTab) {
                 AutomationTab.AUTOMATIONS -> automationItems(state, controller)
                 AutomationTab.SCENES -> sceneItems(state, controller)
             }
@@ -94,21 +81,18 @@ private fun AutomationListLayout(
                 containerColor = AppTheme.colors.colorPrimary,
                 contentColor = AppTheme.colors.colorAccent,
         ) {
-            tabs.forEachIndexed { index, tab ->
+            state.tabList.forEachIndexed { _, tab ->
+                val isSelected = state.currentTab == tab
+
                 NavigationBarItem(
-                        selected = selectedTab == index,
-                        onClick = { selectedTab = index },
-                        icon = {
-                            Icon(
-                                    imageVector = tab.icon,
-                                    contentDescription = tab.title,
-                            )
-                        },
+                        selected = isSelected,
+                        onClick = { controller.onTabSelected(tab) },
+                        icon = { Icon(imageVector = tab.icon, contentDescription = tab.title) },
                         label = {
                             Text(
                                     text = tab.title,
                                     style = AppTheme.typography.textBook14,
-                                    fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                             )
                         },
                         alwaysShowLabel = true,
@@ -149,7 +133,7 @@ private fun LazyListScope.sceneItems(
                 title = scene.state.attributes.friendlyName,
                 icon = Icons.Outlined.Movie, // TODO temp
                 isEnable = null,
-                onClicked = { controller.onAutomationItemClicked() },
+                onClicked = { controller.onSceneItemClicked() },
                 onEnableClicked = {},
         )
     }

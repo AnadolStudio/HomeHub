@@ -19,6 +19,7 @@ import com.anadolstudio.template.feature.homeAssistantAuth.presetnation.HomeAssi
 import com.anadolstudio.template.feature.manualSetupHomeAssistantUrl.presetnation.ManualSetupHomeAssistantUrlScreen
 import com.anadolstudio.template.feature.registerUser.presentation.RegisterUserScreen
 import com.anadolstudio.template.feature.registerUser.presentation.RegisterUserViewModel
+import com.anadolstudio.template.feature.sceneDetail.presentation.SceneDetailScreen
 import com.anadolstudio.template.feature.splash.SplashScreen
 import com.anadolstudio.template.feature.splash.SplashViewModel
 import com.anadolstudio.template.navigation.NavGraphContract
@@ -47,6 +48,8 @@ internal object MainGraph : NavGraphContract() {
     private fun automationList() = route { "automationList" }
 
     private fun automationDetail() = route { "automationDetail" }
+
+    private fun sceneDetail() = route { "sceneDetail" }
 
     private fun registerUser() = route { "registerUser" }
 
@@ -90,6 +93,9 @@ internal object MainGraph : NavGraphContract() {
         composable(automationDetail()) {
             AutomationDetailScreen(navigator = navigator, snackbarHostState = snackbarHostState)
         }
+        composable(sceneDetail()) {
+            SceneDetailScreen(navigator = navigator, snackbarHostState = snackbarHostState)
+        }
         composable(registerUser()) {
             RegisterUserScreen(navigator = navigator, snackbarHostState = snackbarHostState)
         }
@@ -114,6 +120,8 @@ internal object MainGraph : NavGraphContract() {
     fun HomeViewModel.navigateToAutomationList() = navigateTo(automationList())
 
     fun AutomationListViewModel.navigateToAutomationDetail() = navigateTo(automationDetail())
+
+    fun AutomationListViewModel.navigateToSceneDetail() = navigateTo(sceneDetail())
 
     fun RegisterUserViewModel.navigateToHome() = navigateFromRoot(home())
 

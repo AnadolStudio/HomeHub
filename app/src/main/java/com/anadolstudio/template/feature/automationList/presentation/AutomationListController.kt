@@ -7,4 +7,7 @@ internal interface AutomationListController {
 
     fun onAutomationItemClicked()
     fun onAutomationItemEnableChanged(entity: HomeAssistantEntity<HomeAssistantAttribute>)
+    fun onTabSelected(tab: AutomationTab)
+    fun onSceneItemClicked()
+
 }

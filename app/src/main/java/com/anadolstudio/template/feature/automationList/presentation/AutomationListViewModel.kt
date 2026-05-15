@@ -16,6 +16,7 @@ import com.anadolstudio.template.feature.home.domain.model.states.SceneAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.toAutomation
 import com.anadolstudio.template.feature.home.domain.model.states.toScene
 import com.anadolstudio.template.feature.main.MainGraph.navigateToAutomationDetail
+import com.anadolstudio.template.feature.main.MainGraph.navigateToSceneDetail
 import com.anadolstudio.template.util.mapIfContains
 import com.anadolstudio.utils.states.LoadingContext
 import com.anadolstudio.utils.states.lce.lceFlow
@@ -50,7 +51,8 @@ internal class AutomationListViewModel @Inject constructor(
                     else -> Unit
                 }
             }
-            sceneList to automationList
+            sceneList.sortedBy { it.state.attributes.friendlyName } to
+                    automationList.sortedBy { it.state.attributes.friendlyName }
         }
                 .onEachProgressState(
                         previousState = state.progressState,
@@ -102,6 +104,12 @@ internal class AutomationListViewModel @Inject constructor(
     override fun onAutomationItemClicked() {
         navigateToAutomationDetail()
     }
+
+    override fun onSceneItemClicked() {
+        navigateToSceneDetail()
+    }
+
+    override fun onTabSelected(tab: AutomationTab) = updateState { copy(currentTab = tab) }
 
     override fun onAutomationItemEnableChanged(entity: HomeAssistantEntity<HomeAssistantAttribute>) {
         lceStateFlow {
