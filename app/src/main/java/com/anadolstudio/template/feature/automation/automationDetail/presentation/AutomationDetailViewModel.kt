@@ -1,4 +1,4 @@
-package com.anadolstudio.template.feature.automationDetail.presentation
+package com.anadolstudio.template.feature.automation.automationDetail.presentation
 
 import com.anadolstudio.template.base.viewmodel.StatefulViewModel
 import javax.inject.Inject

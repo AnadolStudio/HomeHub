@@ -1,10 +1,12 @@
-package com.anadolstudio.template.feature.automationList.presentation
+package com.anadolstudio.template.feature.automation.automationList.presentation
 
+import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DeviceHub
 import androidx.compose.material.icons.outlined.Movie
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.anadolstudio.template.R
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.states.AutomationAttributes
 import com.anadolstudio.template.feature.home.domain.model.states.SceneAttributes
@@ -20,9 +22,9 @@ internal data class AutomationListScreenState(
 )
 
 enum class AutomationTab(
-        val title: String,
+        @StringRes val titleRes: Int,
         val icon: ImageVector,
 ) {
-    AUTOMATIONS(title = "Автоматизации", icon = Icons.Outlined.DeviceHub),
-    SCENES(title = "Сценарии", icon = Icons.Outlined.Movie),
+    AUTOMATIONS(titleRes = R.string.automation_list_tab_automations, icon = Icons.Outlined.DeviceHub),
+    SCENES(titleRes = R.string.automation_list_tab_scenes, icon = Icons.Outlined.Movie),
 }

@@ -1,4 +1,4 @@
-package com.anadolstudio.template.feature.sceneDetail.presentation
+package com.anadolstudio.template.feature.automation.sceneDetail.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

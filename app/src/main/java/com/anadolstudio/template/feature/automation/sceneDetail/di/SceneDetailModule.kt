@@ -1,8 +1,8 @@
-package com.anadolstudio.template.feature.sceneDetail.di
+package com.anadolstudio.template.feature.automation.sceneDetail.di
 
 import androidx.lifecycle.ViewModel
 import com.anadolstudio.template.di.viewmodel.ViewModelKey
-import com.anadolstudio.template.feature.sceneDetail.presentation.SceneDetailViewModel
+import com.anadolstudio.template.feature.automation.sceneDetail.presentation.SceneDetailViewModel
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap

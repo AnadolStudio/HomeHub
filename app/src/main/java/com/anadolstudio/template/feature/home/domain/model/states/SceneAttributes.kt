@@ -9,6 +9,7 @@ import kotlinx.serialization.json.decodeFromJsonElement
 
 @Serializable
 data class SceneAttributes(
+        @SerialName("id") val id: String,
         @SerialName("friendly_name") override val friendlyName: String = "",
         @SerialName("entity_id") val includeEntityIdList: List<String> = emptyList(),
         @Transient override val jsonAttributes: JsonObject = JsonObject(emptyMap()),

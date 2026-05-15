@@ -1,8 +1,15 @@
-package com.anadolstudio.template.feature.automationList.presentation
+package com.anadolstudio.template.feature.automation.automationList.presentation
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.DeviceHub
 import androidx.compose.material.icons.outlined.Movie
 import androidx.compose.material3.Icon
@@ -30,12 +38,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.anadolstudio.compose.ui.theme.AppTheme
 import com.anadolstudio.compose.ui.theme.Dimension
 import com.anadolstudio.compose.ui.theme.Shapes
 import com.anadolstudio.compose.ui.theme.largeShimmer
+import com.anadolstudio.compose.ui.view.button.FloatTextButton
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
+import com.anadolstudio.template.R
 import com.anadolstudio.template.di.viewmodel.daggerViewModel
 import com.anadolstudio.template.event.ObserveEvents
 import com.anadolstudio.template.feature.main.NavigationController
@@ -64,16 +76,41 @@ private fun AutomationListLayout(
                     .background(AppTheme.colors.colorSecondary)
                     .statusBarsPadding(),
     ) {
-        LazyColumn(
+        Box(
                 modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth(),
-                contentPadding = PaddingValues(Dimension.mainMargin),
-                verticalArrangement = Arrangement.spacedBy(Dimension.mediumMargin),
         ) {
-            when (state.currentTab) {
-                AutomationTab.AUTOMATIONS -> automationItems(state, controller)
-                AutomationTab.SCENES -> sceneItems(state, controller)
+            LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(Dimension.mainMargin),
+                    verticalArrangement = Arrangement.spacedBy(Dimension.mediumMargin),
+            ) {
+                when (state.currentTab) {
+                    AutomationTab.AUTOMATIONS -> automationItems(state, controller)
+                    AutomationTab.SCENES -> sceneItems(state, controller)
+                }
+            }
+
+            AnimatedContent(
+                    modifier = Modifier.align(Alignment.BottomEnd),
+                    targetState = state.currentTab,
+                    label = "FloatTextButtonAnimation",
+                    transitionSpec = {
+                        (fadeIn() + slideInVertically { height -> height / 2 })
+                                .togetherWith(fadeOut() + slideOutVertically { height -> -height / 2 })
+                    },
+            ) { tab ->
+                FloatTextButton(
+                        text = stringResource(
+                                when (tab) {
+                                    AutomationTab.AUTOMATIONS -> R.string.automation_list_create_automation
+                                    AutomationTab.SCENES -> R.string.automation_list_create_scene
+                                }
+                        ),
+                        onClick = controller::onCreateClicked,
+                        icon = rememberVectorPainter(Icons.Outlined.Add),
+                )
             }
         }
 
@@ -83,14 +120,15 @@ private fun AutomationListLayout(
         ) {
             state.tabList.forEachIndexed { _, tab ->
                 val isSelected = state.currentTab == tab
+                val title = stringResource(tab.titleRes)
 
                 NavigationBarItem(
                         selected = isSelected,
                         onClick = { controller.onTabSelected(tab) },
-                        icon = { Icon(imageVector = tab.icon, contentDescription = tab.title) },
+                        icon = { Icon(imageVector = tab.icon, contentDescription = title) },
                         label = {
                             Text(
-                                    text = tab.title,
+                                    text = title,
                                     style = AppTheme.typography.textBook14,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                             )

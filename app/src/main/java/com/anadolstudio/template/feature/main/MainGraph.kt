@@ -9,9 +9,10 @@ import com.anadolstudio.template.feature.addDevice.presentation.AddDeviceScreen
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.model.HomeAssistantInstance
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.presetnation.AutoSetupHomeAssistantUrlScreen
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.presetnation.AutoSetupHomeAssistantUrlViewModel
-import com.anadolstudio.template.feature.automationDetail.presentation.AutomationDetailScreen
-import com.anadolstudio.template.feature.automationList.presentation.AutomationListScreen
-import com.anadolstudio.template.feature.automationList.presentation.AutomationListViewModel
+import com.anadolstudio.template.feature.automation.automationDetail.presentation.AutomationDetailScreen
+import com.anadolstudio.template.feature.automation.automationList.presentation.AutomationListScreen
+import com.anadolstudio.template.feature.automation.automationList.presentation.AutomationListViewModel
+import com.anadolstudio.template.feature.automation.sceneDetail.presentation.SceneDetailScreen
 import com.anadolstudio.template.feature.history.presentation.HistoryScreen
 import com.anadolstudio.template.feature.home.presentation.HomeScreen
 import com.anadolstudio.template.feature.home.presentation.HomeViewModel
@@ -19,7 +20,6 @@ import com.anadolstudio.template.feature.homeAssistantAuth.presetnation.HomeAssi
 import com.anadolstudio.template.feature.manualSetupHomeAssistantUrl.presetnation.ManualSetupHomeAssistantUrlScreen
 import com.anadolstudio.template.feature.registerUser.presentation.RegisterUserScreen
 import com.anadolstudio.template.feature.registerUser.presentation.RegisterUserViewModel
-import com.anadolstudio.template.feature.sceneDetail.presentation.SceneDetailScreen
 import com.anadolstudio.template.feature.splash.SplashScreen
 import com.anadolstudio.template.feature.splash.SplashViewModel
 import com.anadolstudio.template.navigation.NavGraphContract

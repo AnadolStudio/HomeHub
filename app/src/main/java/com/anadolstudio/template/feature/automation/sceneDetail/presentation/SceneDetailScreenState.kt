@@ -1,4 +1,4 @@
-package com.anadolstudio.template.feature.sceneDetail.presentation
+package com.anadolstudio.template.feature.automation.sceneDetail.presentation
 
 import androidx.compose.runtime.Immutable
 import com.anadolstudio.utils.states.ProgressState

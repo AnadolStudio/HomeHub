@@ -1,4 +1,4 @@
-package com.anadolstudio.template.feature.automationList.presentation
+package com.anadolstudio.template.feature.automation.automationList.presentation
 
 import androidx.lifecycle.viewModelScope
 import com.anadolstudio.template.base.viewmodel.StatefulViewModel
@@ -110,6 +110,13 @@ internal class AutomationListViewModel @Inject constructor(
     }
 
     override fun onTabSelected(tab: AutomationTab) = updateState { copy(currentTab = tab) }
+
+    override fun onCreateClicked() {
+        when (state.currentTab) {
+            AutomationTab.AUTOMATIONS -> navigateToAutomationDetail()
+            AutomationTab.SCENES -> navigateToSceneDetail()
+        }
+    }
 
     override fun onAutomationItemEnableChanged(entity: HomeAssistantEntity<HomeAssistantAttribute>) {
         lceStateFlow {
