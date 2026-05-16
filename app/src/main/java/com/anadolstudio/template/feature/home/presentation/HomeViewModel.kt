@@ -149,4 +149,6 @@ internal class HomeViewModel @Inject constructor(
     override fun onAddDeviceClicked() = navigateToAddDevice()
 
     override fun onHistoryClicked() = navigateToHistory()
+
+    override fun onAreaClicked() = showTodo()
 }

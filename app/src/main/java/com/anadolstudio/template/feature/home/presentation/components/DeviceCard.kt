@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowColumn
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -12,15 +13,21 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.HelpOutline
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
+import androidx.compose.material.icons.outlined.BrokenImage
+import androidx.compose.material.icons.outlined.DeviceUnknown
+import androidx.compose.material.icons.outlined.PanoramaFishEye
 import androidx.compose.material.icons.outlined.PowerSettingsNew
+import androidx.compose.material.icons.outlined.RemoveRedEye
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,10 +40,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -49,15 +58,15 @@ import com.anadolstudio.compose.ui.theme.Dimension
 import com.anadolstudio.compose.ui.theme.Shapes
 import com.anadolstudio.compose.ui.theme.image
 import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
-import com.anadolstudio.template.feature.home.domain.model.AllowedDomain
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.states.AllowedState
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
+import com.anadolstudio.template.feature.home.domain.model.states.SensorAttributes
+import com.anadolstudio.template.feature.home.domain.model.states.SwitchAttribute
 import com.anadolstudio.template.feature.home.presentation.PreviewUtils
-import kotlin.math.min
+import com.anadolstudio.template.util.toPainter
 
 private val DEVICE_IMAGE_MAX_SIZE = 80.dp
-private val DEVICE_IMAGE_MIN_SIZE = 48.dp
 private val DEVICE_CARD_SHAPE = RoundedCornerShape(12.dp)
 private val DEVICE_CARD_ELEVATION = 4.dp
 private const val MAX_SWITCH_ENTITY = 6
@@ -65,11 +74,11 @@ private const val MAX_PER_COLUMN = 3
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun SwitchCard(
+fun DeviceCard(
         title: String,
         description: String?,
         imageUrl: String?,
-        switchEntityList: List<HomeAssistantEntity<HomeAssistantAttribute>>,
+        entityList: List<HomeAssistantEntity<HomeAssistantAttribute>>,
         onInnerEntityClicked: (entity: HomeAssistantEntity<HomeAssistantAttribute>) -> Unit,
         onDeviceClicked: () -> Unit,
 ) {
@@ -79,35 +88,103 @@ fun SwitchCard(
             imageUrl = imageUrl,
             onDeviceClicked = onDeviceClicked,
     ) {
-
-        val size = switchEntityList.size
-        val maxItemsInEachColumn = remember(switchEntityList.size) {
+        val size = entityList.size
+        val maxItemsInEachColumn = remember(entityList.size) {
             val columns = ((size + MAX_PER_COLUMN - 1) / MAX_PER_COLUMN).coerceAtLeast(1)
             (size + columns - 1) / columns
         }
 
         FlowColumn(
-                modifier = Modifier,
-                maxItemsInEachColumn = maxItemsInEachColumn
+                modifier = Modifier.fillMaxWidth(),
+                maxItemsInEachColumn = maxItemsInEachColumn,
         ) {
-            repeat(min(MAX_SWITCH_ENTITY, size)) { index ->
-                val entity = switchEntityList[index]
-                val enable = when (entity.state.allowedState) {
-                    AllowedState.On -> true
-                    AllowedState.Unavailable, AllowedState.Unknown, AllowedState.Off -> false
-                    else -> return@repeat
-                }
+            entityList.forEach { entity ->
+                when (val attribute = entity.state.attributes) {
+                    is SwitchAttribute -> EntityItem(
+                            icon = rememberVectorPainter(Icons.Outlined.PowerSettingsNew),
+                            text = attribute.friendlyName.takeIf { size > 1 },
+                            isEnable = when (entity.state.allowedState) {
+                                AllowedState.On -> true
+                                AllowedState.Unavailable, AllowedState.Unknown, AllowedState.Off -> false
+                                else -> return@forEach
+                            },
+                            onClicked = { onInnerEntityClicked.invoke(entity) },
+                    )
 
-                Icon(
-                        imageVector = Icons.Outlined.PowerSettingsNew,
-                        contentDescription = null,
-                        tint = if (enable) AppTheme.colors.colorAccent else AppTheme.colors.disable,
-                        modifier = Modifier
-                                .size(24.dp)
-                                .clip(Shapes.image)
-                                .clickable(onClick = { onInnerEntityClicked.invoke(entity) }),
-                )
+                    is SensorAttributes -> {
+                        EntityItem(
+                                icon = attribute.icon
+                                        ?.toPainter()
+                                        ?: let {
+                                            val icon = when (entity.state.allowedState) {
+                                                is AllowedState.On -> Icons.Outlined.RemoveRedEye
+                                                is AllowedState.Off -> Icons.Outlined.PanoramaFishEye
+                                                else -> Icons.AutoMirrored.Outlined.HelpOutline
+                                            }
+                                            rememberVectorPainter(icon)
+                                        },
+                                text = "${entity.state.allowedState.value} ${attribute.unitOfMeasurement}",
+                                isEnable = true,
+                        )
+                    }
+
+                    else -> Unit
+                }
             }
+        }
+    }
+}
+
+@Composable
+fun ColumnScope.EntityItem(
+        icon: Painter?,
+        text: String?,
+        isEnable: Boolean = true,
+        onClicked: (() -> Unit)? = null,
+) {
+    Row(
+            modifier = Modifier
+                    .weight(1f, false)
+                    .heightIn(min = 24.dp)
+                    .padding(2.dp)
+                    .clip(Shapes.image)
+                    .clickable(enabled = onClicked != null, onClick = { onClicked?.invoke() }),
+            verticalAlignment = Alignment.CenterVertically
+    ) {
+        icon?.let {
+            Icon(
+                    painter = it,
+                    contentDescription = null,
+                    tint = if (isEnable) AppTheme.colors.colorAccent else AppTheme.colors.disable,
+                    modifier = Modifier.size(24.dp),
+            )
+
+        }
+
+        if (icon != null && text != null) {
+            Spacer(modifier = Modifier.width(Dimension.extraSmallMargin))
+        }
+
+        text?.let {
+            val displayText = it.take(15)
+            val style = AppTheme.typography.captionMedium12
+            val textMeasurer = rememberTextMeasurer()
+            val density = LocalDensity.current
+
+            val textWidth = remember(displayText, style, density) {
+                with(density) {
+                    textMeasurer.measure(text = displayText, style = style).size.width.toDp()
+                }
+            }
+            Text(
+                    modifier = Modifier.widthIn(min = textWidth),
+                    text = displayText,
+                    style = style,
+                    color = AppTheme.colors.colorAccent,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+            )
+            Spacer(modifier = Modifier.width(2.dp))
         }
     }
 }
@@ -148,7 +225,7 @@ fun BaseDeviceCard(
 
         Text(
                 text = title,
-                style = AppTheme.typography.captionMedium12,
+                style = AppTheme.typography.captionMedium14,
                 fontWeight = FontWeight.Bold,
                 color = AppTheme.colors.colorAccent,
                 maxLines = 2,
@@ -159,7 +236,7 @@ fun BaseDeviceCard(
 
         description?.let {
             Text(
-                    text = it, // TODO temp
+                    text = it,
                     style = AppTheme.typography.captionMedium12,
                     color = AppTheme.colors.colorAccent,
                     maxLines = 1,
@@ -174,9 +251,11 @@ private fun DeviceImage(
         imageUrl: String?,
         modifier: Modifier = Modifier,
 ) {
+    val defaultIcon = Icons.Outlined.DeviceUnknown
+
     if (imageUrl == null) {
         Icon(
-                imageVector = Icons.Outlined.HelpOutline,
+                imageVector = defaultIcon,
                 contentDescription = null,
                 modifier = modifier,
                 tint = AppTheme.colors.textPrimary,
@@ -186,7 +265,7 @@ private fun DeviceImage(
 
     val context = LocalContext.current
     val sizePx = with(LocalDensity.current) { DEVICE_IMAGE_MAX_SIZE.roundToPx() }
-    val fallbackPainter = rememberVectorPainter(Icons.Outlined.HelpOutline)
+    val fallbackPainter = rememberVectorPainter(defaultIcon)
     val painter = rememberAsyncImagePainter(
             model = remember(imageUrl, sizePx) {
                 ImageRequest.Builder(context)
@@ -196,7 +275,7 @@ private fun DeviceImage(
                         .build()
             },
             placeholder = fallbackPainter,
-            error = fallbackPainter,
+            error = rememberVectorPainter(Icons.Outlined.BrokenImage),
     )
 
     // Тинт применяется только когда отрисовывается fallback (placeholder/error/empty),
@@ -208,6 +287,7 @@ private fun DeviceImage(
                 is AsyncImagePainter.State.Empty,
                 is AsyncImagePainter.State.Loading,
                 is AsyncImagePainter.State.Error -> ColorFilter.tint(fallbackTint)
+
                 is AsyncImagePainter.State.Success -> null
             }
         }
@@ -221,7 +301,7 @@ private fun DeviceImage(
     )
 }
 
-@Preview(showBackground = true, widthDp = 200)
+@Preview(showBackground = true, widthDp = 300)
 @Composable
 private fun BaseDeviceCardPreview(
         @PreviewParameter(ThemePreviewParameter::class) useDarkMode: Boolean,
@@ -241,11 +321,20 @@ private fun BaseDeviceCardPreview(
                     onDeviceClicked = {},
             )
 
-            SwitchCard(
+            DeviceCard(
                     title = device.name,
                     description = null,
                     imageUrl = device.imageUrl,
-                    switchEntityList = device.controlEntityList.filter { it.allowedDomain == AllowedDomain.SWITCH },
+                    entityList = device.controlEntityList,
+                    onDeviceClicked = {},
+                    onInnerEntityClicked = {}
+            )
+
+            DeviceCard(
+                    title = device.name,
+                    description = null,
+                    imageUrl = device.imageUrl,
+                    entityList = device.controlEntityList.take(1),
                     onDeviceClicked = {},
                     onInnerEntityClicked = {}
             )

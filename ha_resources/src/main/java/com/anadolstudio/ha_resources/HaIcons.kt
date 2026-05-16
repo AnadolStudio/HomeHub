@@ -7,18 +7,19 @@ object HaIcons {
     const val MDI_VERSION: String = "7.4.47"
 
     val icons: Map<String, Int> by lazy(LazyThreadSafetyMode.PUBLICATION) {
-        val m = HashMap<String, Int>(14894)
-        fill0(m)
-        fill1(m)
-        fill2(m)
-        fill3(m)
-        fill4(m)
-        fill5(m)
-        fill6(m)
-        fill7(m)
-        fill8(m)
-        fill9(m)
-        m
+        val map = HashMap<String, Int>(14894)
+        fill0(map)
+        fill1(map)
+        fill2(map)
+        fill3(map)
+        fill4(map)
+        fill5(map)
+        fill6(map)
+        fill7(map)
+        fill8(map)
+        fill9(map)
+
+        return@lazy map
     }
 
     fun resolve(haIcon: String): Int? = icons[haIcon]

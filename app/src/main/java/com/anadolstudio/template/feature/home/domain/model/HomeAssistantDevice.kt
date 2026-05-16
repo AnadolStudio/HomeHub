@@ -27,11 +27,10 @@ data class HomeAssistantDevice(
     val diagnosticEntityList: List<HomeAssistantEntity<HomeAssistantAttribute>>
         get() = entityMap[EntityCategory.DIAGNOSTIC].orEmpty()
 
-    val componentType: AllowedDomain? =
-            controlEntityList.firstOrNull()?.allowedDomain // TODO некорректный подход по определение типа device на основании типов entity
-
     val imageUrl: String?
-        get() = modelId
-                ?.takeIf { it.isNotBlank() }
-                ?.let { "https://www.zigbee2mqtt.io/images/devices/$it.png" }
+        get() = when {
+            entityMap[EntityCategory.CONTROL].orEmpty().any { it.allowedDomain == AllowedDomain.LIGHT } -> null
+            modelId.orEmpty().isNotBlank() -> "https://www.zigbee2mqtt.io/images/devices/$modelId.png" // TODO
+            else -> null
+        }
 }

@@ -12,4 +12,5 @@ interface HomeController {
     fun onAutomationClicked()
     fun onAddDeviceClicked()
     fun onHistoryClicked()
+    fun onAreaClicked()
 }

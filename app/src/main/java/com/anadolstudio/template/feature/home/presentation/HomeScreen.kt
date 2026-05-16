@@ -27,6 +27,7 @@ import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -64,18 +65,16 @@ import com.anadolstudio.template.base.view.HomeHubLoader
 import com.anadolstudio.template.base.viewmodel.ObserveViewModelLifecycle
 import com.anadolstudio.template.di.viewmodel.daggerViewModel
 import com.anadolstudio.template.event.ObserveEvents
-import com.anadolstudio.template.feature.home.domain.model.AllowedDomain
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistantService
 import com.anadolstudio.template.feature.home.domain.model.services.SwitchService
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
-import com.anadolstudio.template.feature.home.presentation.components.BaseDeviceCard
-import com.anadolstudio.template.feature.home.presentation.components.SwitchCard
+import com.anadolstudio.template.feature.home.presentation.components.DeviceCard
 import com.anadolstudio.template.feature.main.NavigationController
 import com.anadolstudio.utils.states.ProgressState
 
-private val DEVICE_IMAGE_SIZE = 100.dp
+private val DEVICE_IMAGE_SIZE = 60.dp
 private val HEADER_MAX_HEIGHT = 320.dp
 private val BADGE_HEIGHT = 56.dp
 private val BADGE_BOTTOM_INSET = 12.dp
@@ -249,6 +248,7 @@ private fun Badge(
 
     Box(
             modifier = Modifier
+                    .minimumInteractiveComponentSize()
                     .height(BADGE_HEIGHT)
                     .clip(RoundedCornerShape(12.dp))
                     .clickable(onClick = onClick)
@@ -366,7 +366,7 @@ private fun AreaSection(
     Column(verticalArrangement = Arrangement.spacedBy(Dimension.smallMargin)) {
         GroupHeader(
                 title = areaName,
-                onClick = { },
+                onClick = { controller.onAreaClicked() },
                 modifier = Modifier.padding(horizontal = Dimension.mainMargin),
         )
 
@@ -388,27 +388,14 @@ private fun AreaSection(
 
 @Composable
 private fun DeviceCard(device: HomeAssistantDevice, controller: HomeController) {
-    when (device.componentType) {
-        AllowedDomain.SWITCH -> {
-            SwitchCard(
-                    title = device.name,
-                    description = null,
-                    imageUrl = device.imageUrl,
-                    switchEntityList = device.controlEntityList.filter { it.allowedDomain == AllowedDomain.SWITCH },
-                    onInnerEntityClicked = { controller.onEntityClicked(it, SwitchService.Toggle) },
-                    onDeviceClicked = { controller.onDeviceClicked(device) },
-            )
-        }
-
-        else -> {
-            BaseDeviceCard(
-                    title = device.name,
-                    description = null,
-                    imageUrl = device.imageUrl,
-                    onDeviceClicked = { controller.onDeviceClicked(device) },
-            )
-        }
-    }
+    DeviceCard(
+            title = device.name,
+            description = null,
+            imageUrl = device.imageUrl,
+            entityList = device.controlEntityList,
+            onInnerEntityClicked = { controller.onEntityClicked(it, SwitchService.Toggle) },
+            onDeviceClicked = { controller.onDeviceClicked(device) },
+    )
 }
 
 @Composable
@@ -444,9 +431,11 @@ private fun GroupHeader(
 // region Previews
 
 private fun createPreviewController(): HomeController = object : HomeController {
-    override fun onEntityClicked(entity: HomeAssistantEntity<HomeAssistantAttribute>, service: HomeAssistantService) =
-            Unit
+    override fun onEntityClicked(
+            entity: HomeAssistantEntity<HomeAssistantAttribute>, service: HomeAssistantService
+    ) = Unit
 
+    override fun onAreaClicked() = Unit
     override fun onDeviceClicked(device: HomeAssistantDevice) = Unit
     override fun onAutomationClicked() = Unit
     override fun onAddDeviceClicked() = Unit

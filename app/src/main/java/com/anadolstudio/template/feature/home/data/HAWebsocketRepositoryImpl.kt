@@ -184,11 +184,15 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
                             area = areaMap[deviceResponse.areaId],
                             modelId = deviceResponse.modelId,
                             manufacturer = deviceResponse.manufacturer,
-                            entityMap = entityList.groupBy { it.entityCategory },
+                            entityMap = entityList
+                                    .sortedBy { it.entityId }
+                                    .groupBy { it.entityCategory }
+                                    .toSortedMap(),
                     )
                 }
     }
 
+    // TODO идейно должно быть одинм на все приложение
     override suspend fun subscribeToStateChangedEvents(): Flow<HomeAssistantStateChangedEvent> = webSocketCore
             .subscribe(
                     request = WsRequest(

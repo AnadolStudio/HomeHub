@@ -7,7 +7,8 @@ import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantE
 import com.anadolstudio.template.feature.home.domain.model.states.AllowedState
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
-import com.anadolstudio.template.feature.home.domain.model.states.SimpleAttribute
+import com.anadolstudio.template.feature.home.domain.model.states.SensorAttributes
+import com.anadolstudio.template.feature.home.domain.model.states.SwitchAttribute
 import java.time.OffsetDateTime
 import kotlinx.serialization.json.JsonObject
 
@@ -21,29 +22,47 @@ internal object PreviewUtils {
             aliases = emptyList(),
     )
 
-    fun previewState(entityId: String, state: AllowedState): HomeAssistantState<HomeAssistantAttribute> =
-            HomeAssistantState(
-                    entityId = entityId,
-                    attributes = SimpleAttribute(
-                            jsonAttributes = JsonObject(emptyMap()),
-                            friendlyName = entityId,
-                    ),
-                    lastChanged = OffsetDateTime.MIN,
-                    allowedState = state,
-                    lastUpdated = null,
-            )
+    fun previewSwitchState(
+            entityId: String,
+            state: AllowedState = AllowedState.On,
+    ): HomeAssistantState<HomeAssistantAttribute> = HomeAssistantState(
+            entityId = entityId,
+            attributes = SwitchAttribute(
+                    jsonAttributes = JsonObject(emptyMap()),
+                    friendlyName = entityId,
+            ),
+            lastChanged = OffsetDateTime.MIN,
+            allowedState = state,
+            lastUpdated = null,
+    )
+
+    fun previewSensorState(
+            entityId: String,
+            state: AllowedState = AllowedState.DigitState("77"),
+    ): HomeAssistantState<HomeAssistantAttribute> = HomeAssistantState(
+            entityId = entityId,
+            attributes = SensorAttributes(
+                    jsonAttributes = JsonObject(emptyMap()),
+                    friendlyName = "Температура",
+                    stateClass = "measurement",
+                    unitOfMeasurement = "°C",
+                    deviceClass = "temperature",
+            ),
+            lastChanged = OffsetDateTime.MIN,
+            allowedState = state,
+            lastUpdated = null,
+    )
 
     fun previewEntity(
             entityId: String,
-            state: AllowedState = AllowedState.Unknown,
-    ): HomeAssistantEntity<HomeAssistantAttribute> =
-            HomeAssistantEntity(
-                    entityId = entityId,
-                    deviceId = "someId",
-                    services = setOf("turn_on", "turn_off", "toggle"),
-                    entityCategory = EntityCategory.CONTROL,
-                    state = previewState(entityId, state),
-            )
+            state: HomeAssistantState<HomeAssistantAttribute>,
+    ): HomeAssistantEntity<HomeAssistantAttribute> = HomeAssistantEntity(
+            entityId = entityId,
+            deviceId = "someId",
+            services = setOf("turn_on", "turn_off", "toggle"),
+            entityCategory = EntityCategory.CONTROL,
+            state = state,
+    )
 
     val previewDevices: List<HomeAssistantDevice> = listOf(
             HomeAssistantDevice(
@@ -55,8 +74,14 @@ internal object PreviewUtils {
                     area = previewArea("Зал"),
                     entityMap = mapOf(
                             EntityCategory.CONTROL to listOf(
-                                    previewEntity("switch.name_1"),
-                                    previewEntity("switch.name_2", AllowedState.On),
+                                    previewEntity(
+                                            "switch.name_1",
+                                            previewSensorState("switch.name_1")
+                                    ),
+                                    previewEntity(
+                                            "switch.name_2",
+                                            previewSwitchState("switch.name_2")
+                                    ),
                             ),
                     ),
             ),
@@ -68,7 +93,12 @@ internal object PreviewUtils {
                     manufacturer = "Aqara",
                     area = previewArea("Балкон"),
                     entityMap = mapOf(
-                            EntityCategory.DIAGNOSTIC to listOf(previewEntity("switch.name_1")),
+                            EntityCategory.DIAGNOSTIC to listOf(
+                                    previewEntity(
+                                            "switch.name_2",
+                                            previewSwitchState("switch.name_2")
+                                    )
+                            ),
                     ),
             ),
             HomeAssistantDevice(
@@ -79,7 +109,13 @@ internal object PreviewUtils {
                     manufacturer = "IKEA",
                     area = previewArea("Спальня"),
                     entityMap = mapOf(
-                            EntityCategory.CONFIG to listOf(previewEntity("switch.name_1")),
+                            EntityCategory.CONTROL to listOf(
+                                    previewEntity("switch.name_1", previewSensorState("switch.name_1")),
+                                    previewEntity(
+                                            "switch.name_2",
+                                            previewSensorState("switch.name_2")
+                                    ),
+                            ),
                     ),
             ),
     )

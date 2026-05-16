@@ -2,6 +2,7 @@ package com.anadolstudio.template.feature.home.domain.model
 
 enum class AllowedDomain(val prefix: String) {
     SENSOR("sensor"),
+    BINARY_SENSOR("binary_sensor"),
     SWITCH("switch"),
     LIGHT("light"),
     ZONE_HOME("zone.home"),
@@ -26,7 +27,7 @@ enum class AllowedDomain(val prefix: String) {
         }
 
         fun getZigbeeAndMatterComponentsRegex(): Regex {
-            val regexString = listOf(SENSOR, SWITCH, LIGHT).joinToString(
+            val regexString = listOf(SENSOR, BINARY_SENSOR, SWITCH, LIGHT).joinToString(
                     separator = "|",
                     transform = { component -> component.prefix }
             )
