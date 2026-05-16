@@ -22,13 +22,13 @@ import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.entity.EntityCategory
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
-import com.anadolstudio.template.feature.home.domain.model.states.AllowedState
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
@@ -200,12 +200,9 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
                             payload = buildJsonObject { put(PAYLOAD_EVENT_TYPE_KEY, PAYLOAD_EVENT_TYPE_VALUE) }
                     ),
                     deserializer = StateChangedEventResponse.serializer()
-            ).mapNotNull { stateChangedEventResponse ->
-                HomeAssistantStateChangedEvent(
-                        entityId = stateChangedEventResponse.entityId,
-                        allowedState = AllowedState.getAllowedStateByName(stateChangedEventResponse.newState.state)
-                )
-            }
+            )
+            .map { it.newState.toDomain(json) }
+            .mapNotNull { newState -> HomeAssistantStateChangedEvent(newState = newState) }
 
     private companion object {
 

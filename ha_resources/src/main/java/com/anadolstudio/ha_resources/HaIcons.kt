@@ -22,7 +22,12 @@ object HaIcons {
         return@lazy map
     }
 
-    fun resolve(haIcon: String): Int? = icons[haIcon]
+    fun resolve(haIconName: String?, tint: Int? = null): HaIcon? {
+        val res = icons[haIconName]
+        if (res == null || haIconName == null) return null
+
+        return HaIcon(haIconName, res, tint)
+    }
 
     private fun fill0(m: MutableMap<String, Int>) {
         m["mdi:ab-testing"] = R.drawable.ic_mdi_ab_testing

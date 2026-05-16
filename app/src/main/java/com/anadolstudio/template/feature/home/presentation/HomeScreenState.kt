@@ -19,12 +19,11 @@ internal data class HomeScreenState(
     )
 
     private val isLoading: Boolean
-        get() = connectionState != WebSocketConnectionState.ConnectedAuthenticated ||
-                progressStateList.any { it is ProgressState.Loading }
+        get() = connectionState != WebSocketConnectionState.ConnectedAuthenticated
 
     val progressState: ProgressState
         get() = when {
-            progressStateList.any { it is ProgressState.Loading } -> ProgressState.Loading
+            isLoading || progressStateList.any { it is ProgressState.Loading } -> ProgressState.Loading
             progressStateList.all { it is ProgressState.Content } -> ProgressState.Content
             progressStateList.any { it is ProgressState.Error } -> {
                 val errorProgressState = progressStateList

@@ -19,11 +19,7 @@ data class SensorAttributes(
 ) : HomeAssistantAttribute, Iconable {
 
     override val icon: HaIcon?
-        get() = getHaIconString()?.let {
-            val resId = HaIcons.resolve(it) ?: return@let null
-
-            HaIcon(haIcon = it, drawableRes = resId)
-        }
+        get() = HaIcons.resolve(getHaIconString())
 
     private fun getHaIconString(): String? = when (deviceClass) {
         // Non-numeric sensor classes

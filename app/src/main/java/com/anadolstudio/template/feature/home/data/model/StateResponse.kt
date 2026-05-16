@@ -7,6 +7,7 @@ import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantA
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 import com.anadolstudio.template.feature.home.domain.model.states.toAutomation
 import com.anadolstudio.template.feature.home.domain.model.states.toHome
+import com.anadolstudio.template.feature.home.domain.model.states.toLight
 import com.anadolstudio.template.feature.home.domain.model.states.toScene
 import com.anadolstudio.template.feature.home.domain.model.states.toSensor
 import com.anadolstudio.template.feature.home.domain.model.states.toSimple
@@ -37,6 +38,7 @@ data class StateResponse(
     private fun parseAttributes(json: Json): HomeAssistantAttribute = when (allowedDomain) {
         AllowedDomain.SENSOR, AllowedDomain.BINARY_SENSOR -> attributes.toSensor(json)
         AllowedDomain.SWITCH -> attributes.toSwitch(json)
+        AllowedDomain.LIGHT -> attributes.toLight(json)
         AllowedDomain.ZONE_HOME -> attributes.toHome(json)
         AllowedDomain.AUTOMATION -> attributes.toAutomation(json)
         AllowedDomain.SCENE -> attributes.toScene(json)

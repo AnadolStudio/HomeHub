@@ -1,5 +1,6 @@
 package com.anadolstudio.template.feature.home.domain.model.states
 
+import com.anadolstudio.ha_resources.HaIcon
 import com.anadolstudio.template.feature.home.domain.model.domain.DomainParser
 import java.time.OffsetDateTime
 import kotlinx.serialization.Contextual
@@ -16,9 +17,12 @@ data class HomeAssistantState<out Attributes : HomeAssistantAttribute>(
 ) : DomainParser
 
 @Serializable
-sealed interface HomeAssistantAttribute {
+sealed interface HomeAssistantAttribute: Iconable {
     val jsonAttributes: JsonObject
     val friendlyName: String
+
+    override val icon: HaIcon?
+        get() = null
 }
 
 fun <E : HomeAssistantAttribute, T : HomeAssistantAttribute> HomeAssistantState<E>.mapAttributes(

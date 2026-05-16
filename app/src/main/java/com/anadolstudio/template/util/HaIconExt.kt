@@ -6,4 +6,4 @@ import androidx.compose.ui.res.painterResource
 import com.anadolstudio.ha_resources.HaIcon
 
 @Composable
-fun HaIcon?.toPainter(): Painter? = this?.let { painterResource(drawableRes) }
+fun HaIcon.toPainter(): Painter = painterResource(drawableRes)

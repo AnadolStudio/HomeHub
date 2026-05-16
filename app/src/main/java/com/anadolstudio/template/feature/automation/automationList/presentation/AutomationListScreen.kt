@@ -160,7 +160,7 @@ private fun LazyListScope.automationItems(
     items(state.automationList) { automation ->
         AutomationItem(
                 title = automation.state.attributes.friendlyName,
-                icon = automation.state.attributes.icon.toPainter()
+                icon = automation.state.attributes.icon?.toPainter()
                         ?: rememberVectorPainter(Icons.Outlined.HdrAuto),
                 isEnable = automation.state.allowedState.toBooleanOrNull(),
                 onClicked = { controller.onAutomationItemClicked() },
@@ -176,7 +176,7 @@ private fun LazyListScope.sceneItems(
     items(state.sceneList) { scene ->
         AutomationItem(
                 title = scene.state.attributes.friendlyName,
-                icon = scene.state.attributes.icon.toPainter()
+                icon = scene.state.attributes.icon?.toPainter()
                         ?: rememberVectorPainter(Icons.Outlined.Movie),
                 isEnable = null,
                 onClicked = { controller.onSceneItemClicked() },

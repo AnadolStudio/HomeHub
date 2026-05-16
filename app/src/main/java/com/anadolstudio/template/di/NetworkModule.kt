@@ -32,6 +32,7 @@ object NetworkModule {
     @Singleton
     fun provideJson(): Json = Json {
         ignoreUnknownKeys = true
+        coerceInputValues = true
         serializersModule = SerializersModule {
             contextual(OffsetDateTime::class, OffsetDateTimeSerializer)
         }

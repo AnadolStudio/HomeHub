@@ -1,5 +1,7 @@
 package com.anadolstudio.template.feature.home.presentation.components
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,6 +30,7 @@ import androidx.compose.material.icons.outlined.DeviceUnknown
 import androidx.compose.material.icons.outlined.PanoramaFishEye
 import androidx.compose.material.icons.outlined.PowerSettingsNew
 import androidx.compose.material.icons.outlined.RemoveRedEye
+import androidx.compose.material.icons.outlined.WifiOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -58,9 +62,11 @@ import com.anadolstudio.compose.ui.theme.Dimension
 import com.anadolstudio.compose.ui.theme.Shapes
 import com.anadolstudio.compose.ui.theme.image
 import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
+import com.anadolstudio.template.feature.home.domain.model.DeviceImage
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.states.AllowedState
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
+import com.anadolstudio.template.feature.home.domain.model.states.LightAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.SensorAttributes
 import com.anadolstudio.template.feature.home.domain.model.states.SwitchAttribute
 import com.anadolstudio.template.feature.home.presentation.PreviewUtils
@@ -77,7 +83,7 @@ private const val MAX_PER_COLUMN = 3
 fun DeviceCard(
         title: String,
         description: String?,
-        imageUrl: String?,
+        image: DeviceImage?,
         entityList: List<HomeAssistantEntity<HomeAssistantAttribute>>,
         onInnerEntityClicked: (entity: HomeAssistantEntity<HomeAssistantAttribute>) -> Unit,
         onDeviceClicked: () -> Unit,
@@ -85,7 +91,7 @@ fun DeviceCard(
     BaseDeviceCard(
             title = title,
             description = description,
-            imageUrl = imageUrl,
+            image = image,
             onDeviceClicked = onDeviceClicked,
     ) {
         val size = entityList.size
@@ -100,8 +106,14 @@ fun DeviceCard(
         ) {
             entityList.forEach { entity ->
                 when (val attribute = entity.state.attributes) {
-                    is SwitchAttribute -> EntityItem(
-                            icon = rememberVectorPainter(Icons.Outlined.PowerSettingsNew),
+                    is LightAttribute, is SwitchAttribute -> EntityItem(
+                            icon = when (entity.state.allowedState) {
+                                AllowedState.On,
+                                AllowedState.Unknown,
+                                AllowedState.Off -> Icons.Outlined.PowerSettingsNew
+
+                                else -> Icons.Outlined.WifiOff
+                            }.let { rememberVectorPainter(it) },
                             text = attribute.friendlyName.takeIf { size > 1 },
                             isEnable = when (entity.state.allowedState) {
                                 AllowedState.On -> true
@@ -193,7 +205,7 @@ fun ColumnScope.EntityItem(
 fun BaseDeviceCard(
         title: String,
         description: String?,
-        imageUrl: String?,
+        image: DeviceImage?,
         onDeviceClicked: () -> Unit,
         entityInformationRow: (@Composable RowScope.() -> Unit)? = null,
 ) {
@@ -215,7 +227,7 @@ fun BaseDeviceCard(
                     modifier = Modifier
                             .heightIn(max = DEVICE_IMAGE_MAX_SIZE)
                             .aspectRatio(1f),
-                    imageUrl = imageUrl
+                    image = image
             )
 
             entityInformationRow?.invoke(this@Row)
@@ -248,57 +260,76 @@ fun BaseDeviceCard(
 
 @Composable
 private fun DeviceImage(
-        imageUrl: String?,
+        image: DeviceImage?,
         modifier: Modifier = Modifier,
 ) {
     val defaultIcon = Icons.Outlined.DeviceUnknown
 
-    if (imageUrl == null) {
-        Icon(
-                imageVector = defaultIcon,
-                contentDescription = null,
-                modifier = modifier,
-                tint = AppTheme.colors.textPrimary,
-        )
-        return
-    }
+    when (image) {
+        is DeviceImage.HaIconType -> {
+            val targetColor = image.haIcon.tint?.let { Color(it) } ?: AppTheme.colors.colorAccent
+            val tint by animateColorAsState(
+                    targetValue = targetColor,
+                    animationSpec = tween(durationMillis = 300),
+                    label = "HaIconTint",
+            )
+            Icon(
+                    painter = image.haIcon.toPainter(),
+                    contentDescription = null,
+                    modifier = modifier,
+                    tint = tint,
+            )
+        }
 
-    val context = LocalContext.current
-    val sizePx = with(LocalDensity.current) { DEVICE_IMAGE_MAX_SIZE.roundToPx() }
-    val fallbackPainter = rememberVectorPainter(defaultIcon)
-    val painter = rememberAsyncImagePainter(
-            model = remember(imageUrl, sizePx) {
-                ImageRequest.Builder(context)
-                        .data(imageUrl)
-                        .size(sizePx)
-                        .crossfade(false)
-                        .build()
-            },
-            placeholder = fallbackPainter,
-            error = rememberVectorPainter(Icons.Outlined.BrokenImage),
-    )
+        is DeviceImage.ImageUrlType -> {
+            val context = LocalContext.current
+            val sizePx = with(LocalDensity.current) { DEVICE_IMAGE_MAX_SIZE.roundToPx() }
+            val fallbackPainter = rememberVectorPainter(defaultIcon)
+            val painter = rememberAsyncImagePainter(
+                    model = remember(image.url, sizePx) {
+                        ImageRequest.Builder(context)
+                                .data(image.url)
+                                .size(sizePx)
+                                .crossfade(false)
+                                .build()
+                    },
+                    placeholder = fallbackPainter,
+                    error = rememberVectorPainter(Icons.Outlined.BrokenImage),
+            )
 
-    // Тинт применяется только когда отрисовывается fallback (placeholder/error/empty),
-    // чтобы не закрашивать реальный PNG устройства после успешной загрузки.
-    val fallbackTint = AppTheme.colors.colorAccent
-    val colorFilter by remember(painter, fallbackTint) {
-        derivedStateOf {
-            when (painter.state) {
-                is AsyncImagePainter.State.Empty,
-                is AsyncImagePainter.State.Loading,
-                is AsyncImagePainter.State.Error -> ColorFilter.tint(fallbackTint)
+            // Тинт применяется только когда отрисовывается fallback (placeholder/error/empty),
+            // чтобы не закрашивать реальный PNG устройства после успешной загрузки.
+            val fallbackTint = AppTheme.colors.colorAccent
+            val colorFilter by remember(painter, fallbackTint) {
+                derivedStateOf {
+                    when (painter.state) {
+                        is AsyncImagePainter.State.Empty,
+                        is AsyncImagePainter.State.Loading,
+                        is AsyncImagePainter.State.Error,
+                            -> ColorFilter.tint(fallbackTint)
 
-                is AsyncImagePainter.State.Success -> null
+                        is AsyncImagePainter.State.Success -> null
+                    }
+                }
             }
+
+            Image(
+                    painter = painter,
+                    contentDescription = null,
+                    modifier = modifier,
+                    colorFilter = colorFilter,
+            )
+        }
+
+        null -> {
+            Icon(
+                    imageVector = defaultIcon,
+                    contentDescription = null,
+                    modifier = modifier,
+                    tint = AppTheme.colors.colorAccent,
+            )
         }
     }
-
-    Image(
-            painter = painter,
-            contentDescription = null,
-            modifier = modifier,
-            colorFilter = colorFilter,
-    )
 }
 
 @Preview(showBackground = true, widthDp = 300)
@@ -317,14 +348,14 @@ private fun BaseDeviceCardPreview(
             BaseDeviceCard(
                     title = device.name,
                     description = null,
-                    imageUrl = device.imageUrl,
+                    image = device.image,
                     onDeviceClicked = {},
             )
 
             DeviceCard(
                     title = device.name,
                     description = null,
-                    imageUrl = device.imageUrl,
+                    image = device.image,
                     entityList = device.controlEntityList,
                     onDeviceClicked = {},
                     onInnerEntityClicked = {}
@@ -333,7 +364,7 @@ private fun BaseDeviceCardPreview(
             DeviceCard(
                     title = device.name,
                     description = null,
-                    imageUrl = device.imageUrl,
+                    image = device.image,
                     entityList = device.controlEntityList.take(1),
                     onDeviceClicked = {},
                     onInnerEntityClicked = {}

@@ -12,6 +12,7 @@ import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantS
 import com.anadolstudio.template.feature.home.domain.model.services.SwitchService
 import com.anadolstudio.template.feature.home.domain.model.states.AutomationAttributes
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
+import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 import com.anadolstudio.template.feature.home.domain.model.states.SceneAttributes
 import com.anadolstudio.template.feature.home.domain.model.states.toAutomation
 import com.anadolstudio.template.feature.home.domain.model.states.toScene
@@ -78,21 +79,25 @@ internal class AutomationListViewModel @Inject constructor(
 
     private fun updateEntity(stateChangedEvent: HomeAssistantStateChangedEvent) {
         val entityId = stateChangedEvent.entityId
-        val newAllowedState = stateChangedEvent.allowedState
+        val newState = stateChangedEvent.newState
 
-        when (stateChangedEvent.allowedDomain) {
-            AUTOMATION -> updateState {
+        when (newState.attributes) {
+            is AutomationAttributes -> updateState {
                 val newList = automationList.mapIfContains(
                         condition = { it.entityId == entityId },
-                        provideNewElement = { entity -> entity.copy(state = entity.state.copy(allowedState = newAllowedState)) }
+                        provideNewElement = { entity ->
+                            entity.copy(state = newState as HomeAssistantState<AutomationAttributes>)
+                        }
                 )
                 copy(automationList = newList)
             }
 
-            SCENE -> updateState {
+            is SceneAttributes -> updateState {
                 val newList = sceneList.mapIfContains(
                         condition = { it.entityId == entityId },
-                        provideNewElement = { entity -> entity.copy(state = entity.state.copy(allowedState = newAllowedState)) }
+                        provideNewElement = { entity ->
+                            entity.copy(state = newState as HomeAssistantState<SceneAttributes>)
+                        }
                 )
                 copy(sceneList = newList)
             }

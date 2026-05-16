@@ -1,6 +1,8 @@
 package com.anadolstudio.template.feature.home.domain.model
 
 import androidx.compose.runtime.Immutable
+import com.anadolstudio.ha_resources.HaIcon
+import com.anadolstudio.template.feature.home.domain.model.DeviceImage.ImageUrlType
 import com.anadolstudio.template.feature.home.domain.model.entity.EntityCategory
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
@@ -27,10 +29,19 @@ data class HomeAssistantDevice(
     val diagnosticEntityList: List<HomeAssistantEntity<HomeAssistantAttribute>>
         get() = entityMap[EntityCategory.DIAGNOSTIC].orEmpty()
 
-    val imageUrl: String?
-        get() = when {
-            entityMap[EntityCategory.CONTROL].orEmpty().any { it.allowedDomain == AllowedDomain.LIGHT } -> null
-            modelId.orEmpty().isNotBlank() -> "https://www.zigbee2mqtt.io/images/devices/$modelId.png" // TODO
-            else -> null
+    val image: DeviceImage?
+        get() {
+            val lightEntity = entityMap[EntityCategory.CONTROL].orEmpty()
+                    .firstOrNull { it.allowedDomain == AllowedDomain.LIGHT }
+            return when {
+                lightEntity != null -> lightEntity.state.attributes.icon?.let { DeviceImage.HaIconType(it) }
+                !modelId.isNullOrBlank() -> ImageUrlType("https://www.zigbee2mqtt.io/images/devices/$modelId.png")
+                else -> null
+            }
         }
+}
+
+sealed interface DeviceImage {
+    data class ImageUrlType(val url: String) : DeviceImage
+    data class HaIconType(val haIcon: HaIcon) : DeviceImage
 }

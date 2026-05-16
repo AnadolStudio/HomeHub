@@ -38,7 +38,6 @@ internal class HomeViewModel @Inject constructor(
     init {
         loadHomeName(loadingContext = LoadingContext.INIT_LOADING)
         observeConnectionState()
-        subscribeToStateChangedEvents()
     }
 
     private fun observeConnectionState() {
@@ -107,15 +106,13 @@ internal class HomeViewModel @Inject constructor(
 
     private fun updateEntity(stateChangedEvent: HomeAssistantStateChangedEvent) {
         val entityId = stateChangedEvent.entityId
-        val newAllowedState = stateChangedEvent.allowedState
+        val newState = stateChangedEvent.newState
 
         val changedDevice = state.deviceState.entityToDeviceMap[entityId] ?: return
         val newEntityList = changedDevice.entityMap.mapValues { (_, entityList) ->
             entityList.mapIfContains(
                     condition = { it.entityId == entityId },
-                    provideNewElement = { entity ->
-                        entity.copy(state = entity.state.copy(allowedState = newAllowedState))
-                    }
+                    provideNewElement = { entity -> entity.copy(state = newState) }
             )
         }
 

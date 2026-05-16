@@ -1,9 +1,10 @@
 package com.anadolstudio.template.feature.home.domain.model.events
 
 import com.anadolstudio.template.feature.home.domain.model.domain.DomainParser
-import com.anadolstudio.template.feature.home.domain.model.states.AllowedState
+import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
+import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 
 data class HomeAssistantStateChangedEvent(
-        override val entityId: String,
-        val allowedState: AllowedState,
+        val newState: HomeAssistantState<HomeAssistantAttribute>,
+        override val entityId: String = newState.entityId,
 ) : DomainParser

@@ -65,6 +65,7 @@ import com.anadolstudio.template.base.view.HomeHubLoader
 import com.anadolstudio.template.base.viewmodel.ObserveViewModelLifecycle
 import com.anadolstudio.template.di.viewmodel.daggerViewModel
 import com.anadolstudio.template.event.ObserveEvents
+import com.anadolstudio.template.feature.home.domain.model.DeviceImage
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistantService
@@ -321,7 +322,7 @@ private fun HomeContent(
         val urls = deviceMap.values
                 .asSequence()
                 .flatten()
-                .mapNotNull { it.imageUrl }
+                .mapNotNull { (it.image as? DeviceImage.ImageUrlType)?.url }
                 .distinct()
                 .toList()
 
@@ -391,7 +392,7 @@ private fun DeviceCard(device: HomeAssistantDevice, controller: HomeController) 
     DeviceCard(
             title = device.name,
             description = null,
-            imageUrl = device.imageUrl,
+            image = device.image,
             entityList = device.controlEntityList,
             onInnerEntityClicked = { controller.onEntityClicked(it, SwitchService.Toggle) },
             onDeviceClicked = { controller.onDeviceClicked(device) },
