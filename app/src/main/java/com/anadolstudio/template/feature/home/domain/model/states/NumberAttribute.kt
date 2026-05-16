@@ -8,11 +8,17 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 
 @Serializable
-data class SwitchAttribute(
+data class NumberAttribute(
         @Transient override val jsonAttributes: JsonObject = JsonObject(emptyMap()),
         @SerialName("friendly_name") override val friendlyName: String = "",
+        @SerialName("min") val min: Double? = null,
+        @SerialName("max") val max: Double? = null,
+        @SerialName("step") val step: Double? = null,
+        @SerialName("mode") val mode: String? = null,
+        @SerialName("unit_of_measurement") val unitOfMeasurement: String = "",
+        @SerialName("device_class") val deviceClass: String = "",
 ) : HomeAssistantAttribute
 
-fun JsonObject.toSwitch(json: Json): SwitchAttribute = json
-        .decodeFromJsonElement<SwitchAttribute>(this)
+fun JsonObject.toNumber(json: Json): NumberAttribute = json
+        .decodeFromJsonElement<NumberAttribute>(this)
         .copy(jsonAttributes = this)

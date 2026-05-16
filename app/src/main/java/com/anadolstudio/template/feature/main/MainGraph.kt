@@ -1,6 +1,7 @@
 package com.anadolstudio.template.feature.main
 
 import android.net.Uri
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
@@ -13,22 +14,37 @@ import com.anadolstudio.template.feature.automation.automationDetail.presentatio
 import com.anadolstudio.template.feature.automation.automationList.presentation.AutomationListScreen
 import com.anadolstudio.template.feature.automation.automationList.presentation.AutomationListViewModel
 import com.anadolstudio.template.feature.automation.sceneDetail.presentation.SceneDetailScreen
+import com.anadolstudio.template.feature.deviceDetail.presentation.DeviceDetailScreen
+import com.anadolstudio.template.feature.deviceDetail.presentation.DeviceDetailViewModel
 import com.anadolstudio.template.feature.history.presentation.HistoryScreen
+import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.presentation.HomeScreen
 import com.anadolstudio.template.feature.home.presentation.HomeViewModel
 import com.anadolstudio.template.feature.homeAssistantAuth.presetnation.HomeAssistantAuthScreen
+import com.anadolstudio.template.feature.lightDetail.presentation.LightDetailArgs
+import com.anadolstudio.template.feature.lightDetail.presentation.LightDetailScreen
 import com.anadolstudio.template.feature.manualSetupHomeAssistantUrl.presetnation.ManualSetupHomeAssistantUrlScreen
 import com.anadolstudio.template.feature.registerUser.presentation.RegisterUserScreen
 import com.anadolstudio.template.feature.registerUser.presentation.RegisterUserViewModel
 import com.anadolstudio.template.feature.splash.SplashScreen
 import com.anadolstudio.template.feature.splash.SplashViewModel
 import com.anadolstudio.template.navigation.NavGraphContract
+import com.anadolstudio.template.navigation.objectToString
+import com.anadolstudio.template.navigation.requireObject
+import com.anadolstudio.template.navigation.requireStringArgument
 import com.anadolstudio.template.navigation.stringArgument
+import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
+import com.google.accompanist.navigation.material.bottomSheet
 
+@OptIn(ExperimentalMaterialNavigationApi::class)
 @Suppress("TooManyFunctions", "MemberNameEqualsClassName")
 internal object MainGraph : NavGraphContract() {
 
     private val urlArgument = stringArgument(name = "url")
+
+    private val deviceIdArgument = stringArgument(name = "deviceId")
+
+    private val lightDetailArgsArgument = stringArgument(name = "lightDetailArgs")
 
     private fun autoSetupHomeAssistantUrl() = route { "autoSetupHomeAssistantUrl" }
 
@@ -50,6 +66,15 @@ internal object MainGraph : NavGraphContract() {
     private fun automationDetail() = route { "automationDetail" }
 
     private fun sceneDetail() = route { "sceneDetail" }
+
+    private fun deviceDetail() = route { "deviceDetail/{${deviceIdArgument.name}}" }
+
+    private fun deviceDetail(deviceId: String): String = route { "deviceDetail/${Uri.encode(deviceId)}" }
+
+    private fun lightDetail() = route { "lightDetail/{${lightDetailArgsArgument.name}}" }
+
+    private fun lightDetail(args: LightDetailArgs): String =
+            route { "lightDetail/${Uri.encode(objectToString(args))}" }
 
     private fun registerUser() = route { "registerUser" }
 
@@ -96,6 +121,33 @@ internal object MainGraph : NavGraphContract() {
         composable(sceneDetail()) {
             SceneDetailScreen(navigator = navigator, snackbarHostState = snackbarHostState)
         }
+        bottomSheet(
+                route = deviceDetail(),
+                arguments = listOf(deviceIdArgument),
+        ) { entry ->
+            // Workaround for accompanist navigation-material bug: при переходе между bot-sheet'ами
+            // sheetContent может пересоставиться с уже-DESTROYED NavBackStackEntry,
+            // и viewModel(...) падает с IllegalStateException.
+            if (entry.lifecycle.currentState == Lifecycle.State.DESTROYED) return@bottomSheet
+            val deviceId = entry.requireStringArgument(deviceIdArgument)
+            DeviceDetailScreen(
+                    navigator = navigator,
+                    snackbarHostState = snackbarHostState,
+                    deviceId = deviceId,
+            )
+        }
+        bottomSheet(
+                route = lightDetail(),
+                arguments = listOf(lightDetailArgsArgument),
+        ) { entry ->
+            if (entry.lifecycle.currentState == Lifecycle.State.DESTROYED) return@bottomSheet
+            val args = entry.requireObject<LightDetailArgs>(lightDetailArgsArgument)
+            LightDetailScreen(
+                    navigator = navigator,
+                    snackbarHostState = snackbarHostState,
+                    args = args,
+            )
+        }
         composable(registerUser()) {
             RegisterUserScreen(navigator = navigator, snackbarHostState = snackbarHostState)
         }
@@ -122,6 +174,12 @@ internal object MainGraph : NavGraphContract() {
     fun AutomationListViewModel.navigateToAutomationDetail() = navigateTo(automationDetail())
 
     fun AutomationListViewModel.navigateToSceneDetail() = navigateTo(sceneDetail())
+
+    fun DeviceDetailViewModel.navigateToLightDetail(args: LightDetailArgs) =
+            navigateTo(lightDetail(args))
+
+    fun HomeViewModel.navigateToDeviceDetail(device: HomeAssistantDevice) =
+            navigateTo(deviceDetail(device.id))
 
     fun RegisterUserViewModel.navigateToHome() = navigateFromRoot(home())
 

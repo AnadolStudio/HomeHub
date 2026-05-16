@@ -10,7 +10,7 @@ import kotlinx.serialization.json.decodeFromJsonElement
 @Serializable
 data class SimpleAttribute(
         @Transient override val jsonAttributes: JsonObject = JsonObject(emptyMap()),
-        @SerialName("friendly_name")override val friendlyName: String,
+        @SerialName("friendly_name")override val friendlyName: String = "",
 ) : HomeAssistantAttribute
 
 fun JsonObject.toSimple(json: Json): SimpleAttribute = json

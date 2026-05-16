@@ -8,11 +8,12 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 
 @Serializable
-data class SwitchAttribute(
+data class SelectAttribute(
         @Transient override val jsonAttributes: JsonObject = JsonObject(emptyMap()),
         @SerialName("friendly_name") override val friendlyName: String = "",
+        @SerialName("options") val options: List<String> = emptyList(),
 ) : HomeAssistantAttribute
 
-fun JsonObject.toSwitch(json: Json): SwitchAttribute = json
-        .decodeFromJsonElement<SwitchAttribute>(this)
+fun JsonObject.toSelect(json: Json): SelectAttribute = json
+        .decodeFromJsonElement<SelectAttribute>(this)
         .copy(jsonAttributes = this)

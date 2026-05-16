@@ -41,16 +41,21 @@ internal data class HomeScreenState(
 internal data class DeviceState(
         val progressState: ProgressState = ProgressState.Loading,
         val deviceSet: Set<HomeAssistantDevice> = emptySet(),
-
-        ) {
+) {
     val areaToDeviceMap: Map<String, List<HomeAssistantDevice>>
         get() = deviceSet
                 .groupBy { device -> requireNotNull(device.area).name }
+                .mapValues { (_, devices) -> devices.sortedDevice().toList() }
+                .toSortedMap()
 
     val entityToDeviceMap: Map<String, HomeAssistantDevice>
         get() = deviceSet
                 .flatMap { device -> device.allEntityList.map { entity -> entity.entityId to device } }
                 .toMap()
+
+    private fun Collection<HomeAssistantDevice>.sortedDevice(): Set<HomeAssistantDevice> = this
+            .sortedBy { it.model + it.name + it.id }
+            .toCollection(LinkedHashSet())
 }
 
 @Immutable

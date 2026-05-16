@@ -22,14 +22,18 @@ import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.entity.EntityCategory
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
+import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistantService
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
@@ -46,6 +50,9 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
 ) : HAWebsocketRepository {
 
     private val serviceStateFlow = MutableStateFlow<Map<String, ServiceResponse>>(emptyMap())
+    private val deviceStateFlow = MutableStateFlow<Map<String, HomeAssistantDevice>>(emptyMap())
+
+    private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     override val webSocketConnectionState: StateFlow<WebSocketConnectionState>
         get() = webSocketCore.connectionState
@@ -67,15 +74,17 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
 
         return entityRegistryListResult.entities
                 .filter { entity -> entity.entityId.contains(regex) }
-                .mapNotNull { entity ->
-                    val state = stateMap[entity.entityId] ?: return@mapNotNull null
-                    val services = serviceMap[entity.domain]?.services.orEmpty().keys
-                    val entityCategory = entity.entityCategory.let { categoryMap[it] }
+                .mapNotNull { registryEntry ->
+                    val state = stateMap[registryEntry.entityId] ?: return@mapNotNull null
+                    val services = serviceMap[registryEntry.domain]?.services.orEmpty().keys
+                    val entityCategory = registryEntry.entityCategory.let { categoryMap[it] }
 
                     HomeAssistantEntity(
-                            entityId = entity.entityId,
-                            deviceId = entity.deviceId.orEmpty(),
+                            entityId = registryEntry.entityId,
+                            deviceId = registryEntry.deviceId.orEmpty(),
                             services = services,
+                            name = registryEntry.name ?: state.attributes.friendlyName,
+                            platform = registryEntry.platform,
                             state = state,
                             entityCategory = EntityCategory.fromString(entityCategory),
                     )
@@ -133,11 +142,13 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
     override suspend fun callService(
             entityId: String,
             domain: String,
-            service: String,
+            service: HomeAssistantService<*>,
     ): CallServiceResult {
         val payload = buildJsonObject {
             put("domain", domain)
-            put("service", service)
+            put("service", service.service)
+
+            service.getServiceData()?.let { put("service_data", it) }
             putJsonObject("target") {
                 putJsonArray("entity_id") { add(entityId) }
             }
@@ -159,7 +170,11 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
             )
             .map { it.toDomain() }
 
-    override suspend fun getDeviceList(): List<HomeAssistantDevice> {
+    override suspend fun getDeviceList(useCache: Boolean): List<HomeAssistantDevice> {
+        if (useCache && deviceStateFlow.value.isNotEmpty()) {
+            return deviceStateFlow.value.values.toList()
+        }
+
         val deviceMap = webSocketCore
                 .sendCommandForResult(
                         request = WsRequest(command = Command.DEVICE_REGISTRY_LIST),
@@ -185,14 +200,21 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
                             modelId = deviceResponse.modelId,
                             manufacturer = deviceResponse.manufacturer,
                             entityMap = entityList
-                                    .sortedBy { it.entityId }
+                                    .sortedBy { it.domain + it.name }
                                     .groupBy { it.entityCategory }
                                     .toSortedMap(),
                     )
                 }
+                .also { deviceStateFlow.value = it.associateBy { device -> device.id }.toSortedMap() }
     }
 
-    // TODO идейно должно быть одинм на все приложение
+    override suspend fun getDevice(deviceId: String, useCache: Boolean): HomeAssistantDevice? {
+        if (useCache) {
+            deviceStateFlow.value[deviceId]?.let { return it }
+        }
+        return getDeviceList(useCache = false).firstOrNull { it.id == deviceId }
+    }
+
     override suspend fun subscribeToStateChangedEvents(): Flow<HomeAssistantStateChangedEvent> = webSocketCore
             .subscribe(
                     request = WsRequest(
@@ -202,7 +224,25 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
                     deserializer = StateChangedEventResponse.serializer()
             )
             .map { it.newState.toDomain(json) }
-            .mapNotNull { newState -> HomeAssistantStateChangedEvent(newState = newState) }
+            .map { newState -> HomeAssistantStateChangedEvent(newState = newState) }
+            .onEach { event -> applyEventToDeviceCache(event) }
+
+    private fun applyEventToDeviceCache(event: HomeAssistantStateChangedEvent) {
+        val entityId = event.entityId
+        val newState = event.newState
+        val cache = deviceStateFlow.value
+        val changedDevice = cache.values.firstOrNull { device ->
+            device.allEntityList.any { it.entityId == entityId }
+        } ?: return
+
+        val newEntityMap = changedDevice.entityMap.mapValues { (_, entityList) ->
+            entityList.map { entity ->
+                if (entity.entityId == entityId) entity.copy(state = newState) else entity
+            }
+        }
+        val updatedDevice = changedDevice.copy(entityMap = newEntityMap)
+        deviceStateFlow.value = cache + (updatedDevice.id to updatedDevice)
+    }
 
     private companion object {
 

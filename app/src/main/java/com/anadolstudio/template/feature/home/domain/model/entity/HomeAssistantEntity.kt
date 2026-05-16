@@ -13,6 +13,8 @@ import kotlinx.serialization.json.JsonObject
 data class HomeAssistantEntity<out Attribute : HomeAssistantAttribute>(
         override val entityId: String,
         val deviceId: String,
+        val name: String,
+        val platform: String,
         val services: Set<String>,
         val entityCategory: EntityCategory,
         val state: HomeAssistantState<Attribute>,
@@ -23,7 +25,9 @@ fun <E : HomeAssistantAttribute, T : HomeAssistantAttribute> HomeAssistantEntity
 ): HomeAssistantEntity<T> = HomeAssistantEntity(
         entityId = entityId,
         deviceId = deviceId,
+        name = name,
         services = services,
         entityCategory = entityCategory,
+        platform = platform,
         state = state.mapAttributes(block)
 )

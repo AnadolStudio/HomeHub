@@ -13,6 +13,7 @@ import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistan
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.main.MainGraph.navigateToAddDevice
 import com.anadolstudio.template.feature.main.MainGraph.navigateToAutomationList
+import com.anadolstudio.template.feature.main.MainGraph.navigateToDeviceDetail
 import com.anadolstudio.template.feature.main.MainGraph.navigateToHistory
 import com.anadolstudio.template.util.mapIfContains
 import com.anadolstudio.utils.states.LoadingContext
@@ -70,9 +71,7 @@ internal class HomeViewModel @Inject constructor(
                 )
                 .mapContent { deviceList ->
                     deviceList
-                            .filter { device -> device.isBindToArea }
-                            .sortedBy { it.name }
-                            .toCollection(LinkedHashSet())
+                            .filter { device -> device.isBindToArea }.toSet()
                 }
                 .onEachContent { deviceSet ->
                     updateState { copy(deviceState = deviceState.copy(deviceSet = deviceSet)) }
@@ -122,23 +121,24 @@ internal class HomeViewModel @Inject constructor(
                     remove(changedDevice)
                     add(newDevice)
                 }
-                .sortedBy { it.name }
-                .toCollection(LinkedHashSet())
         updateState { copy(deviceState = deviceState.copy(deviceSet = newDeviceSet)) }
     }
 
-    override fun onEntityClicked(entity: HomeAssistantEntity<HomeAssistantAttribute>, service: HomeAssistantService) {
+    override fun onEntityClicked(
+            entity: HomeAssistantEntity<HomeAssistantAttribute>,
+            service: HomeAssistantService<*>,
+    ) {
         lceStateFlow {
             websocketRepository.callService(
                     entityId = entity.entityId,
                     domain = entity.domain,
-                    service = service.toStringService(),
+                    service = service,
             )
         }.launchIn(viewModelScope)
     }
 
     override fun onDeviceClicked(device: HomeAssistantDevice) {
-        showTodo()
+        navigateToDeviceDetail(device)
     }
 
     override fun onAutomationClicked() = navigateToAutomationList()
@@ -148,4 +148,5 @@ internal class HomeViewModel @Inject constructor(
     override fun onHistoryClicked() = navigateToHistory()
 
     override fun onAreaClicked() = showTodo()
+
 }

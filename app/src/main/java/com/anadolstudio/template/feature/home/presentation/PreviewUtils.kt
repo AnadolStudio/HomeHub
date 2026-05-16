@@ -60,7 +60,9 @@ internal object PreviewUtils {
             entityId = entityId,
             deviceId = "someId",
             services = setOf("turn_on", "turn_off", "toggle"),
-            entityCategory = EntityCategory.CONTROL,
+            entityCategory = EntityCategory.TARGET,
+            name = entityId,
+            platform = "mqtt",
             state = state,
     )
 
@@ -73,7 +75,7 @@ internal object PreviewUtils {
                     manufacturer = "Aqara",
                     area = previewArea("Зал"),
                     entityMap = mapOf(
-                            EntityCategory.CONTROL to listOf(
+                            EntityCategory.TARGET to listOf(
                                     previewEntity(
                                             "switch.name_1",
                                             previewSensorState("switch.name_1")
@@ -109,7 +111,7 @@ internal object PreviewUtils {
                     manufacturer = "IKEA",
                     area = previewArea("Спальня"),
                     entityMap = mapOf(
-                            EntityCategory.CONTROL to listOf(
+                            EntityCategory.TARGET to listOf(
                                     previewEntity("switch.name_1", previewSensorState("switch.name_1")),
                                     previewEntity(
                                             "switch.name_2",

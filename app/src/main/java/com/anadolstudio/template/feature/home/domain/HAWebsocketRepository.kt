@@ -9,6 +9,7 @@ import com.anadolstudio.template.feature.home.domain.model.Area
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
+import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistantService
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 import kotlinx.coroutines.flow.Flow
@@ -26,8 +27,9 @@ interface HAWebsocketRepository {
     suspend fun getAllStates(): List<HomeAssistantState<HomeAssistantAttribute>>
     suspend fun getServiceMap(useCache: Boolean = true): Map<String, ServiceResponse>
     suspend fun extractFromTarget(target: ServiceTarget, expandGroup: Boolean): ExtractFromTargetResult
-    suspend fun callService(entityId: String, domain: String, service: String): CallServiceResult
+    suspend fun callService(entityId: String, domain: String, service: HomeAssistantService<*>): CallServiceResult
     suspend fun getAreaList(): List<Area>
-    suspend fun getDeviceList(): List<HomeAssistantDevice>
+    suspend fun getDeviceList(useCache: Boolean = true): List<HomeAssistantDevice>
+    suspend fun getDevice(deviceId: String, useCache: Boolean = true): HomeAssistantDevice?
     suspend fun subscribeToStateChangedEvents(): Flow<HomeAssistantStateChangedEvent>
 }

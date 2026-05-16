@@ -9,7 +9,7 @@ import com.anadolstudio.template.feature.home.domain.model.AllowedDomain.SCENE
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.entity.mapAttributes
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
-import com.anadolstudio.template.feature.home.domain.model.services.SwitchService
+import com.anadolstudio.template.feature.home.domain.model.services.SimpleToggleableService
 import com.anadolstudio.template.feature.home.domain.model.states.AutomationAttributes
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
@@ -52,8 +52,8 @@ internal class AutomationListViewModel @Inject constructor(
                     else -> Unit
                 }
             }
-            sceneList.sortedBy { it.state.attributes.friendlyName } to
-                    automationList.sortedBy { it.state.attributes.friendlyName }
+            sceneList.sortedBy { it.name } to
+                    automationList.sortedBy { it.name }
         }
                 .onEachProgressState(
                         previousState = state.progressState,
@@ -128,7 +128,7 @@ internal class AutomationListViewModel @Inject constructor(
             websocketRepository.callService(
                     entityId = entity.entityId,
                     domain = entity.domain,
-                    service = SwitchService.Toggle.toStringService(),
+                    service = SimpleToggleableService.Toggle,
             )
         }.launchIn(viewModelScope)
     }

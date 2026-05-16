@@ -20,4 +20,30 @@
     <string name="automation_list_create_automation">Создать автоматизацию</string>
     <string name="automation_list_create_scene">Создать сценарий</string>
 
+    <string name="device_detail_section_general_info">Общая информация</string>
+    <string name="device_detail_section_control">Управление</string>
+    <string name="device_detail_section_sensors">Сенсоры</string>
+    <string name="device_detail_section_config">Настройки</string>
+    <string name="device_detail_section_diagnostic">Диагностика</string>
+    <string name="device_detail_section_automations">Автоматизации</string>
+    <string name="device_detail_section_scenes">Сценарии</string>
+    <string name="device_detail_section_history">История</string>
+    <string name="device_detail_field_name">Название</string>
+    <string name="device_detail_field_id">ID</string>
+    <string name="device_detail_field_model">Модель</string>
+    <string name="device_detail_field_model_id">Model ID</string>
+    <string name="device_detail_field_manufacturer">Производитель</string>
+    <string name="device_detail_field_area">Зона</string>
+    <string name="device_detail_field_entity_count">Сущностей всего</string>
+    <string name="device_detail_value_empty">—</string>
+    <string name="device_detail_error_generic">Не удалось загрузить устройство</string>
+    <string name="device_detail_retry">Повторить</string>
+    <string name="device_detail_not_found">Устройство не найдено: %1$s</string>
+    <string name="device_detail_history_empty">За последние 24 часа состояний не менялось</string>
+    <string name="device_detail_history_error">Не удалось загрузить историю</string>
+    <string name="device_detail_history_truncated_format">Показаны последние %1$d из %2$d событий</string>
+    <string name="device_detail_number_invalid">Введите число</string>
+    <string name="device_detail_number_range_format">Диапазон: %1$s … %2$s</string>
+    <string name="device_detail_number_min_format">Не меньше %1$s</string>
+    <string name="device_detail_number_max_format">Не больше %1$s</string>
 </resources>

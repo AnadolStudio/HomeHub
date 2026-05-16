@@ -65,15 +65,18 @@ import com.anadolstudio.template.base.view.HomeHubLoader
 import com.anadolstudio.template.base.viewmodel.ObserveViewModelLifecycle
 import com.anadolstudio.template.di.viewmodel.daggerViewModel
 import com.anadolstudio.template.event.ObserveEvents
+import com.anadolstudio.template.feature.deviceDetail.presentation.DeviceDetailResult
 import com.anadolstudio.template.feature.home.domain.model.DeviceImage
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistantService
-import com.anadolstudio.template.feature.home.domain.model.services.SwitchService
+import com.anadolstudio.template.feature.home.domain.model.services.SimpleToggleableService
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.presentation.components.DeviceCard
 import com.anadolstudio.template.feature.main.NavigationController
+import com.anadolstudio.template.navigation.ObserveResultValue
 import com.anadolstudio.utils.states.ProgressState
+import timber.log.Timber
 
 private val DEVICE_IMAGE_SIZE = 60.dp
 private val HEADER_MAX_HEIGHT = 320.dp
@@ -91,6 +94,13 @@ internal fun HomeScreen(
     val state by viewModel.stateFlow.collectAsState()
     ObserveEvents(viewModel.events, snackbarHostState, navigator)
     ObserveViewModelLifecycle(viewModel)
+
+    ObserveResultValue<List<HomeAssistantEntity<HomeAssistantAttribute>>>(
+            navigator = navigator,
+            key = DeviceDetailResult.KEY,
+    ) { result ->
+        Timber.d("DeviceDetailResult received: ${result.size} entities -> ${result.map { it.entityId }}")
+    }
 
     HomeLayout(
             state = state,
@@ -312,7 +322,7 @@ private fun HomeContent(
 ) {
     val deviceMap = state.deviceState.areaToDeviceMap
 
-    val entries = remember(deviceMap) { deviceMap.entries.toList() }
+    val entries = remember(deviceMap) { deviceMap.entries }
     val listState = rememberLazyListState()
 
     val context = LocalContext.current
@@ -393,8 +403,8 @@ private fun DeviceCard(device: HomeAssistantDevice, controller: HomeController) 
             title = device.name,
             description = null,
             image = device.image,
-            entityList = device.controlEntityList,
-            onInnerEntityClicked = { controller.onEntityClicked(it, SwitchService.Toggle) },
+            entityList = device.targetEntityList,
+            onInnerEntityClicked = { controller.onEntityClicked(it, SimpleToggleableService.Toggle) },
             onDeviceClicked = { controller.onDeviceClicked(device) },
     )
 }
@@ -433,7 +443,7 @@ private fun GroupHeader(
 
 private fun createPreviewController(): HomeController = object : HomeController {
     override fun onEntityClicked(
-            entity: HomeAssistantEntity<HomeAssistantAttribute>, service: HomeAssistantService
+            entity: HomeAssistantEntity<HomeAssistantAttribute>, service: HomeAssistantService<*>
     ) = Unit
 
     override fun onAreaClicked() = Unit

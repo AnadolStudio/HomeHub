@@ -5,13 +5,15 @@ enum class AllowedDomain(val prefix: String) {
     BINARY_SENSOR("binary_sensor"),
     SWITCH("switch"),
     LIGHT("light"),
+    CLIMATE("climate"),
     ZONE_HOME("zone.home"),
-    SELECT("select"), // select.0x603d61fffe758b32_power_on_behavior_1,
+    SELECT("select"),
+    NUMBER("number"),
     PERSON("person"),
     AUTOMATION("automation"),
     SCENE("scene"),
     WEATHER("weather"),
-    BUTTON("button"); // bulb_gx53_color_identifikatsiia_2
+    BUTTON("button");
 
     companion object {
 
@@ -27,7 +29,7 @@ enum class AllowedDomain(val prefix: String) {
         }
 
         fun getZigbeeAndMatterComponentsRegex(): Regex {
-            val regexString = listOf(SENSOR, BINARY_SENSOR, SWITCH, LIGHT).joinToString(
+            val regexString = listOf(SENSOR, BINARY_SENSOR, SWITCH, LIGHT, SELECT, CLIMATE, NUMBER).joinToString(
                     separator = "|",
                     transform = { component -> component.prefix }
             )

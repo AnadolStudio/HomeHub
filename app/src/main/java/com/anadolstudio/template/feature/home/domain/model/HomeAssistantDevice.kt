@@ -22,8 +22,8 @@ data class HomeAssistantDevice(
 
     val allEntityList: List<HomeAssistantEntity<HomeAssistantAttribute>>
         get() = entityMap.flatMap { (_, entityList) -> entityList }
-    val controlEntityList: List<HomeAssistantEntity<HomeAssistantAttribute>>
-        get() = entityMap[EntityCategory.CONTROL].orEmpty()
+    val targetEntityList: List<HomeAssistantEntity<HomeAssistantAttribute>>
+        get() = entityMap[EntityCategory.TARGET].orEmpty()
     val configEntityList: List<HomeAssistantEntity<HomeAssistantAttribute>>
         get() = entityMap[EntityCategory.CONFIG].orEmpty()
     val diagnosticEntityList: List<HomeAssistantEntity<HomeAssistantAttribute>>
@@ -31,7 +31,7 @@ data class HomeAssistantDevice(
 
     val image: DeviceImage?
         get() {
-            val lightEntity = entityMap[EntityCategory.CONTROL].orEmpty()
+            val lightEntity = entityMap[EntityCategory.TARGET].orEmpty()
                     .firstOrNull { it.allowedDomain == AllowedDomain.LIGHT }
             return when {
                 lightEntity != null -> lightEntity.state.attributes.icon?.let { DeviceImage.HaIconType(it) }

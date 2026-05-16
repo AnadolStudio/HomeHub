@@ -15,9 +15,11 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
@@ -36,6 +38,8 @@ class HaWebSocketMessageController(
     private val pendingRequests = ConcurrentHashMap<Long, CompletableDeferred<WsMessage>>()
     private var pingJob: Job? = null
     private val messageIdCounter = AtomicLong(1)
+
+    private val subscriptionsFlowMap = mutableMapOf<WsRequest, Flow<*>>()
 
     override fun onNewEvent(event: WebSocketEvent) {
         when (event) {
@@ -115,32 +119,45 @@ class HaWebSocketMessageController(
             scope: CoroutineScope,
             subscriptionRequest: WsRequest,
             deserializer: DeserializationStrategy<T>,
-    ): Flow<T> = callbackFlow {
-        val subscriptionResult = sendCommand(webSocket, subscriptionRequest)
-        val subscriptionId = subscriptionResult.id
+    ): Flow<T> {
+        val requestToMap = subscriptionRequest.copy(id = null)
+        val existFlow = subscriptionsFlowMap[requestToMap] as? Flow<T>
+        if (existFlow != null) {
 
-        if (!subscriptionResult.success) {
-            val errorMsg = subscriptionResult.error?.let { "${it.code}: ${it.message}" } ?: "Unknown error"
-            close(WebSocketCoreException.ProtocolError("Subscription failed: $errorMsg"))
-            return@callbackFlow
+            return existFlow
         }
 
-        val collectJob = scope.launch {
-            incomingMessagesFlow
-                    .filterIsInstance<WsEventMessage>()
-                    .collect { event ->
-                        if (event.id == subscriptionId) {
-                            val result = dependencies.json.decodeFromJsonElement(deserializer, event.eventData)
-                            trySend(result)
+        return callbackFlow {
+            val subscriptionResult = sendCommand(webSocket, subscriptionRequest)
+            val subscriptionId = subscriptionResult.id
+
+            if (!subscriptionResult.success) {
+                val errorMsg = subscriptionResult.error?.let { "${it.code}: ${it.message}" } ?: "Unknown error"
+                close(WebSocketCoreException.ProtocolError("Subscription failed: $errorMsg"))
+                return@callbackFlow
+            }
+
+            val collectJob = scope.launch {
+                incomingMessagesFlow
+                        .filterIsInstance<WsEventMessage>()
+                        .collect { event ->
+                            if (event.id == subscriptionId) {
+                                val result = dependencies.json.decodeFromJsonElement(deserializer, event.eventData)
+                                trySend(result)
+                            }
                         }
-                    }
-        }
+            }
 
-        awaitClose {
-            collectJob.cancel()
-            // TODO: Здесь можно отправить unsubscribe-команду, если протокол это требует.
-            // Например: scope.launch { sendCommand(WsRequest(type = "unsubscribe_events", id = subscriptionId)) }
+            awaitClose {
+                collectJob.cancel()
+                // TODO: Здесь можно отправить unsubscribe-команду, если протокол это требует.
+                // Например: scope.launch { sendCommand(WsRequest(type = "unsubscribe_events", id = subscriptionId)) }
+            }
         }
+                .shareIn(scope, WhileSubscribed(5_000))
+                .also { flow ->
+                    subscriptionsFlowMap[requestToMap.copy(id = null)] = flow
+                }
     }
 
     fun startPingLoop(webSocket: WebSocket, scope: CoroutineScope) {
@@ -169,6 +186,7 @@ class HaWebSocketMessageController(
 
     fun failAllPending(exception: WebSocketCoreException) {
         stopPingLoop()
+        subscriptionsFlowMap.clear()
 
         val entries = pendingRequests.entries.toList()
         pendingRequests.clear()

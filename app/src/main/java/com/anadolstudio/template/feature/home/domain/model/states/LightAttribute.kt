@@ -17,7 +17,7 @@ import kotlinx.serialization.json.decodeFromJsonElement
 @Serializable
 data class LightAttribute(
         @Transient override val jsonAttributes: JsonObject = JsonObject(emptyMap()),
-        @SerialName("friendly_name") override val friendlyName: String,
+        @SerialName("friendly_name") override val friendlyName: String = "",
         @SerialName("min_color_temp_kelvin") val minTempKelvin: Int? = null,
         @SerialName("max_color_temp_kelvin") val maxTempKelvin: Int? = null,
         @SerialName("supported_color_modes") val supportedColorModes: List<String>? = null,

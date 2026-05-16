@@ -22,6 +22,48 @@ object HaIcons {
         return@lazy map
     }
 
+    fun resolveDefaultIcon(
+            domain: String,
+            state: String?,
+    ): HaIcon {
+        return when (domain) {
+            "light" -> when (state) {
+                "on" -> "mdi:lightbulb-on"
+                "off" -> "mdi:lightbulb-off"
+                else -> "mdi:lightbulb"
+            }
+
+            "switch" -> when (state) {
+                "on" -> "mdi:toggle-switch-variant"
+                "off" -> "mdi:toggle-switch-variant-off"
+                else -> "mdi:toggle-switch-variant"
+            }
+
+            "binary_sensor" -> "mdi:help-circle-outline" // TODO
+
+            "button" -> "mdi:gesture-tap-button"
+            "select" -> "mdi:format-list-bulleted"
+            "number" -> "mdi:numeric"
+            "update" -> "mdi:update"
+            "automation" -> "mdi:robot"
+            "scene" -> "mdi:palette"
+            "script" -> "mdi:script-text"
+            "climate" -> "mdi:thermostat"
+            "cover" -> "mdi:window-shutter"
+            "lock" -> if (state == "locked") "mdi:lock" else "mdi:lock-open"
+            "camera" -> "mdi:video"
+            "media_player" -> "mdi:cast"
+            "person" -> "mdi:account"
+            "device_tracker" -> "mdi:account"
+            "sun" -> "mdi:white-balance-sunny"
+            "weather" -> "mdi:weather-partly-cloudy"
+
+            else -> "mdi:help-circle-outline"
+        }.let {
+            requireNotNull(resolve(it))
+        }
+    }
+
     fun resolve(haIconName: String?, tint: Int? = null): HaIcon? {
         val res = icons[haIconName]
         if (res == null || haIconName == null) return null

@@ -1,8 +1,5 @@
 package com.anadolstudio.template.feature.home.presentation.components
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,8 +22,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
-import androidx.compose.material.icons.outlined.BrokenImage
-import androidx.compose.material.icons.outlined.DeviceUnknown
 import androidx.compose.material.icons.outlined.PanoramaFishEye
 import androidx.compose.material.icons.outlined.PowerSettingsNew
 import androidx.compose.material.icons.outlined.RemoveRedEye
@@ -34,19 +29,14 @@ import androidx.compose.material.icons.outlined.WifiOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -54,9 +44,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImagePainter
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
 import com.anadolstudio.compose.ui.theme.AppTheme
 import com.anadolstudio.compose.ui.theme.Dimension
 import com.anadolstudio.compose.ui.theme.Shapes
@@ -77,6 +64,7 @@ private val DEVICE_CARD_SHAPE = RoundedCornerShape(12.dp)
 private val DEVICE_CARD_ELEVATION = 4.dp
 private const val MAX_SWITCH_ENTITY = 6
 private const val MAX_PER_COLUMN = 3
+private const val ENTITY_TEXT_MAX_LENGTH = 15
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -114,7 +102,7 @@ fun DeviceCard(
 
                                 else -> Icons.Outlined.WifiOff
                             }.let { rememberVectorPainter(it) },
-                            text = attribute.friendlyName.takeIf { size > 1 },
+                            text = entity.name.takeIf { size > 1 },
                             isEnable = when (entity.state.allowedState) {
                                 AllowedState.On -> true
                                 AllowedState.Unavailable, AllowedState.Unknown, AllowedState.Off -> false
@@ -178,7 +166,7 @@ fun ColumnScope.EntityItem(
         }
 
         text?.let {
-            val displayText = it.take(15)
+            val displayText = it.take(ENTITY_TEXT_MAX_LENGTH)
             val style = AppTheme.typography.captionMedium12
             val textMeasurer = rememberTextMeasurer()
             val density = LocalDensity.current
@@ -223,7 +211,7 @@ fun BaseDeviceCard(
                         .clipToBounds(),
                 verticalAlignment = Alignment.Top,
         ) {
-            DeviceImage(
+            DeviceImageView(
                     modifier = Modifier
                             .heightIn(max = DEVICE_IMAGE_MAX_SIZE)
                             .aspectRatio(1f),
@@ -258,80 +246,6 @@ fun BaseDeviceCard(
     }
 }
 
-@Composable
-private fun DeviceImage(
-        image: DeviceImage?,
-        modifier: Modifier = Modifier,
-) {
-    val defaultIcon = Icons.Outlined.DeviceUnknown
-
-    when (image) {
-        is DeviceImage.HaIconType -> {
-            val targetColor = image.haIcon.tint?.let { Color(it) } ?: AppTheme.colors.colorAccent
-            val tint by animateColorAsState(
-                    targetValue = targetColor,
-                    animationSpec = tween(durationMillis = 300),
-                    label = "HaIconTint",
-            )
-            Icon(
-                    painter = image.haIcon.toPainter(),
-                    contentDescription = null,
-                    modifier = modifier,
-                    tint = tint,
-            )
-        }
-
-        is DeviceImage.ImageUrlType -> {
-            val context = LocalContext.current
-            val sizePx = with(LocalDensity.current) { DEVICE_IMAGE_MAX_SIZE.roundToPx() }
-            val fallbackPainter = rememberVectorPainter(defaultIcon)
-            val painter = rememberAsyncImagePainter(
-                    model = remember(image.url, sizePx) {
-                        ImageRequest.Builder(context)
-                                .data(image.url)
-                                .size(sizePx)
-                                .crossfade(false)
-                                .build()
-                    },
-                    placeholder = fallbackPainter,
-                    error = rememberVectorPainter(Icons.Outlined.BrokenImage),
-            )
-
-            // Тинт применяется только когда отрисовывается fallback (placeholder/error/empty),
-            // чтобы не закрашивать реальный PNG устройства после успешной загрузки.
-            val fallbackTint = AppTheme.colors.colorAccent
-            val colorFilter by remember(painter, fallbackTint) {
-                derivedStateOf {
-                    when (painter.state) {
-                        is AsyncImagePainter.State.Empty,
-                        is AsyncImagePainter.State.Loading,
-                        is AsyncImagePainter.State.Error,
-                            -> ColorFilter.tint(fallbackTint)
-
-                        is AsyncImagePainter.State.Success -> null
-                    }
-                }
-            }
-
-            Image(
-                    painter = painter,
-                    contentDescription = null,
-                    modifier = modifier,
-                    colorFilter = colorFilter,
-            )
-        }
-
-        null -> {
-            Icon(
-                    imageVector = defaultIcon,
-                    contentDescription = null,
-                    modifier = modifier,
-                    tint = AppTheme.colors.colorAccent,
-            )
-        }
-    }
-}
-
 @Preview(showBackground = true, widthDp = 300)
 @Composable
 private fun BaseDeviceCardPreview(
@@ -356,7 +270,7 @@ private fun BaseDeviceCardPreview(
                     title = device.name,
                     description = null,
                     image = device.image,
-                    entityList = device.controlEntityList,
+                    entityList = device.targetEntityList,
                     onDeviceClicked = {},
                     onInnerEntityClicked = {}
             )
@@ -365,7 +279,7 @@ private fun BaseDeviceCardPreview(
                     title = device.name,
                     description = null,
                     image = device.image,
-                    entityList = device.controlEntityList.take(1),
+                    entityList = device.targetEntityList.take(1),
                     onDeviceClicked = {},
                     onInnerEntityClicked = {}
             )

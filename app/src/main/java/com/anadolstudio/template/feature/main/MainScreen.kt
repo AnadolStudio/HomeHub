@@ -23,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
@@ -101,7 +102,7 @@ private fun ModalBottomSheet(
         bottomSheetNavigator = navigator.bottomSheetNavigator,
         sheetShape = ModalBottomSheetDefaults.shape,
         scrimColor = AppTheme.colors.textPrimary.copy(alpha = 0.32f),
-        sheetBackgroundColor = AppTheme.colors.colorPrimary
+        sheetBackgroundColor = Color.Transparent,
     ) {
         NavHost(
             navController = navigator,

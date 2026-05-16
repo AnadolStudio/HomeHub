@@ -19,4 +19,31 @@
     <string name="automation_list_tab_scenes">Scenes</string>
     <string name="automation_list_create_automation">Create automation</string>
     <string name="automation_list_create_scene">Create scene</string>
+
+    <string name="device_detail_section_general_info">General information</string>
+    <string name="device_detail_section_control">Controls</string>
+    <string name="device_detail_section_sensors">Sensors</string>
+    <string name="device_detail_section_config">Settings</string>
+    <string name="device_detail_section_diagnostic">Diagnostics</string>
+    <string name="device_detail_section_automations">Automations</string>
+    <string name="device_detail_section_scenes">Scenes</string>
+    <string name="device_detail_section_history">History</string>
+    <string name="device_detail_field_name">Name</string>
+    <string name="device_detail_field_id">ID</string>
+    <string name="device_detail_field_model">Model</string>
+    <string name="device_detail_field_model_id">Model ID</string>
+    <string name="device_detail_field_manufacturer">Manufacturer</string>
+    <string name="device_detail_field_area">Area</string>
+    <string name="device_detail_field_entity_count">Entities total</string>
+    <string name="device_detail_value_empty">—</string>
+    <string name="device_detail_error_generic">Failed to load the device</string>
+    <string name="device_detail_retry">Retry</string>
+    <string name="device_detail_not_found">Device not found: %1$s</string>
+    <string name="device_detail_history_empty">No state changes in the last 24 hours</string>
+    <string name="device_detail_history_error">Failed to load history</string>
+    <string name="device_detail_history_truncated_format">Showing the latest %1$d of %2$d events</string>
+    <string name="device_detail_number_invalid">Enter a number</string>
+    <string name="device_detail_number_range_format">Range: %1$s … %2$s</string>
+    <string name="device_detail_number_min_format">Min: %1$s</string>
+    <string name="device_detail_number_max_format">Max: %1$s</string>
 </resources>

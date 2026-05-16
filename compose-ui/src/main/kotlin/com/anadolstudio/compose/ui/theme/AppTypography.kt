@@ -15,6 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.anadolstudio.compose.ui.R
+import com.anadolstudio.compose.ui.theme.AppTypography.Companion.Default
 import com.anadolstudio.compose.ui.view.text.Text
 
 private const val FUTURA_MEDIUM_FONT_WEIGHT = 450
@@ -77,6 +78,11 @@ class AppTypography(
         fontWeight = FontWeight.Normal,
         fontSize = 24.sp,
         lineHeight = 30.sp,
+    )
+    val textBook22: TextStyle = defaultStyle.copy(
+            fontWeight = FontWeight.Normal,
+            fontSize = 22.sp,
+            lineHeight = 36.sp,
     )
     val textBook14: TextStyle = defaultStyle.copy(
         fontWeight = FontWeight.Normal,

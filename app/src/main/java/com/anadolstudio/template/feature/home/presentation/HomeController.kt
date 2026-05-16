@@ -7,7 +7,7 @@ import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantA
 
 interface HomeController {
 
-    fun onEntityClicked(entity: HomeAssistantEntity<HomeAssistantAttribute>, service: HomeAssistantService)
+    fun onEntityClicked(entity: HomeAssistantEntity<HomeAssistantAttribute>, service: HomeAssistantService<*>)
     fun onDeviceClicked(device: HomeAssistantDevice)
     fun onAutomationClicked()
     fun onAddDeviceClicked()

@@ -6,9 +6,12 @@ import com.anadolstudio.template.feature.home.domain.model.states.AllowedState.C
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 import com.anadolstudio.template.feature.home.domain.model.states.toAutomation
+import com.anadolstudio.template.feature.home.domain.model.states.toClimate
 import com.anadolstudio.template.feature.home.domain.model.states.toHome
 import com.anadolstudio.template.feature.home.domain.model.states.toLight
+import com.anadolstudio.template.feature.home.domain.model.states.toNumber
 import com.anadolstudio.template.feature.home.domain.model.states.toScene
+import com.anadolstudio.template.feature.home.domain.model.states.toSelect
 import com.anadolstudio.template.feature.home.domain.model.states.toSensor
 import com.anadolstudio.template.feature.home.domain.model.states.toSimple
 import com.anadolstudio.template.feature.home.domain.model.states.toSwitch
@@ -39,6 +42,9 @@ data class StateResponse(
         AllowedDomain.SENSOR, AllowedDomain.BINARY_SENSOR -> attributes.toSensor(json)
         AllowedDomain.SWITCH -> attributes.toSwitch(json)
         AllowedDomain.LIGHT -> attributes.toLight(json)
+        AllowedDomain.CLIMATE -> attributes.toClimate(json)
+        AllowedDomain.NUMBER -> attributes.toNumber(json)
+        AllowedDomain.SELECT -> attributes.toSelect(json)
         AllowedDomain.ZONE_HOME -> attributes.toHome(json)
         AllowedDomain.AUTOMATION -> attributes.toAutomation(json)
         AllowedDomain.SCENE -> attributes.toScene(json)
