@@ -9,6 +9,7 @@ import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantE
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAttributes
+import com.anadolstudio.template.feature.sceneCreate.domain.model.SceneDraft
 import kotlinx.serialization.json.JsonObject
 
 interface HARestRepository {
@@ -79,4 +80,22 @@ interface HARestRepository {
 
     /** DELETE /api/states/{entity_id} — удалить сущность. */
     suspend fun deleteState(entityId: String): Message
+
+    /**
+     * GET /api/config/scene/config/{scene_id} — получить конфигурацию сохранённой сцены.
+     * Сырое тело конфигурации; парсинг в [SceneDraft] на стороне use-case (пока не реализован).
+     */
+    suspend fun getSceneConfig(sceneConfigId: String): JsonObject
+
+    /**
+     * POST /api/config/scene/config/{scene_id} — сохранить постоянную сцену.
+     * @return true если HA вернул `{"result":"ok"}`.
+     */
+    suspend fun saveSceneConfig(draft: SceneDraft): Boolean
+
+    /**
+     * DELETE /api/config/scene/config/{scene_id} — удалить постоянную сцену.
+     * @return true если HA вернул `{"result":"ok"}`.
+     */
+    suspend fun deleteSceneConfig(sceneConfigId: String): Boolean
 }

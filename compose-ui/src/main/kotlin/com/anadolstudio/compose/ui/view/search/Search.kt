@@ -59,11 +59,12 @@ fun Search(
     enabled: Boolean = true,
     isError: Boolean = false,
     textStyle: TextStyle = AppTypography.textBook18,
-    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() }
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+    modifier: Modifier = Modifier.padding(16.dp)
 ) {
     val borderColor by animateColorAsState(getBorderlineColor(isError, enabled))
 
-    Column(modifier = Modifier.padding(16.dp)) {
+    Column(modifier = modifier) {
         Row(
             modifier = Modifier
                 .background(AppTheme.colors.colorSecondary, shape = Shapes.tiny)

@@ -16,6 +16,7 @@ import com.anadolstudio.template.feature.homeAssistantAuth.di.HomeAssistantAuthM
 import com.anadolstudio.template.feature.lightDetail.di.LightDetailModule
 import com.anadolstudio.template.feature.manualSetupHomeAssistantUrl.di.ManualSetupHomeAssistantUrlModule
 import com.anadolstudio.template.feature.registerUser.di.RegisterUserModule
+import com.anadolstudio.template.feature.sceneCreate.di.SceneCreateModule
 import com.anadolstudio.template.feature.splash.di.SplashModule
 import dagger.BindsInstance
 import dagger.Component
@@ -38,6 +39,7 @@ import javax.inject.Singleton
         HomeModule::class,
         ManualSetupHomeAssistantUrlModule::class,
         RegisterUserModule::class,
+        SceneCreateModule::class,
         SceneDetailModule::class,
         SplashModule::class,
     ]

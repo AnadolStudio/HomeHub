@@ -15,6 +15,8 @@ import com.anadolstudio.template.feature.home.domain.model.states.HomeAttributes
 import com.anadolstudio.template.feature.home.domain.model.states.mapAttributes
 import com.anadolstudio.template.feature.home.domain.model.states.toHome
 import com.anadolstudio.template.feature.homeAssistantAuth.data.api.AuthHomeAssistantApi
+import com.anadolstudio.template.feature.sceneCreate.data.mapper.toSceneConfigPayload
+import com.anadolstudio.template.feature.sceneCreate.domain.model.SceneDraft
 import javax.inject.Inject
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -90,6 +92,17 @@ internal class HARestRepositoryImpl @Inject constructor(
 
     override suspend fun deleteState(entityId: String): Message =
             api.deleteState(entityId).toDomain()
+
+    override suspend fun getSceneConfig(sceneConfigId: String): JsonObject =
+            api.getSceneConfig(sceneId = sceneConfigId)
+
+    override suspend fun saveSceneConfig(draft: SceneDraft): Boolean = api.saveSceneConfig(
+            sceneId = draft.sceneConfigId,
+            body = draft.toSceneConfigPayload(),
+    ).isOk
+
+    override suspend fun deleteSceneConfig(sceneConfigId: String): Boolean =
+            api.deleteSceneConfig(sceneId = sceneConfigId).isOk
 
     private companion object {
         const val HOME_ENTITY_ID = "zone.home"

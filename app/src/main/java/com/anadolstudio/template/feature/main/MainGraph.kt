@@ -26,6 +26,10 @@ import com.anadolstudio.template.feature.lightDetail.presentation.LightDetailScr
 import com.anadolstudio.template.feature.manualSetupHomeAssistantUrl.presetnation.ManualSetupHomeAssistantUrlScreen
 import com.anadolstudio.template.feature.registerUser.presentation.RegisterUserScreen
 import com.anadolstudio.template.feature.registerUser.presentation.RegisterUserViewModel
+import com.anadolstudio.template.feature.sceneCreate.presentation.SceneCreateScreen
+import com.anadolstudio.template.feature.sceneCreate.presentation.SceneCreateViewModel
+import com.anadolstudio.template.feature.sceneCreate.presentation.picker.SceneDevicePickerScreen
+import com.anadolstudio.template.feature.sceneCreate.presentation.picker.SceneDevicePickerViewModel
 import com.anadolstudio.template.feature.splash.SplashScreen
 import com.anadolstudio.template.feature.splash.SplashViewModel
 import com.anadolstudio.template.navigation.NavGraphContract
@@ -45,6 +49,8 @@ internal object MainGraph : NavGraphContract() {
     private val deviceIdArgument = stringArgument(name = "deviceId")
 
     private val lightDetailArgsArgument = stringArgument(name = "lightDetailArgs")
+
+    private val sceneConfigIdArgument = stringArgument(name = "sceneConfigId")
 
     private fun autoSetupHomeAssistantUrl() = route { "autoSetupHomeAssistantUrl" }
 
@@ -66,6 +72,15 @@ internal object MainGraph : NavGraphContract() {
     private fun automationDetail() = route { "automationDetail" }
 
     private fun sceneDetail() = route { "sceneDetail" }
+
+    private fun sceneCreate() = route { "sceneCreate" }
+
+    private fun sceneEdit() = route { "sceneEdit/{${sceneConfigIdArgument.name}}" }
+
+    private fun sceneEdit(sceneConfigId: String): String =
+            route { "sceneEdit/${Uri.encode(sceneConfigId)}" }
+
+    private fun sceneDevicePicker() = route { "sceneDevicePicker" }
 
     private fun deviceDetail() = route { "deviceDetail/{${deviceIdArgument.name}}" }
 
@@ -121,6 +136,23 @@ internal object MainGraph : NavGraphContract() {
         composable(sceneDetail()) {
             SceneDetailScreen(navigator = navigator, snackbarHostState = snackbarHostState)
         }
+        composable(sceneCreate()) {
+            SceneCreateScreen(navigator = navigator, snackbarHostState = snackbarHostState)
+        }
+        composable(
+                route = sceneEdit(),
+                arguments = listOf(sceneConfigIdArgument),
+        ) { entry ->
+            val sceneConfigId = entry.requireStringArgument(sceneConfigIdArgument)
+            SceneCreateScreen(
+                    navigator = navigator,
+                    snackbarHostState = snackbarHostState,
+                    editSceneConfigId = sceneConfigId,
+            )
+        }
+        composable(sceneDevicePicker()) {
+            SceneDevicePickerScreen(navigator = navigator, snackbarHostState = snackbarHostState)
+        }
         bottomSheet(
                 route = deviceDetail(),
                 arguments = listOf(deviceIdArgument),
@@ -174,6 +206,26 @@ internal object MainGraph : NavGraphContract() {
     fun AutomationListViewModel.navigateToAutomationDetail() = navigateTo(automationDetail())
 
     fun AutomationListViewModel.navigateToSceneDetail() = navigateTo(sceneDetail())
+
+    fun AutomationListViewModel.navigateToSceneCreate() = navigateTo(sceneCreate())
+
+    fun AutomationListViewModel.navigateToSceneEdit(sceneConfigId: String) =
+            navigateTo(sceneEdit(sceneConfigId))
+
+    fun SceneCreateViewModel.navigateToSceneDevicePicker() = navigateTo(sceneDevicePicker())
+
+    /** Изменение уже добавленного устройства: открываем DeviceDetail напрямую из SceneCreate. */
+    fun SceneCreateViewModel.navigateToDeviceDetailFromSceneCreate(deviceId: String) =
+            navigateTo(deviceDetail(deviceId))
+
+    /**
+     * Из picker'а попадаем в DeviceDetail с popUpTo picker (inclusive): после закрытия
+     * DeviceDetail юзер возвращается на SceneCreate, а не на picker.
+     */
+    fun SceneDevicePickerViewModel.navigateToDeviceDetailFromPicker(deviceId: String) =
+            navigateTo(deviceDetail(deviceId)) {
+                popUpTo(sceneDevicePicker()) { inclusive = true }
+            }
 
     fun DeviceDetailViewModel.navigateToLightDetail(args: LightDetailArgs) =
             navigateTo(lightDetail(args))

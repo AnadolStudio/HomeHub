@@ -10,7 +10,10 @@ import kotlinx.serialization.json.decodeFromJsonElement
 
 @Serializable
 data class SceneAttributes(
-        @SerialName("id") val id: String,
+        // У scene.* сущностей, созданных через `scene.create` (runtime-сцены) либо у некоторых
+        // state_changed event'ов поле id отсутствует — допускаем null, чтобы не падать на десериализации.
+        // Для постоянных scene.* (созданных через /api/config/scene/config/{id}) id всегда есть.
+        @SerialName("id") val id: String? = null,
         @SerialName("icon") override val icon: HaIcon? = null,
         @SerialName("friendly_name") override val friendlyName: String = "",
         @SerialName("entity_id") val includeEntityIdList: List<String> = emptyList(),

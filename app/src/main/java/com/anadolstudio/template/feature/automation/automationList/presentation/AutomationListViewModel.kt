@@ -17,7 +17,8 @@ import com.anadolstudio.template.feature.home.domain.model.states.SceneAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.toAutomation
 import com.anadolstudio.template.feature.home.domain.model.states.toScene
 import com.anadolstudio.template.feature.main.MainGraph.navigateToAutomationDetail
-import com.anadolstudio.template.feature.main.MainGraph.navigateToSceneDetail
+import com.anadolstudio.template.feature.main.MainGraph.navigateToSceneCreate
+import com.anadolstudio.template.feature.main.MainGraph.navigateToSceneEdit
 import com.anadolstudio.template.util.mapIfContains
 import com.anadolstudio.utils.states.LoadingContext
 import com.anadolstudio.utils.states.lce.lceFlow
@@ -110,8 +111,21 @@ internal class AutomationListViewModel @Inject constructor(
         navigateToAutomationDetail()
     }
 
-    override fun onSceneItemClicked() {
-        navigateToSceneDetail()
+    override fun onSceneListRefreshRequested() {
+        loadAutomationStates(LoadingContext.RETRY)
+    }
+
+    override fun onSceneItemClicked(scene: HomeAssistantEntity<SceneAttributes>) {
+        // Постоянная сцена (созданная через /api/config/scene/config) хранит свой config-id
+        // в attributes.id. Если его нет (runtime-сцена от scene.create), берём из entity_id
+        // как `scene.<config_id>` и пробуем. Если и тут пусто — сцена не редактируется.
+        val sceneConfigId = scene.state.attributes.id
+                ?: scene.entityId.substringAfter("scene.", missingDelimiterValue = "")
+        if (sceneConfigId.isBlank()) {
+            showError("Эта сцена не может быть отредактирована")
+            return
+        }
+        navigateToSceneEdit(sceneConfigId)
     }
 
     override fun onTabSelected(tab: AutomationTab) = updateState { copy(currentTab = tab) }
@@ -119,7 +133,7 @@ internal class AutomationListViewModel @Inject constructor(
     override fun onCreateClicked() {
         when (state.currentTab) {
             AutomationTab.AUTOMATIONS -> navigateToAutomationDetail()
-            AutomationTab.SCENES -> navigateToSceneDetail()
+            AutomationTab.SCENES -> navigateToSceneCreate()
         }
     }
 

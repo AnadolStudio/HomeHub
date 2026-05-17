@@ -41,6 +41,8 @@ import com.anadolstudio.template.di.viewmodel.daggerViewModel
 import com.anadolstudio.template.event.ObserveEvents
 import com.anadolstudio.template.feature.automation.common.presentation.AutomationItem
 import com.anadolstudio.template.feature.main.NavigationController
+import com.anadolstudio.template.feature.sceneCreate.presentation.SCENE_LIST_NEEDS_REFRESH_KEY
+import com.anadolstudio.template.navigation.ObserveResultValue
 import com.anadolstudio.template.util.toPainter
 
 @Composable
@@ -51,6 +53,12 @@ internal fun AutomationListScreen(
 ) {
     val state by viewModel.stateFlow.collectAsState()
     ObserveEvents(viewModel.events, snackbarHostState, navigator)
+
+    // После закрытия SceneCreate приходит маркер — перезагружаем сцены/автоматизации.
+    ObserveResultValue<Boolean>(
+            navigator = navigator,
+            key = SCENE_LIST_NEEDS_REFRESH_KEY,
+    ) { _ -> viewModel.onSceneListRefreshRequested() }
 
     AutomationListLayout(state = state, controller = viewModel)
 }
@@ -169,7 +177,7 @@ private fun LazyListScope.sceneItems(
                 icon = scene.state.attributes.icon?.toPainter()
                         ?: rememberVectorPainter(Icons.Outlined.Movie),
                 isEnable = null,
-                onClicked = { controller.onSceneItemClicked() },
+                onClicked = { controller.onSceneItemClicked(scene) },
                 onEnableClicked = {},
         )
     }

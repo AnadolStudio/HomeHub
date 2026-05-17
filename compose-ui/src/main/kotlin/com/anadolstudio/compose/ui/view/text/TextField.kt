@@ -424,7 +424,7 @@ internal fun Modifier.drawIndicatorLine(
 @Composable
 internal fun String.addAsterisk(): AnnotatedString = buildAnnotatedString {
     append(this@addAsterisk)
-    withStyle(style = SpanStyle(color = AppTheme.colors.template)) {
+    withStyle(style = SpanStyle(color = AppTheme.colors.colorAccent)) {
         append("\u002A")
     }
 }
