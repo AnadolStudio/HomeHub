@@ -26,9 +26,6 @@ import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistan
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 import javax.inject.Inject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -51,8 +48,7 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
 
     private val serviceStateFlow = MutableStateFlow<Map<String, ServiceResponse>>(emptyMap())
     private val deviceStateFlow = MutableStateFlow<Map<String, HomeAssistantDevice>>(emptyMap())
-
-    private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val entityToCategoryCache = MutableStateFlow<Map<String, EntityCategory>>(emptyMap())
 
     override val webSocketConnectionState: StateFlow<WebSocketConnectionState>
         get() = webSocketCore.connectionState
@@ -70,6 +66,7 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
         val categoryMap = entityRegistryListResult.categoryMap
         val serviceMap = getServiceMap()
         val stateMap = getAllStates().associateBy { states -> states.entityId }
+        val entityToCategoryMap = mutableMapOf<String, EntityCategory>()
         val regex = AllowedDomain.getRegex()
 
         return entityRegistryListResult.entities
@@ -77,7 +74,10 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
                 .mapNotNull { registryEntry ->
                     val state = stateMap[registryEntry.entityId] ?: return@mapNotNull null
                     val services = serviceMap[registryEntry.domain]?.services.orEmpty().keys
-                    val entityCategory = registryEntry.entityCategory.let { categoryMap[it] }
+                    val entityCategory = registryEntry.entityCategoryIndex
+                            .let { EntityCategory.fromString(categoryMap[it]) }
+
+                    entityToCategoryMap[registryEntry.entityId] = entityCategory
 
                     HomeAssistantEntity(
                             entityId = registryEntry.entityId,
@@ -86,8 +86,11 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
                             name = registryEntry.name ?: state.attributes.friendlyName,
                             platform = registryEntry.platform,
                             state = state,
-                            entityCategory = EntityCategory.fromString(entityCategory),
+                            entityCategory = entityCategory,
                     )
+                }
+                .also {
+                    entityToCategoryCache.value = entityToCategoryMap
                 }
     }
 
@@ -229,19 +232,22 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
 
     private fun applyEventToDeviceCache(event: HomeAssistantStateChangedEvent) {
         val entityId = event.entityId
+        val entityCategory = entityToCategoryCache.value[entityId]
         val newState = event.newState
-        val cache = deviceStateFlow.value
-        val changedDevice = cache.values.firstOrNull { device ->
-            device.allEntityList.any { it.entityId == entityId }
+        val deviceToEntityMap = deviceStateFlow.value
+
+        val changedDevice = deviceToEntityMap.values.firstOrNull { device ->
+            val list = device.entityMap[entityCategory] ?: device.allEntityList
+            list.any { it.entityId == entityId }
         } ?: return
 
-        val newEntityMap = changedDevice.entityMap.mapValues { (_, entityList) ->
-            entityList.map { entity ->
-                if (entity.entityId == entityId) entity.copy(state = newState) else entity
-            }
+        val newEntityMap = changedDevice.entityMap.mapValues { (category, entityList) ->
+            if (entityCategory != null && entityCategory != category) return@mapValues entityList
+
+            entityList.map { entity -> if (entity.entityId == entityId) entity.copy(state = newState) else entity }
         }
         val updatedDevice = changedDevice.copy(entityMap = newEntityMap)
-        deviceStateFlow.value = cache + (updatedDevice.id to updatedDevice)
+        deviceStateFlow.value = deviceToEntityMap + (updatedDevice.id to updatedDevice)
     }
 
     private companion object {

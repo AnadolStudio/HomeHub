@@ -58,7 +58,7 @@ data class EntityRegistryEntry(
         @SerialName("ai") val areaId: String? = null,
         @SerialName("ic") val icon: String? = null,
         @SerialName("tk") val translationKey: String? = null,
-        @SerialName("ec") val entityCategory: Int? = null,
+        @SerialName("ec") val entityCategoryIndex: Int? = null,
         @SerialName("hb") val hiddenBy: Boolean? = null,
         @SerialName("hn") val hasEntityName: Boolean? = null,
         @SerialName("dp") val displayPrecision: Int? = null,
