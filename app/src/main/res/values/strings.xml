@@ -15,10 +15,41 @@
 
     <string name="automation_button">Automation</string>
 
+    <string name="area_filter_all">All</string>
+
     <string name="automation_list_tab_automations">Automations</string>
     <string name="automation_list_tab_scenes">Scenes</string>
     <string name="automation_list_create_automation">Create automation</string>
     <string name="automation_list_create_scene">Create scene</string>
+
+    <string name="scene_create_title_create">Create scene</string>
+    <string name="scene_create_title_edit">Edit scene</string>
+    <string name="scene_create_label_name">Scene name</string>
+    <string name="scene_create_button_save">Save</string>
+    <string name="scene_create_button_run">Run scene</string>
+    <string name="scene_create_section_devices">Devices in scene</string>
+    <string name="scene_create_empty_devices">No devices yet. Add at least one to save the scene.</string>
+    <string name="scene_create_button_add_device">Add device</string>
+    <string name="scene_create_action_edit">Edit</string>
+    <string name="scene_create_action_delete">Delete</string>
+    <string name="scene_create_section_preview">Data preview</string>
+    <string name="scene_create_state_on_short">on</string>
+    <string name="scene_create_state_off_short">off</string>
+    <string name="scene_create_validation_empty_name">Enter scene name</string>
+    <string name="scene_create_validation_empty_id">Scene ID can\'t be empty</string>
+    <string name="scene_create_validation_bad_id">Scene ID: only a-z, 0-9, _</string>
+    <string name="scene_create_validation_no_entities">Add at least one device or state</string>
+    <string name="scene_create_orphan_device_name">Entities without device</string>
+    <string name="scene_create_error_save_failed">Failed to save the scene</string>
+    <string name="scene_create_error_not_found">Scene saved, but not yet found among entities</string>
+
+    <string name="scene_picker_search_placeholder">Search</string>
+    <string name="scene_picker_title">Choose device</string>
+    <string name="scene_picker_empty">No devices found</string>
+    <string name="scene_picker_supported_count">Available for scene: %1$d</string>
+    <string name="scene_picker_not_supported">Not supported by app scenes</string>
+    <string name="scene_picker_error_load">Failed to load devices</string>
+    <string name="scene_picker_retry">Retry</string>
 
     <string name="device_detail_section_general_info">General information</string>
     <string name="device_detail_section_control">Controls</string>

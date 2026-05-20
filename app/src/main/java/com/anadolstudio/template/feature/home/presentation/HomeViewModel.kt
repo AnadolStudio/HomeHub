@@ -6,6 +6,7 @@ import com.anadolstudio.template.core.websocket.connection.WebSocketConnectionSt
 import com.anadolstudio.template.event.showTodo
 import com.anadolstudio.template.feature.home.domain.HARestRepository
 import com.anadolstudio.template.feature.home.domain.HAWebsocketRepository
+import com.anadolstudio.template.feature.home.domain.model.Area
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
@@ -61,7 +62,12 @@ internal class HomeViewModel @Inject constructor(
     }
 
     private fun loadDevices(loadingContext: LoadingContext) {
-        lceFlow { websocketRepository.getDeviceList() }
+        lceFlow {
+            val devices = websocketRepository.getDeviceList()
+            val areas = websocketRepository.getAreaList(useCache = true)
+
+            return@lceFlow devices to areas
+        }
                 .onEachProgressState(
                         previousState = state.progressState,
                         loadingContext = loadingContext,
@@ -69,12 +75,19 @@ internal class HomeViewModel @Inject constructor(
                             updateState { copy(deviceState = deviceState.copy(progressState = it)) }
                         }
                 )
-                .mapContent { deviceList ->
-                    deviceList
-                            .filter { device -> device.isBindToArea }.toSet()
+                .mapContent { (deviceList, areas) ->
+                    val deviceSet = deviceList.filter { device -> device.isBindToArea }.toSet()
+
+                    return@mapContent deviceSet to areas
                 }
-                .onEachContent { deviceSet ->
-                    updateState { copy(deviceState = deviceState.copy(deviceSet = deviceSet)) }
+                .onEachContent { (deviceSet, areas) ->
+                    val selectedAreaId = state.selectedAreaId
+                            ?.takeIf { id -> areas.any { it.areaId == id } }
+
+                    val newDeviceState = state.deviceState.copy(
+                            deviceSet = deviceSet, availableAreas = areas
+                    )
+                    updateState { copy(deviceState = newDeviceState, selectedAreaId = selectedAreaId) }
                     subscribeToStateChangedEvents()
                 }
                 .launchIn(viewModelScope)
@@ -149,4 +162,5 @@ internal class HomeViewModel @Inject constructor(
 
     override fun onAreaClicked() = showTodo()
 
+    override fun onAreaSelected(area: Area?) = updateState { copy(selectedAreaId = area?.areaId) }
 }

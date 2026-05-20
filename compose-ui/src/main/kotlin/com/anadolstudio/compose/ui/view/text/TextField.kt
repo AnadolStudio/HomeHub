@@ -51,7 +51,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.anadolstudio.compose.ui.theme.AppTheme
 import com.anadolstudio.compose.ui.theme.AppTypography
-import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
 import com.anadolstudio.compose.ui.view.VSpacer
 
@@ -361,13 +361,13 @@ private fun BaseTextField(
 
 @ExperimentalMaterialApi
 private fun Modifier.indicatorLine(
-    enabled: Boolean,
-    isError: Boolean,
-    interactionSource: InteractionSource,
-    colors: TextFieldColors,
-    horizontalPadding: Dp = Dimension.mainMargin,
-    focusedIndicatorLineThickness: Dp = TextFieldDefaults.FocusedBorderThickness,
-    unfocusedIndicatorLineThickness: Dp = TextFieldDefaults.UnfocusedBorderThickness
+        enabled: Boolean,
+        isError: Boolean,
+        interactionSource: InteractionSource,
+        colors: TextFieldColors,
+        horizontalPadding: Dp = Dimmens.mainMargin,
+        focusedIndicatorLineThickness: Dp = TextFieldDefaults.FocusedBorderThickness,
+        unfocusedIndicatorLineThickness: Dp = TextFieldDefaults.UnfocusedBorderThickness
 ) = composed {
     val stroke = animateBorderStrokeAsState(
         enabled = enabled,

@@ -74,8 +74,7 @@ internal fun DeviceImageView(
                     when (painter.state) {
                         is AsyncImagePainter.State.Empty,
                         is AsyncImagePainter.State.Loading,
-                        is AsyncImagePainter.State.Error,
-                            -> ColorFilter.tint(fallbackTint)
+                        is AsyncImagePainter.State.Error -> ColorFilter.tint(fallbackTint)
 
                         is AsyncImagePainter.State.Success -> null
                     }

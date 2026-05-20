@@ -5,6 +5,7 @@ import com.anadolstudio.template.base.viewmodel.StatefulViewModel
 import com.anadolstudio.template.event.navigateUp
 import com.anadolstudio.template.event.showError
 import com.anadolstudio.template.feature.home.domain.HAWebsocketRepository
+import com.anadolstudio.template.feature.home.domain.model.Area
 import com.anadolstudio.template.feature.main.MainGraph.navigateToDeviceDetailFromPicker
 import com.anadolstudio.utils.states.LoadingContext
 import com.anadolstudio.utils.states.lce.lceFlow
@@ -50,9 +51,7 @@ internal class SceneDevicePickerViewModel @Inject constructor(
         updateState { copy(searchQuery = query) }
     }
 
-    override fun onAreaSelected(areaId: String?) {
-        updateState { copy(selectedAreaId = areaId) }
-    }
+    override fun onAreaSelected(area: Area?) = updateState { copy(selectedAreaId = area?.areaId) }
 
     override fun onDeviceClicked(deviceId: String) {
         // Сразу попаем picker — после возврата из DeviceDetail юзер окажется на SceneCreate.

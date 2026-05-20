@@ -34,17 +34,17 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.anadolstudio.compose.ui.theme.AppTheme
 import com.anadolstudio.compose.ui.theme.AppTypography
-import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
 import com.anadolstudio.compose.ui.view.HSpacer
 import com.anadolstudio.compose.ui.view.VSpacer
+import kotlin.coroutines.CoroutineContext
+import kotlin.math.max
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CompletionHandler
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.InternalCoroutinesApi
-import kotlin.coroutines.CoroutineContext
-import kotlin.math.max
 
 @Composable
 internal fun Snackbar(
@@ -55,7 +55,7 @@ internal fun Snackbar(
     Snackbar(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = Dimension.mainMargin),
+            .padding(horizontal = Dimmens.mainMargin),
         content = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 snackbarData.style.icon?.let { icon ->

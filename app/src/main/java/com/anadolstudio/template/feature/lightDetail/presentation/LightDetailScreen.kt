@@ -50,7 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.anadolstudio.compose.ui.theme.AppTheme
-import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
 import com.anadolstudio.template.base.view.homeHubSwitchDefaults
 import com.anadolstudio.template.di.viewmodel.assistedViewModel
@@ -93,8 +93,8 @@ private fun LightDetailLayout(
                     .background(
                             color = AppTheme.colors.colorSecondary,
                             shape = RoundedCornerShape(
-                                    topStart = Dimension.mainMargin,
-                                    topEnd = Dimension.mainMargin,
+                                    topStart = Dimmens.mainMargin,
+                                    topEnd = Dimmens.mainMargin,
                             ),
                     )
                     .padding(horizontal = 16.dp)

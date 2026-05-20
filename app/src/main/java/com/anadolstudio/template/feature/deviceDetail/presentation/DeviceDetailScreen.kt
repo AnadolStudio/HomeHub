@@ -69,7 +69,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.anadolstudio.compose.ui.theme.AppTheme
-import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.theme.Shapes
 import com.anadolstudio.compose.ui.theme.largeShimmer
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
@@ -169,15 +169,14 @@ private fun DeviceDetailLayout(
                     .fillMaxSize()
                     .background(
                             color = AppTheme.colors.colorSecondary,
-                            shape = RoundedCornerShape(topStart = Dimension.mainMargin, topEnd = Dimension.mainMargin)
+                            shape = RoundedCornerShape(topStart = Dimmens.mainMargin, topEnd = Dimmens.mainMargin)
                     )
                     .padding(horizontal = 16.dp),
     ) {
         when (state.progressState) {
             is ProgressState.Loading,
             is ProgressState.LoadingFromError,
-            is ProgressState.Refresh,
-                -> LoadingContent()
+            is ProgressState.Refresh -> LoadingContent()
 
             is ProgressState.Error -> ErrorContent(onRetryClicked = controller::onRetryClicked)
             is ProgressState.Content -> {
@@ -309,7 +308,7 @@ private fun DeviceContent(
 private fun GeneralInfoSection(device: HomeAssistantDevice) {
     val emptyValue = stringResource(R.string.device_detail_value_empty)
     SectionContainer(title = stringResource(R.string.device_detail_section_general_info)) {
-        Spacer(modifier = Modifier.height(Dimension.mainMargin))
+        Spacer(modifier = Modifier.height(Dimmens.mainMargin))
 
         Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -383,12 +382,12 @@ private fun EntityValueRow(
             .background(AppTheme.colors.colorPrimary)
             .clickable(enabled = onEntityClick != null, onClick = { onEntityClick?.invoke() })
             .heightIn(min = LocalMinimumInteractiveComponentSize.current)
-            .padding(vertical = Dimension.smallMargin, horizontal = Dimension.smallMargin)
+            .padding(vertical = Dimmens.smallMargin, horizontal = Dimmens.smallMargin)
 
     Row(
             modifier = rowModifier,
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Dimension.smallMargin),
+            horizontalArrangement = Arrangement.spacedBy(Dimmens.smallMargin),
     ) {
         Icon(
                 painter = painterResource(drawableRes),
@@ -659,8 +658,7 @@ private fun HistorySection(
         when (historyState.progressState) {
             is ProgressState.Loading,
             is ProgressState.LoadingFromError,
-            is ProgressState.Refresh,
-                -> Box(
+            is ProgressState.Refresh -> Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center,
             ) {
@@ -701,7 +699,7 @@ private fun HistorySection(
                     historyState.entries.forEach { entry -> HistoryEntryRow(entry = entry) }
                     if (historyState.entries.size < historyState.totalCount) {
                         Divider(
-                                modifier = Modifier.padding(bottom = Dimension.smallMargin),
+                                modifier = Modifier.padding(bottom = Dimmens.smallMargin),
                                 color = AppTheme.colors.colorSecondary
                         )
                         Text(
@@ -776,11 +774,11 @@ private fun SectionContainer(
     Column(
             modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(Dimension.mediumMargin))
+                    .clip(RoundedCornerShape(Dimmens.mediumMargin))
                     .background(AppTheme.colors.colorPrimary)
-                    .padding(Dimension.mediumMargin)
-                    .padding(bottom = Dimension.extraSmallMargin),
-            verticalArrangement = Arrangement.spacedBy(Dimension.extraSmallMargin),
+                    .padding(Dimmens.mediumMargin)
+                    .padding(bottom = Dimmens.extraSmallMargin),
+            verticalArrangement = Arrangement.spacedBy(Dimmens.extraSmallMargin),
     ) {
         Text(
                 text = title,

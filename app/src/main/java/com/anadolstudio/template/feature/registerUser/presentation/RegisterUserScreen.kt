@@ -16,7 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import com.anadolstudio.compose.ui.theme.AppTheme
-import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
 import com.anadolstudio.template.di.viewmodel.daggerViewModel
 import com.anadolstudio.template.event.ObserveEvents
@@ -44,7 +44,7 @@ private fun RegisterUserLayout(
                     .fillMaxSize()
                     .background(AppTheme.colors.colorSecondary)
                     .systemBarsPadding()
-                    .padding(Dimension.mainMargin),
+                    .padding(Dimmens.mainMargin),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
     ) {
@@ -59,14 +59,14 @@ private fun RegisterUserLayout(
                 text = "Заглушка экрана RegisterUser. Показывается один раз после авторизации.",
                 style = AppTheme.typography.textBook14,
                 color = AppTheme.colors.textSecondary,
-                modifier = Modifier.padding(top = Dimension.mediumMargin),
+                modifier = Modifier.padding(top = Dimmens.mediumMargin),
         )
 
         Button(
                 onClick = { controller.onContinueClicked() },
                 modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = Dimension.largeMargin),
+                        .padding(top = Dimmens.largeMargin),
         ) {
             Text(text = "Продолжить")
         }

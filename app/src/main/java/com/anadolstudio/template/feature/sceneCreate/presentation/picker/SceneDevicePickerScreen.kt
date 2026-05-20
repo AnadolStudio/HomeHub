@@ -18,14 +18,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -37,16 +34,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.anadolstudio.compose.ui.theme.AppTheme
-import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.view.search.Search
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
+import com.anadolstudio.template.R
 import com.anadolstudio.template.di.viewmodel.daggerViewModel
 import com.anadolstudio.template.event.ObserveEvents
 import com.anadolstudio.template.feature.home.domain.model.DeviceImage
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
+import com.anadolstudio.template.feature.home.presentation.components.AreaChipRow
 import com.anadolstudio.template.feature.home.presentation.components.DeviceImageView
 import com.anadolstudio.template.feature.main.NavigationController
 import com.anadolstudio.template.feature.sceneCreate.presentation.SCENE_DEVICE_SNAPSHOT_KEY
@@ -95,7 +95,7 @@ private fun SceneDevicePickerLayout(
 
         Search(
                 value = state.searchQuery,
-                placeholderText = "Поиск",
+                placeholderText = stringResource(R.string.scene_picker_search_placeholder),
                 onValueChange = controller::onSearchQueryChanged,
                 onValueResetClick = { controller.onSearchQueryChanged("") },
                 modifier = Modifier
@@ -112,12 +112,17 @@ private fun SceneDevicePickerLayout(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        Box(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+        Box(
+                modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp)
+        ) {
+
             when (state.progressState) {
                 is ProgressState.Loading,
                 is ProgressState.LoadingFromError,
-                is ProgressState.Refresh,
-                    -> CenteredLoader()
+                is ProgressState.Refresh -> CenteredLoader()
+
                 is ProgressState.Error -> ErrorContent(onRetryClicked = controller::onRetryClicked)
                 is ProgressState.Content -> DeviceList(
                         items = state.filteredDevices,
@@ -145,52 +150,12 @@ private fun Header(onCloseClicked: () -> Unit) {
         }
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-                text = "Выбор устройства",
+                text = stringResource(R.string.scene_picker_title),
                 style = AppTheme.typography.textMedium18,
                 color = AppTheme.colors.colorAccent,
         )
     }
 }
-
-@Composable
-private fun AreaChipRow(
-        selectedAreaId: String?,
-        areas: List<com.anadolstudio.template.feature.home.domain.model.Area>,
-        onAreaSelected: (String?) -> Unit,
-) {
-    LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        item {
-            FilterChip(
-                    selected = selectedAreaId == null,
-                    onClick = { onAreaSelected(null) },
-                    label = { Text(text = "Все") },
-                    colors = sceneChipColors(),
-                    border = null
-            )
-        }
-        items(areas, key = { it.areaId }) { area ->
-            FilterChip(
-                    selected = selectedAreaId == area.areaId,
-                    onClick = { onAreaSelected(area.areaId) },
-                    label = { Text(text = area.name) },
-                    colors = sceneChipColors(),
-                    border = null
-            )
-        }
-    }
-}
-
-@Composable
-private fun sceneChipColors() = FilterChipDefaults.filterChipColors(
-        containerColor = AppTheme.colors.colorPrimary,
-        labelColor = AppTheme.colors.colorAccent,
-        selectedContainerColor = AppTheme.colors.colorAccent,
-        selectedLabelColor = AppTheme.colors.colorPrimary,
-)
 
 @Composable
 private fun DeviceList(
@@ -200,7 +165,7 @@ private fun DeviceList(
     if (items.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(
-                    text = "Устройства не найдены",
+                    text = stringResource(R.string.scene_picker_empty),
                     style = AppTheme.typography.textBook18,
                     color = AppTheme.colors.textSecondary,
             )
@@ -227,7 +192,7 @@ private fun DeviceCard(item: DeviceListItem, onClicked: () -> Unit) {
     Row(
             modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(Dimension.smallMargin))
+                    .clip(RoundedCornerShape(Dimmens.smallMargin))
                     .background(AppTheme.colors.colorPrimary)
                     .let { mod -> if (item.isSupported) mod.clickable(onClick = onClicked) else mod.alpha(0.5f) }
                     .padding(horizontal = 12.dp, vertical = 12.dp),
@@ -265,9 +230,9 @@ private fun DeviceCard(item: DeviceListItem, onClicked: () -> Unit) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                     text = if (item.isSupported) {
-                        "Доступно для сцены: ${item.supportedEntityCount}"
+                        stringResource(R.string.scene_picker_supported_count, item.supportedEntityCount)
                     } else {
-                        "Не поддерживается в сценах приложения"
+                        stringResource(R.string.scene_picker_not_supported)
                     },
                     style = AppTheme.typography.captionBook14,
                     color = if (item.isSupported) AppTheme.colors.colorAccent else AppTheme.colors.textSecondary,
@@ -288,14 +253,14 @@ private fun ErrorContent(onRetryClicked: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                    text = "Не удалось загрузить устройства",
+                    text = stringResource(R.string.scene_picker_error_load),
                     style = AppTheme.typography.textBook18,
                     color = AppTheme.colors.colorAccent,
             )
             Spacer(modifier = Modifier.height(8.dp))
             TextButton(onClick = onRetryClicked) {
                 Text(
-                        text = "Повторить",
+                        text = stringResource(R.string.scene_picker_retry),
                         style = AppTheme.typography.textMedium18,
                         color = AppTheme.colors.template,
                 )

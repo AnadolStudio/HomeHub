@@ -18,7 +18,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.anadolstudio.compose.ui.theme.AppTypography
-import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.view.text.Text
 
 @Composable
@@ -88,7 +88,7 @@ private fun BaseCheckbox(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
-                .padding(vertical = 12.dp, horizontal = Dimension.mainMargin)
+                .padding(vertical = 12.dp, horizontal = Dimmens.mainMargin)
         ) {
             val icon = if (isEnabled) isEnabledIcon else isDisabledIcon
 

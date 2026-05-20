@@ -56,7 +56,7 @@ import coil.compose.AsyncImage
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.anadolstudio.compose.ui.theme.AppTheme
-import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
 import com.anadolstudio.compose.ui.view.stub.ErrorStub
@@ -66,12 +66,14 @@ import com.anadolstudio.template.base.viewmodel.ObserveViewModelLifecycle
 import com.anadolstudio.template.di.viewmodel.daggerViewModel
 import com.anadolstudio.template.event.ObserveEvents
 import com.anadolstudio.template.feature.deviceDetail.presentation.DeviceDetailResult
+import com.anadolstudio.template.feature.home.domain.model.Area
 import com.anadolstudio.template.feature.home.domain.model.DeviceImage
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistantService
 import com.anadolstudio.template.feature.home.domain.model.services.SimpleToggleableService
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
+import com.anadolstudio.template.feature.home.presentation.components.AreaChipRow
 import com.anadolstudio.template.feature.home.presentation.components.DeviceCard
 import com.anadolstudio.template.feature.main.NavigationController
 import com.anadolstudio.template.navigation.ObserveResultValue
@@ -173,12 +175,12 @@ private fun HomeLayout(
 
         Row(
                 horizontalArrangement = Arrangement.spacedBy(
-                        space = Dimension.smallMargin,
+                        space = Dimmens.smallMargin,
                         alignment = Alignment.End,
                 ),
                 modifier = Modifier
                         .fillMaxWidth()
-                        .padding(end = Dimension.mainMargin)
+                        .padding(end = Dimmens.mainMargin)
                         .offset {
                             IntOffset(
                                     x = 0,
@@ -220,9 +222,19 @@ private fun HomeLayout(
                     modifier = Modifier
                             .fillMaxWidth()
                             .statusBarsPadding()
-                            .padding(horizontal = Dimension.mainMargin)
-                            .padding(bottom = Dimension.mainMargin, top = Dimension.smallMargin),
+                            .padding(horizontal = Dimmens.mainMargin)
+                            .padding(bottom = Dimmens.smallMargin, top = Dimmens.smallMargin),
             )
+
+            if (state.deviceState.availableAreas.isNotEmpty()) {
+                AreaChipRow(
+                        selectedAreaId = state.selectedAreaId,
+                        areas = state.deviceState.availableAreas,
+                        onAreaSelected = controller::onAreaSelected,
+                        contentPadding = PaddingValues(horizontal = Dimmens.mainMargin),
+                        modifier = Modifier.padding(bottom = Dimmens.smallMargin),
+                )
+            }
 
             when (progressState) {
                 ProgressState.Content -> HomeContent(state = state, controller = controller)
@@ -264,7 +276,7 @@ private fun Badge(
                     .clip(RoundedCornerShape(12.dp))
                     .clickable(onClick = onClick)
                     .background(AppTheme.colors.colorPrimary)
-                    .padding(horizontal = Dimension.mediumMargin),
+                    .padding(horizontal = Dimmens.mediumMargin),
             contentAlignment = Alignment.Center,
     ) {
         vector?.let {
@@ -320,7 +332,7 @@ private fun HomeContent(
         state: HomeScreenState,
         controller: HomeController,
 ) {
-    val deviceMap = state.deviceState.areaToDeviceMap
+    val deviceMap = state.filteredAreaToDeviceMap
 
     val entries = remember(deviceMap) { deviceMap.entries }
     val listState = rememberLazyListState()
@@ -352,8 +364,8 @@ private fun HomeContent(
     LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = Dimension.largeMargin),
-            verticalArrangement = Arrangement.spacedBy(Dimension.mediumMargin),
+            contentPadding = PaddingValues(bottom = Dimmens.largeMargin),
+            verticalArrangement = Arrangement.spacedBy(Dimmens.mediumMargin),
     ) {
         entries.forEach { (areaName, deviceList) ->
             item(key = areaName) {
@@ -374,19 +386,19 @@ private fun AreaSection(
         deviceList: List<HomeAssistantDevice>,
         controller: HomeController,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(Dimension.smallMargin)) {
+    Column(verticalArrangement = Arrangement.spacedBy(Dimmens.smallMargin)) {
         GroupHeader(
                 title = areaName,
                 onClick = { controller.onAreaClicked() },
-                modifier = Modifier.padding(horizontal = Dimension.mainMargin),
+                modifier = Modifier.padding(horizontal = Dimmens.mainMargin),
         )
 
         FlowRow(
                 modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = Dimension.mainMargin),
-                horizontalArrangement = Arrangement.spacedBy(Dimension.smallMargin),
-                verticalArrangement = Arrangement.spacedBy(Dimension.mediumMargin),
+                        .padding(horizontal = Dimmens.mainMargin),
+                horizontalArrangement = Arrangement.spacedBy(Dimmens.smallMargin),
+                verticalArrangement = Arrangement.spacedBy(Dimmens.mediumMargin),
         ) {
             deviceList.forEach { device ->
                 Box(modifier = Modifier) {
@@ -419,7 +431,7 @@ private fun GroupHeader(
             verticalAlignment = Alignment.CenterVertically,
             modifier = modifier
                     .fillMaxWidth()
-                    .padding(top = Dimension.smallMargin),
+                    .padding(top = Dimmens.smallMargin),
     ) {
         Text(
                 text = title,
@@ -427,7 +439,7 @@ private fun GroupHeader(
                 color = AppTheme.colors.colorAccent,
                 fontWeight = FontWeight.SemiBold,
         )
-        Spacer(modifier = Modifier.size(Dimension.extraSmallMargin))
+        Spacer(modifier = Modifier.size(Dimmens.extraSmallMargin))
         Icon(
                 imageVector = Icons.Outlined.ChevronRight,
                 contentDescription = null,
@@ -451,6 +463,7 @@ private fun createPreviewController(): HomeController = object : HomeController 
     override fun onAutomationClicked() = Unit
     override fun onAddDeviceClicked() = Unit
     override fun onHistoryClicked() = Unit
+    override fun onAreaSelected(area: Area?) = Unit
 }
 
 @Preview(showBackground = true, heightDp = 800)
@@ -459,8 +472,14 @@ private fun HomeScreenPreview(
         @PreviewParameter(ThemePreviewParameter::class) useDarkMode: Boolean,
 ) {
     AppTheme(useDarkMode) {
+        val devices = PreviewUtils.previewDevices.toSet()
         HomeLayout(
-                state = HomeScreenState(deviceState = DeviceState(deviceSet = PreviewUtils.previewDevices.toSet())),
+                state = HomeScreenState(
+                        deviceState = DeviceState(
+                                deviceSet = devices,
+                                availableAreas = devices.mapNotNull { it.area }.distinctBy { it.areaId },
+                        ),
+                ),
                 controller = createPreviewController()
         )
     }
@@ -495,8 +514,16 @@ private fun HomeScreenDevicesPreview(
         @PreviewParameter(ThemePreviewParameter::class) useDarkMode: Boolean,
 ) {
     AppTheme(useDarkMode) {
+        val devices = PreviewUtils.previewDevices.toSet()
+        val areas = devices.mapNotNull { it.area }.distinctBy { it.areaId }
         HomeLayout(
-                state = HomeScreenState(deviceState = DeviceState(deviceSet = PreviewUtils.previewDevices.toSet())),
+                state = HomeScreenState(
+                        deviceState = DeviceState(
+                                deviceSet = devices,
+                                availableAreas = areas,
+                        ),
+                        selectedAreaId = areas.firstOrNull()?.areaId,
+                ),
                 controller = createPreviewController(),
         )
     }

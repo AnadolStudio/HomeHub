@@ -19,7 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 import com.anadolstudio.compose.ui.theme.AppTheme
-import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.theme.Shapes
 import com.anadolstudio.compose.ui.theme.largeShimmer
 import com.anadolstudio.template.base.view.homeHubSwitchDefaults
@@ -39,9 +39,9 @@ internal fun AutomationItem(
                     .background(AppTheme.colors.colorPrimary)
                     .clickable(enabled = onClicked != null, onClick = { onClicked?.invoke() })
                     .heightIn(min = LocalMinimumInteractiveComponentSize.current)
-                    .padding(vertical = Dimension.smallMargin, horizontal = Dimension.smallMargin),
+                    .padding(vertical = Dimmens.smallMargin, horizontal = Dimmens.smallMargin),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Dimension.smallMargin)
+            horizontalArrangement = Arrangement.spacedBy(Dimmens.smallMargin)
     ) {
         Icon(
                 modifier = Modifier.size(24.dp),
@@ -58,7 +58,7 @@ internal fun AutomationItem(
 
         if (isEnable != null) {
             Switch(
-                    modifier = Modifier.padding(end = Dimension.smallMargin),
+                    modifier = Modifier.padding(end = Dimmens.smallMargin),
                     checked = isEnable,
                     onCheckedChange = { value -> onEnableClicked.invoke(value) },
                     colors = homeHubSwitchDefaults,

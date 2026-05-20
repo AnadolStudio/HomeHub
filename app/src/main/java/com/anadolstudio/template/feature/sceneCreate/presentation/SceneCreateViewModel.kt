@@ -1,9 +1,11 @@
 package com.anadolstudio.template.feature.sceneCreate.presentation
 
 import androidx.lifecycle.viewModelScope
+import com.anadolstudio.template.R
 import com.anadolstudio.template.base.viewmodel.StatefulViewModel
 import com.anadolstudio.template.event.navigateUp
 import com.anadolstudio.template.event.showError
+import com.anadolstudio.template.feature.common.domain.ResourceRepository
 import com.anadolstudio.template.feature.home.domain.HARestRepository
 import com.anadolstudio.template.feature.home.domain.HAWebsocketRepository
 import com.anadolstudio.template.feature.home.domain.model.AllowedDomain
@@ -34,6 +36,7 @@ internal class SceneCreateViewModel @Inject constructor(
         private val restRepository: HARestRepository,
         private val websocketRepository: HAWebsocketRepository,
         private val json: Json,
+        private val resources: ResourceRepository,
 ) : StatefulViewModel<SceneCreateScreenState>(SceneCreateScreenState()),
     SceneCreateController {
 
@@ -131,7 +134,7 @@ internal class SceneCreateViewModel @Inject constructor(
         if (orphanItems.isNotEmpty()) {
             devices[ORPHAN_DEVICE_KEY] = DeviceDraftCard(
                     deviceId = ORPHAN_DEVICE_KEY,
-                    name = "Сущности без устройства",
+                    name = resources.getString(R.string.scene_create_orphan_device_name),
                     manufacturer = null,
                     model = null,
                     areaName = null,
@@ -151,10 +154,7 @@ internal class SceneCreateViewModel @Inject constructor(
 
     override fun onSceneIdChanged(value: String) {
         updateState {
-            copy(
-                    sceneConfigId = slugify(value),
-                    isIdManuallyEdited = true,
-            )
+            copy(sceneConfigId = slugify(value), isIdManuallyEdited = true,)
         }
     }
 
@@ -263,11 +263,11 @@ internal class SceneCreateViewModel @Inject constructor(
                 .onEachContent { result ->
                     val (ok, sceneEntityId) = result ?: return@onEachContent
                     if (!ok) {
-                        showError("Не удалось сохранить сцену")
+                        showError(R.string.scene_create_error_save_failed)
                         return@onEachContent
                     }
                     if (sceneEntityId == null) {
-                        showError("Сцена сохранена, но пока не найдена среди сущностей")
+                        showError(R.string.scene_create_error_not_found)
                     }
                     updateState { copy(createdSceneEntityId = sceneEntityId, validationError = null) }
                 }

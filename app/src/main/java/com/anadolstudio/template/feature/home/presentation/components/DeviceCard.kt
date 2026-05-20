@@ -45,7 +45,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import com.anadolstudio.compose.ui.theme.AppTheme
-import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.theme.Shapes
 import com.anadolstudio.compose.ui.theme.image
 import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
@@ -59,7 +59,7 @@ import com.anadolstudio.template.feature.home.domain.model.states.SwitchAttribut
 import com.anadolstudio.template.feature.home.presentation.PreviewUtils
 import com.anadolstudio.template.util.toPainter
 
-private val DEVICE_IMAGE_MAX_SIZE = 80.dp
+private val DEVICE_IMAGE_MAX_SIZE = 70.dp
 private val DEVICE_CARD_SHAPE = RoundedCornerShape(12.dp)
 private val DEVICE_CARD_ELEVATION = 4.dp
 private const val MAX_SWITCH_ENTITY = 6
@@ -162,7 +162,7 @@ fun ColumnScope.EntityItem(
         }
 
         if (icon != null && text != null) {
-            Spacer(modifier = Modifier.width(Dimension.extraSmallMargin))
+            Spacer(modifier = Modifier.width(Dimmens.extraSmallMargin))
         }
 
         text?.let {
@@ -203,7 +203,7 @@ fun BaseDeviceCard(
                     .shadow(elevation = DEVICE_CARD_ELEVATION, shape = DEVICE_CARD_SHAPE)
                     .background(color = AppTheme.colors.colorPrimary)
                     .clickable(onClick = { onDeviceClicked.invoke() })
-                    .padding(Dimension.smallMargin),
+                    .padding(Dimmens.smallMargin),
     ) {
         Row(
                 modifier = Modifier
@@ -221,7 +221,7 @@ fun BaseDeviceCard(
             entityInformationRow?.invoke(this@Row)
         }
 
-        Spacer(modifier = Modifier.height(Dimension.smallMargin))
+        Spacer(modifier = Modifier.height(Dimmens.smallMargin))
 
         Text(
                 text = title,
@@ -255,7 +255,7 @@ private fun BaseDeviceCardPreview(
         Column(
                 Modifier
                         .background(color = AppTheme.colors.colorSecondary)
-                        .padding(Dimension.mediumMargin),
+                        .padding(Dimmens.mediumMargin),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             val device = PreviewUtils.previewDevices.first()

@@ -1,6 +1,8 @@
 package com.anadolstudio.template.feature.sceneCreate.presentation
 
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
+import com.anadolstudio.template.R
 import com.anadolstudio.template.feature.sceneCreate.domain.model.SceneDraft
 import com.anadolstudio.template.feature.sceneCreate.domain.model.SceneEntityState
 import com.anadolstudio.utils.states.ProgressState
@@ -18,8 +20,8 @@ internal data class SceneCreateScreenState(
         val progressState: ProgressState = ProgressState.Content,
         /** Заполняется после успешного сохранения — entity_id найденной scene.* сущности. */
         val createdSceneEntityId: String? = null,
-        /** Локализованная ошибка валидации (или null если всё ок). */
-        val validationError: String? = null,
+        /** Ошибка валидации (string-resource id) или null если всё ок. */
+        @StringRes val validationError: Int? = null,
         /** true когда экран открыт для редактирования существующей сцены (id зафиксирован). */
         val isEditMode: Boolean = false,
 ) {
@@ -46,11 +48,12 @@ internal data class SceneCreateScreenState(
      * Возвращает первую найденную ошибку (для текста в UI), либо null если всё валидно.
      * Покрывает п.21 ТЗ.
      */
-    fun validate(): String? = when {
-        name.isBlank() -> "Введите название сцены"
-        sceneConfigId.isBlank() -> "ID сцены не может быть пустым"
-        !sceneConfigId.matches(SCENE_ID_REGEX) -> "ID сцены: только a-z, 0-9, _"
-        entities.isEmpty() -> "Добавьте хотя бы одно устройство или состояние"
+    @StringRes
+    fun validate(): Int? = when {
+        name.isBlank() -> R.string.scene_create_validation_empty_name
+        sceneConfigId.isBlank() -> R.string.scene_create_validation_empty_id
+        !sceneConfigId.matches(SCENE_ID_REGEX) -> R.string.scene_create_validation_bad_id
+        entities.isEmpty() -> R.string.scene_create_validation_no_entities
         else -> null
     }
 

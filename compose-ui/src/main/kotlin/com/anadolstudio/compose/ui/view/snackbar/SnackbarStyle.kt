@@ -18,7 +18,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
 import com.anadolstudio.compose.ui.theme.AppTheme
-import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.Dimmens
 import kotlin.coroutines.resume
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -44,7 +44,7 @@ interface SnackbarStyle {
         override val contentColor: Color
             @Composable get() = AppTheme.colors.colorAccent
         override val shape: Shape
-            @Composable get() = RoundedCornerShape(Dimension.smallMargin)
+            @Composable get() = RoundedCornerShape(Dimmens.smallMargin)
     }
 
     object Error : SnackbarStyle {
@@ -53,7 +53,7 @@ interface SnackbarStyle {
         override val contentColor: Color
             @Composable get() = AppTheme.colors.colorAccent
         override val shape: Shape
-            @Composable get() = RoundedCornerShape(Dimension.smallMargin)
+            @Composable get() = RoundedCornerShape(Dimmens.smallMargin)
     }
 }
 

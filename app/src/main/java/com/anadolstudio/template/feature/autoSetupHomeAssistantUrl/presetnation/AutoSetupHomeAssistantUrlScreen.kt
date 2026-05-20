@@ -44,7 +44,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import com.anadolstudio.compose.ui.theme.AppTheme
-import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.theme.Shapes
 import com.anadolstudio.compose.ui.theme.largeShimmer
 import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
@@ -88,7 +88,7 @@ private fun AutoSetupHomeAssistantUrlLayout(
                     .background(color = AppTheme.colors.colorSecondary)
                     .fillMaxWidth()
                     .statusBarsPadding()
-                    .padding(vertical = Dimension.mainMargin)
+                    .padding(vertical = Dimmens.mainMargin)
                     .navigationBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -135,13 +135,13 @@ private fun AutoSetupHomeAssistantUrlLayout(
 @Composable
 private fun Loading(modifier: Modifier) {
     Column(
-            modifier = modifier.padding(horizontal = Dimension.largeMargin),
+            modifier = modifier.padding(horizontal = Dimmens.largeMargin),
             verticalArrangement = Arrangement.Center,
     ) {
         HomeHubLoader(Modifier.fillMaxSize()) {
-            Spacer(modifier = Modifier.height(Dimension.mainMargin))
+            Spacer(modifier = Modifier.height(Dimmens.mainMargin))
             Text(
-                    modifier = Modifier.padding(horizontal = Dimension.mainMargin),
+                    modifier = Modifier.padding(horizontal = Dimmens.mainMargin),
                     text = stringResource(R.string.auto_setup_home_assistant_url_loading),
                     style = AppTheme.typography.textBook18,
                     color = AppTheme.colors.textPrimary,
@@ -193,10 +193,10 @@ private fun Content(
         }
 
         LazyColumn(
-                modifier = modifier.padding(top = Dimension.mainMargin),
+                modifier = modifier.padding(top = Dimmens.mainMargin),
                 contentPadding = PaddingValues(
-                        horizontal = Dimension.mainMargin,
-                        vertical = Dimension.mainMargin,
+                        horizontal = Dimmens.mainMargin,
+                        vertical = Dimmens.mainMargin,
                 ),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
@@ -213,7 +213,7 @@ private fun Content(
 @Composable
 private fun EmptyState(modifier: Modifier) {
     Column(
-            modifier = modifier.padding(horizontal = Dimension.mainMargin),
+            modifier = modifier.padding(horizontal = Dimmens.mainMargin),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
     ) {
@@ -237,12 +237,12 @@ private fun ServerListItem(
                     .shadow(elevation = 4.dp, shape = Shapes.largeShimmer)
                     .background(color = AppTheme.colors.colorPrimary, shape = Shapes.largeShimmer)
                     .clickable(onClick = onClick)
-                    .padding(vertical = Dimension.smallMargin)
-                    .padding(start = Dimension.extraSmallMargin, end = Dimension.mediumMargin),
+                    .padding(vertical = Dimmens.smallMargin)
+                    .padding(start = Dimmens.extraSmallMargin, end = Dimmens.mediumMargin),
             verticalAlignment = Alignment.CenterVertically,
     ) {
         ServerIcon(painter = HomeHubIcons.Host)
-        Spacer(modifier = Modifier.size(Dimension.smallMargin))
+        Spacer(modifier = Modifier.size(Dimmens.smallMargin))
         Column(modifier = Modifier.weight(1F)) {
             Text(
                     text = instance.name,

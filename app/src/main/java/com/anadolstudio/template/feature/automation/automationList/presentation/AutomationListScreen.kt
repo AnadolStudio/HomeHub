@@ -33,7 +33,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.anadolstudio.compose.ui.theme.AppTheme
-import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.view.button.FloatTextButton
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
 import com.anadolstudio.template.R
@@ -82,8 +82,8 @@ private fun AutomationListLayout(
         ) {
             LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(Dimension.mainMargin),
-                    verticalArrangement = Arrangement.spacedBy(Dimension.mediumMargin),
+                    contentPadding = PaddingValues(Dimmens.mainMargin),
+                    verticalArrangement = Arrangement.spacedBy(Dimmens.mediumMargin),
             ) {
                 when (state.currentTab) {
                     AutomationTab.AUTOMATIONS -> automationItems(state, controller)

@@ -18,7 +18,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import com.anadolstudio.compose.ui.theme.AppTheme
 import com.anadolstudio.compose.ui.theme.AppTypography
-import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
 import com.anadolstudio.compose.ui.view.VSpacer
 import com.anadolstudio.compose.ui.view.button.PrimaryButtonLarge
@@ -47,7 +47,7 @@ fun PagingItemErrorStub(
         PrimaryButtonLarge(
                 text = buttonTitle,
                 onClick = onButtonClick,
-                modifier = Modifier.padding(Dimension.mainMargin),
+                modifier = Modifier.padding(Dimmens.mainMargin),
         )
     }
 }
@@ -139,7 +139,7 @@ fun SuccessStub(
         PrimaryButtonLarge(
                 text = buttonTitle,
                 onClick = onButtonClick,
-                modifier = Modifier.padding(Dimension.mainMargin),
+                modifier = Modifier.padding(Dimmens.mainMargin),
         )
     }
 }
@@ -160,7 +160,7 @@ fun BaseStub(
             verticalArrangement = Arrangement.Center,
     ) {
         val innerModifier = Modifier
-                .padding(Dimension.mainMargin)
+                .padding(Dimmens.mainMargin)
                 .align(Alignment.CenterHorizontally)
                 .run {
                     if (fillMaxSize) {
@@ -194,7 +194,7 @@ fun BaseStub(
             PrimaryButtonLarge(
                     text = buttonTitle,
                     onClick = onButtonClick,
-                    modifier = Modifier.padding(Dimension.mainMargin),
+                    modifier = Modifier.padding(Dimmens.mainMargin),
             )
         }
     }

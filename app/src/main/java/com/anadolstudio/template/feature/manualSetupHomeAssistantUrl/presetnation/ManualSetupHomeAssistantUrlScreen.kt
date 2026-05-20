@@ -13,7 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.anadolstudio.compose.ui.theme.AppTheme
-import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
 import com.anadolstudio.template.di.viewmodel.daggerViewModel
 import com.anadolstudio.template.event.ObserveEvents
@@ -34,7 +34,7 @@ internal fun ManualSetupHomeAssistantUrlScreen(
                     .background(color = AppTheme.colors.colorSecondary)
                     .statusBarsPadding()
                     .navigationBarsPadding()
-                    .padding(Dimension.mainMargin),
+                    .padding(Dimmens.mainMargin),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
     ) {

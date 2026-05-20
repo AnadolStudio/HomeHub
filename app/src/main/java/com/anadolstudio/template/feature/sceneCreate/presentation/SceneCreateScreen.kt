@@ -46,17 +46,19 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.anadolstudio.compose.ui.theme.AppTheme
-import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.theme.Shapes
 import com.anadolstudio.compose.ui.theme.largeShimmer
 import com.anadolstudio.compose.ui.view.button.OutlineButtonLarge
 import com.anadolstudio.compose.ui.view.button.PrimaryButtonLarge
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
 import com.anadolstudio.compose.ui.view.text.LargeTextField
+import com.anadolstudio.template.R
 import com.anadolstudio.template.di.viewmodel.daggerViewModel
 import com.anadolstudio.template.event.ObserveEvents
 import com.anadolstudio.template.feature.deviceDetail.presentation.DeviceDetailResult
@@ -138,7 +140,9 @@ private fun SceneCreateLayout(
                     .padding(horizontal = 16.dp),
     ) {
         Header(
-                title = if (state.isEditMode) "Редактирование сцены" else "Создание сцены",
+                title = stringResource(
+                        if (state.isEditMode) R.string.scene_create_title_edit else R.string.scene_create_title_create
+                ),
                 onCloseClicked = controller::onCloseClicked,
         )
 
@@ -149,12 +153,12 @@ private fun SceneCreateLayout(
                         .fillMaxSize()
                         .shadow(2.dp, Shapes.largeShimmer)
                         .background(AppTheme.colors.colorPrimary)
-                        .padding(vertical = Dimension.smallMargin)
+                        .padding(vertical = Dimmens.smallMargin)
         ) {
             LargeTextField(
                     value = state.name,
                     onValueChange = controller::onNameChanged,
-                    labelText = "Название сцены",
+                    labelText = stringResource(R.string.scene_create_label_name),
                     isRequired = true,
                     showHint = false,
                     modifier = Modifier.fillMaxWidth(),
@@ -179,9 +183,9 @@ private fun SceneCreateLayout(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        state.validationError?.let { error ->
+        state.validationError?.let { errorRes ->
             Text(
-                    text = error,
+                    text = stringResource(errorRes),
                     style = AppTheme.typography.captionBook14,
                     color = AppTheme.colors.colorError,
             )
@@ -189,7 +193,7 @@ private fun SceneCreateLayout(
         }
 
         PrimaryButtonLarge(
-                text = "Сохранить",
+                text = stringResource(R.string.scene_create_button_save),
                 onClick = controller::onSaveClicked,
                 enabled = state.canSave,
                 loading = state.progressState is ProgressState.Loading,
@@ -198,7 +202,7 @@ private fun SceneCreateLayout(
         if (state.createdSceneEntityId != null) {
             Spacer(modifier = Modifier.height(12.dp))
             OutlineButtonLarge(
-                    text = "Запустить сцену",
+                    text = stringResource(R.string.scene_create_button_run),
                     onClick = controller::onRunCreatedSceneClicked,
                     icon = rememberVectorPainter(Icons.Outlined.PlayArrow),
             )
@@ -240,7 +244,7 @@ private fun DevicesSection(
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-                text = "Устройства в сцене",
+                text = stringResource(R.string.scene_create_section_devices),
                 style = AppTheme.typography.textMedium18,
                 color = AppTheme.colors.colorAccent,
         )
@@ -248,7 +252,7 @@ private fun DevicesSection(
 
         if (devices.isEmpty()) {
             Text(
-                    text = "Пока нет устройств. Добавьте хотя бы одно, чтобы сохранить сцену.",
+                    text = stringResource(R.string.scene_create_empty_devices),
                     style = AppTheme.typography.captionBook14,
                     color = AppTheme.colors.textSecondary,
             )
@@ -267,7 +271,7 @@ private fun DevicesSection(
         Spacer(modifier = Modifier.height(12.dp))
 
         OutlineButtonLarge(
-                text = "Добавить устройство",
+                text = stringResource(R.string.scene_create_button_add_device),
                 onClick = onAddClicked,
                 icon = rememberVectorPainter(Icons.Outlined.Add),
         )
@@ -319,14 +323,14 @@ private fun DeviceCardView(
             IconButton(onClick = onEditClicked) {
                 Icon(
                         imageVector = Icons.Outlined.Edit,
-                        contentDescription = "Изменить",
+                        contentDescription = stringResource(R.string.scene_create_action_edit),
                         tint = AppTheme.colors.colorAccent,
                 )
             }
             IconButton(onClick = onRemoveClicked) {
                 Icon(
                         imageVector = Icons.Outlined.Delete,
-                        contentDescription = "Удалить",
+                        contentDescription = stringResource(R.string.scene_create_action_delete),
                         tint = AppTheme.colors.colorAccent,
                 )
             }
@@ -365,9 +369,9 @@ private fun SceneEntityRow(item: DeviceDraftEntityItem) {
                     .clip(shape = Shapes.largeShimmer)
                     .background(AppTheme.colors.colorPrimary)
                     .heightIn(min = LocalMinimumInteractiveComponentSize.current)
-                    .padding(vertical = Dimension.mediumMargin, horizontal = Dimension.smallMargin),
+                    .padding(vertical = Dimmens.mediumMargin, horizontal = Dimmens.smallMargin),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Dimension.smallMargin),
+            horizontalArrangement = Arrangement.spacedBy(Dimmens.smallMargin),
     ) {
         Icon(
                 painter = painterResource(item.drawableRes),
@@ -401,7 +405,7 @@ private fun PreviewBlock(
     Column(
             modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(Dimension.smallMargin))
+                    .clip(RoundedCornerShape(Dimmens.smallMargin))
                     .background(AppTheme.colors.colorPrimary)
                     .padding(horizontal = 12.dp, vertical = 8.dp),
     ) {
@@ -411,7 +415,7 @@ private fun PreviewBlock(
         ) {
             Text(
                     modifier = Modifier.weight(1f),
-                    text = "Предпросмотр данных",
+                    text = stringResource(R.string.scene_create_section_preview),
                     style = AppTheme.typography.textBook18,
                     color = AppTheme.colors.colorAccent,
             )
@@ -438,17 +442,22 @@ private fun PreviewBlock(
     }
 }
 
-private fun SceneEntityState.describeShort(): String = when (this) {
-    is SceneEntityState.Light -> buildString {
-        append(if (on) "вкл" else "выкл")
-        if (on) {
-            brightness?.let { append(" · ${(it * 100 / 255).coerceIn(0, 100)}%") }
-            colorTempKelvin?.let { append(" · $it K") }
-            rgbColor?.takeIf { it.size == 3 }?.let { append(" · RGB ${it.joinToString()}") }
+@Composable
+private fun SceneEntityState.describeShort(): String {
+    val onLabel = stringResource(R.string.scene_create_state_on_short)
+    val offLabel = stringResource(R.string.scene_create_state_off_short)
+    return when (this) {
+        is SceneEntityState.Light -> buildString {
+            append(if (on) onLabel else offLabel)
+            if (on) {
+                brightness?.let { append(" · ${(it * 100 / 255).coerceIn(0, 100)}%") }
+                colorTempKelvin?.let { append(" · $it K") }
+                rgbColor?.takeIf { it.size == 3 }?.let { append(" · RGB ${it.joinToString()}") }
+            }
         }
-    }
 
-    is SceneEntityState.Switch -> if (on) "вкл" else "выкл"
-    is SceneEntityState.Number -> value.toString()
-    is SceneEntityState.Select -> option
+        is SceneEntityState.Switch -> if (on) onLabel else offLabel
+        is SceneEntityState.Number -> value.toString()
+        is SceneEntityState.Select -> option
+    }
 }

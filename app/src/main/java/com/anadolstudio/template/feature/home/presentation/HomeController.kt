@@ -1,5 +1,6 @@
 package com.anadolstudio.template.feature.home.presentation
 
+import com.anadolstudio.template.feature.home.domain.model.Area
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistantService
@@ -13,4 +14,5 @@ interface HomeController {
     fun onAddDeviceClicked()
     fun onHistoryClicked()
     fun onAreaClicked()
+    fun onAreaSelected(area: Area?)
 }

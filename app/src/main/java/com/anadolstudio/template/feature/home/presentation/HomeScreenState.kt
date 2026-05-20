@@ -2,6 +2,7 @@ package com.anadolstudio.template.feature.home.presentation
 
 import androidx.compose.runtime.Immutable
 import com.anadolstudio.template.core.websocket.connection.WebSocketConnectionState
+import com.anadolstudio.template.feature.home.domain.model.Area
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAttributes
@@ -12,7 +13,12 @@ internal data class HomeScreenState(
         val connectionState: WebSocketConnectionState = WebSocketConnectionState.Disconnected,
         val homeOverviewState: HomeOverviewState = HomeOverviewState(),
         val deviceState: DeviceState = DeviceState(),
+        val selectedAreaId: String? = null,
 ) {
+
+    val filteredAreaToDeviceMap: Map<String, List<HomeAssistantDevice>>
+        get() = deviceState.areaToDeviceMap(selectedAreaId = selectedAreaId)
+
     private val progressStateList get() = listOf(
             homeOverviewState.progressState,
             deviceState.progressState,
@@ -41,12 +47,14 @@ internal data class HomeScreenState(
 internal data class DeviceState(
         val progressState: ProgressState = ProgressState.Loading,
         val deviceSet: Set<HomeAssistantDevice> = emptySet(),
+        val availableAreas: List<Area> = emptyList(),
 ) {
-    val areaToDeviceMap: Map<String, List<HomeAssistantDevice>>
-        get() = deviceSet
-                .groupBy { device -> requireNotNull(device.area).name }
-                .mapValues { (_, devices) -> devices.sortedDevice().toList() }
-                .toSortedMap()
+    fun areaToDeviceMap(selectedAreaId: String? = null): Map<String, List<HomeAssistantDevice>> = deviceSet
+            .asSequence()
+            .filter { device -> selectedAreaId == null || device.area?.areaId == selectedAreaId }
+            .groupBy { device -> requireNotNull(device.area).name }
+            .mapValues { (_, devices) -> devices.sortedDevice().toList() }
+            .toSortedMap()
 
     val entityToDeviceMap: Map<String, HomeAssistantDevice>
         get() = deviceSet

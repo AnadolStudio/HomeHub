@@ -42,7 +42,7 @@ import com.anadolstudio.compose.ui.animation.IconAnimatedVisibility
 import com.anadolstudio.compose.ui.drawable.Icons
 import com.anadolstudio.compose.ui.theme.AppTheme
 import com.anadolstudio.compose.ui.theme.AppTypography
-import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.theme.Shapes
 import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
 import com.anadolstudio.compose.ui.theme.tiny
@@ -175,7 +175,7 @@ private fun SearchFieldDecorationBox(
             IconAnimatedVisibility(visible = textFieldValue.text.isNotEmpty()) {
                 IconButton(
                     onClick = onValueResetClick,
-                    modifier = Modifier.size(Dimension.minTouchSize)
+                    modifier = Modifier.size(Dimmens.minTouchSize)
                 ) {
                     Icon(
                         modifier = Modifier.size(10.dp),
