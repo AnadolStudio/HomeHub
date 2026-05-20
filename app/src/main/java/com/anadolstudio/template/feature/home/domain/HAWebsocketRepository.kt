@@ -23,13 +23,13 @@ interface HAWebsocketRepository {
 
     fun onStopWebsocket()
 
-    suspend fun getEntityList(): List<HomeAssistantEntity<HomeAssistantAttribute>>
+    suspend fun getEntityList(useCache: Boolean = false): List<HomeAssistantEntity<HomeAssistantAttribute>>
     suspend fun getAllStates(): List<HomeAssistantState<HomeAssistantAttribute>>
-    suspend fun getServiceMap(useCache: Boolean = true): Map<String, ServiceResponse>
+    suspend fun getServiceMap(useCache: Boolean = false): Map<String, ServiceResponse>
     suspend fun extractFromTarget(target: ServiceTarget, expandGroup: Boolean): ExtractFromTargetResult
     suspend fun callService(entityId: String, domain: String, service: HomeAssistantService<*>): CallServiceResult
-    suspend fun getAreaList(): List<Area>
-    suspend fun getDeviceList(useCache: Boolean = true): List<HomeAssistantDevice>
-    suspend fun getDevice(deviceId: String, useCache: Boolean = true): HomeAssistantDevice?
+    suspend fun getAreaList(useCache: Boolean = false): List<Area>
+    suspend fun getDeviceList(useCache: Boolean = false): List<HomeAssistantDevice>
+    suspend fun getDevice(deviceId: String, useCache: Boolean): HomeAssistantDevice?
     suspend fun subscribeToStateChangedEvents(): Flow<HomeAssistantStateChangedEvent>
 }

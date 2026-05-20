@@ -115,7 +115,7 @@ internal class SceneCreateViewModel @Inject constructor(
 
         val devices: MutableMap<String, DeviceDraftCard> = mutableMapOf()
         for ((deviceId, items) in itemsByDevice) {
-            val device = runCatching { websocketRepository.getDevice(deviceId) }.getOrNull()
+            val device = runCatching { websocketRepository.getDevice(deviceId, useCache = true) }.getOrNull()
             devices[deviceId] = DeviceDraftCard(
                     deviceId = deviceId,
                     name = device?.name?.takeIf { it.isNotBlank() } ?: deviceId,

@@ -1,5 +1,6 @@
 package com.anadolstudio.template.feature.home.domain.model.states
 
+import com.anadolstudio.ha_resources.HaIcon
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -17,6 +18,7 @@ data class NumberAttribute(
         @SerialName("mode") val mode: String? = null,
         @SerialName("unit_of_measurement") val unitOfMeasurement: String = "",
         @SerialName("device_class") val deviceClass: String = "",
+        @SerialName("icon") override val icon: HaIcon? = null
 ) : HomeAssistantAttribute
 
 fun JsonObject.toNumber(json: Json): NumberAttribute = json

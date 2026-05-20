@@ -25,9 +25,6 @@ data class HomeAssistantState<out Attributes : HomeAssistantAttribute>(
 sealed interface HomeAssistantAttribute : Iconable {
     val jsonAttributes: JsonObject
     val friendlyName: String
-
-    override val icon: HaIcon?
-        get() = null
 }
 
 fun <E : HomeAssistantAttribute, T : HomeAssistantAttribute> HomeAssistantState<E>.mapAttributes(

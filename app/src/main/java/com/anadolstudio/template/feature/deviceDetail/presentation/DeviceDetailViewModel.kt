@@ -111,7 +111,7 @@ internal class DeviceDetailViewModel @AssistedInject constructor(
     }
 
     private suspend fun loadDeviceAndRelations(): DeviceRelations? {
-        val device = websocketRepository.getDevice(state.deviceId) ?: return null
+        val device = websocketRepository.getDevice(state.deviceId, useCache = true) ?: return null
         val deviceEntityIds = device.allEntityList.map { it.entityId }.toSet()
         val allEntities = websocketRepository.getEntityList()
 

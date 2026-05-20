@@ -1,5 +1,6 @@
 package com.anadolstudio.template.feature.home.domain.model.states
 
+import com.anadolstudio.ha_resources.HaIcon
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -40,6 +41,7 @@ data class ClimateAttribute(
          * Используется для определения, какие управляющие элементы UI имеет смысл показывать.
          */
         @SerialName("supported_features") val supportedFeatures: Int? = null,
+        @SerialName("icon") override val icon: HaIcon? = null
 ) : HomeAssistantAttribute
 
 fun JsonObject.toClimate(json: Json): ClimateAttribute = json
