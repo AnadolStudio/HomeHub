@@ -6,6 +6,7 @@ import com.anadolstudio.template.event.navigateUp
 import com.anadolstudio.template.event.showError
 import com.anadolstudio.template.feature.home.domain.HAWebsocketRepository
 import com.anadolstudio.template.feature.home.domain.model.Area
+import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.main.MainGraph.navigateToDeviceDetailFromPicker
 import com.anadolstudio.utils.states.LoadingContext
 import com.anadolstudio.utils.states.lce.lceFlow
@@ -53,9 +54,9 @@ internal class SceneDevicePickerViewModel @Inject constructor(
 
     override fun onAreaSelected(area: Area?) = updateState { copy(selectedAreaId = area?.areaId) }
 
-    override fun onDeviceClicked(deviceId: String) {
+    override fun onDeviceClicked(device: HomeAssistantDevice) {
         // Сразу попаем picker — после возврата из DeviceDetail юзер окажется на SceneCreate.
-        navigateToDeviceDetailFromPicker(deviceId)
+        navigateToDeviceDetailFromPicker(device)
     }
 
     override fun onRetryClicked() = load(LoadingContext.RETRY)

@@ -1,19 +1,45 @@
 package com.anadolstudio.template.feature.home.domain.model.states
 
 import androidx.core.text.isDigitsOnly
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed class AllowedState(val value: String) {
+sealed class AllowedState {
 
-    object On : AllowedState(value = "on")
-    object Off : AllowedState(value = "off")
-    object Unavailable : AllowedState(value = "unavailable")
-    object Unknown : AllowedState(value = "unknown")
+    abstract val value: String
 
-    class DigitState(value: String) : AllowedState(value = value)
+    @Serializable
+    @SerialName("On")
+    object On : AllowedState() {
+        override val value: String get() = "on"
+    }
 
-    class UnprocessedState(value: String) : AllowedState(value = value);
+    @Serializable
+    @SerialName("Off")
+    object Off : AllowedState() {
+        override val value: String get() = "off"
+    }
+
+    @Serializable
+    @SerialName("Unavailable")
+    object Unavailable : AllowedState() {
+        override val value: String get() = "unavailable"
+    }
+
+    @Serializable
+    @SerialName("Unknown")
+    object Unknown : AllowedState() {
+        override val value: String get() = "unknown"
+    }
+
+    @Serializable
+    @SerialName("DigitState")
+    data class DigitState(override val value: String) : AllowedState()
+
+    @Serializable
+    @SerialName("UnprocessedState")
+    data class UnprocessedState(override val value: String) : AllowedState()
 
     fun toBooleanOrNull(): Boolean? = when (this) {
         is On -> true

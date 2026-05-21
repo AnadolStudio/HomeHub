@@ -9,6 +9,7 @@ data class AppThemeColors(
     val colorPrimary: Color,
     val colorSecondary: Color,
     val colorAccent: Color,
+    val colorAccentAlternative: Color = colorAccent.copy(0.5f),
     val colorError: Color,
     val textPrimary: Color,
     val textSecondary: Color,

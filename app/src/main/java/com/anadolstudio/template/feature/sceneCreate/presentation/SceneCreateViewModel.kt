@@ -166,13 +166,10 @@ internal class SceneCreateViewModel @Inject constructor(
         // Снапшот для Edit-flow берём прямо из репозитория, потому что SceneCreate сам обладает
         // VM-инстансом и нет нужды передавать через savedStateHandle.
         viewModelScope.launch {
-            runCatching { websocketRepository.getDevice(deviceId, useCache = false) }
-                    .onSuccess { device ->
-                        if (device != null) {
-                            pendingSnapshots[deviceId] = device.allEntityList.associateBy { it.entityId }
-                        }
-                    }
-            navigateToDeviceDetailFromSceneCreate(deviceId)
+            val device = runCatching { websocketRepository.getDevice(deviceId, useCache = false) }
+                    .getOrNull() ?: return@launch
+            pendingSnapshots[deviceId] = device.allEntityList.associateBy { it.entityId }
+            navigateToDeviceDetailFromSceneCreate(device)
         }
     }
 

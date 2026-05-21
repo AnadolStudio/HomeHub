@@ -6,8 +6,10 @@ import com.anadolstudio.template.feature.home.domain.model.DeviceImage.ImageUrlT
 import com.anadolstudio.template.feature.home.domain.model.entity.EntityCategory
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
+import kotlinx.serialization.Serializable
 
 @Immutable
+@Serializable
 data class HomeAssistantDevice(
         val id: String,
         val name: String,

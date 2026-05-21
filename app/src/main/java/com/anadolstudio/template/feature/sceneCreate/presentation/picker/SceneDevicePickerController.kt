@@ -1,6 +1,7 @@
 package com.anadolstudio.template.feature.sceneCreate.presentation.picker
 
 import com.anadolstudio.template.feature.home.domain.model.Area
+import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 
 internal interface SceneDevicePickerController {
 
@@ -8,7 +9,7 @@ internal interface SceneDevicePickerController {
 
     fun onAreaSelected(area: Area?)
 
-    fun onDeviceClicked(deviceId: String)
+    fun onDeviceClicked(device: HomeAssistantDevice)
 
     fun onRetryClicked()
 

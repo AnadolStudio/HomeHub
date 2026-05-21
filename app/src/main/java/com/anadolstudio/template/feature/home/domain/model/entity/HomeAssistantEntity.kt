@@ -31,3 +31,7 @@ fun <E : HomeAssistantAttribute, T : HomeAssistantAttribute> HomeAssistantEntity
         platform = platform,
         state = state.mapAttributes(block)
 )
+
+inline fun <reified Attribute : HomeAssistantAttribute> List<HomeAssistantEntity<HomeAssistantAttribute>>.castEntityList() = this
+        .filter { it.state.attributes is Attribute }
+        .map { it as HomeAssistantEntity<Attribute>}

@@ -46,7 +46,7 @@ internal object MainGraph : NavGraphContract() {
 
     private val urlArgument = stringArgument(name = "url")
 
-    private val deviceIdArgument = stringArgument(name = "deviceId")
+    private val deviceArgument = stringArgument(name = "device")
 
     private val lightDetailArgsArgument = stringArgument(name = "lightDetailArgs")
 
@@ -82,9 +82,10 @@ internal object MainGraph : NavGraphContract() {
 
     private fun sceneDevicePicker() = route { "sceneDevicePicker" }
 
-    private fun deviceDetail() = route { "deviceDetail/{${deviceIdArgument.name}}" }
+    private fun deviceDetail() = route { "deviceDetail/{${deviceArgument.name}}" }
 
-    private fun deviceDetail(deviceId: String): String = route { "deviceDetail/${Uri.encode(deviceId)}" }
+    private fun deviceDetail(device: HomeAssistantDevice): String =
+            route { "deviceDetail/${Uri.encode(objectToString(device))}" }
 
     private fun lightDetail() = route { "lightDetail/{${lightDetailArgsArgument.name}}" }
 
@@ -155,17 +156,17 @@ internal object MainGraph : NavGraphContract() {
         }
         bottomSheet(
                 route = deviceDetail(),
-                arguments = listOf(deviceIdArgument),
+                arguments = listOf(deviceArgument),
         ) { entry ->
             // Workaround for accompanist navigation-material bug: при переходе между bot-sheet'ами
             // sheetContent может пересоставиться с уже-DESTROYED NavBackStackEntry,
             // и viewModel(...) падает с IllegalStateException.
             if (entry.lifecycle.currentState == Lifecycle.State.DESTROYED) return@bottomSheet
-            val deviceId = entry.requireStringArgument(deviceIdArgument)
+            val device = entry.requireObject<HomeAssistantDevice>(deviceArgument)
             DeviceDetailScreen(
                     navigator = navigator,
                     snackbarHostState = snackbarHostState,
-                    deviceId = deviceId,
+                    device = device,
             )
         }
         bottomSheet(
@@ -215,15 +216,15 @@ internal object MainGraph : NavGraphContract() {
     fun SceneCreateViewModel.navigateToSceneDevicePicker() = navigateTo(sceneDevicePicker())
 
     /** Изменение уже добавленного устройства: открываем DeviceDetail напрямую из SceneCreate. */
-    fun SceneCreateViewModel.navigateToDeviceDetailFromSceneCreate(deviceId: String) =
-            navigateTo(deviceDetail(deviceId))
+    fun SceneCreateViewModel.navigateToDeviceDetailFromSceneCreate(device: HomeAssistantDevice) =
+            navigateTo(deviceDetail(device))
 
     /**
      * Из picker'а попадаем в DeviceDetail с popUpTo picker (inclusive): после закрытия
      * DeviceDetail юзер возвращается на SceneCreate, а не на picker.
      */
-    fun SceneDevicePickerViewModel.navigateToDeviceDetailFromPicker(deviceId: String) =
-            navigateTo(deviceDetail(deviceId)) {
+    fun SceneDevicePickerViewModel.navigateToDeviceDetailFromPicker(device: HomeAssistantDevice) =
+            navigateTo(deviceDetail(device)) {
                 popUpTo(sceneDevicePicker()) { inclusive = true }
             }
 
@@ -231,7 +232,7 @@ internal object MainGraph : NavGraphContract() {
             navigateTo(lightDetail(args))
 
     fun HomeViewModel.navigateToDeviceDetail(device: HomeAssistantDevice) =
-            navigateTo(deviceDetail(device.id))
+            navigateTo(deviceDetail(device))
 
     fun RegisterUserViewModel.navigateToHome() = navigateFromRoot(home())
 

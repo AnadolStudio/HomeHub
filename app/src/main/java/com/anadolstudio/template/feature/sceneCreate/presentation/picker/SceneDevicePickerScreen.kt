@@ -74,7 +74,7 @@ internal fun SceneDevicePickerScreen(
                         SCENE_DEVICE_SNAPSHOT_KEY,
                         ArrayList<HomeAssistantEntity<HomeAssistantAttribute>>(item.device.allEntityList),
                 )
-                viewModel.onDeviceClicked(item.device.id)
+                viewModel.onDeviceClicked(item.device)
             },
     )
 }

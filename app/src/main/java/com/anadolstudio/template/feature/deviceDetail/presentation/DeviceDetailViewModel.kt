@@ -1,21 +1,27 @@
 package com.anadolstudio.template.feature.deviceDetail.presentation
 
 import androidx.lifecycle.viewModelScope
+import com.anadolstudio.template.R
 import com.anadolstudio.template.base.viewmodel.StatefulViewModel
+import com.anadolstudio.template.core.websocket.connection.WebSocketConnectionState
 import com.anadolstudio.template.event.showError
+import com.anadolstudio.template.feature.common.domain.ResourceRepository
 import com.anadolstudio.template.feature.home.domain.HARestRepository
 import com.anadolstudio.template.feature.home.domain.HAWebsocketRepository
 import com.anadolstudio.template.feature.home.domain.model.AllowedDomain
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
+import com.anadolstudio.template.feature.home.domain.model.entity.castEntityList
 import com.anadolstudio.template.feature.home.domain.model.entity.mapAttributes
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
 import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistantService
+import com.anadolstudio.template.feature.home.domain.model.services.NumberService
 import com.anadolstudio.template.feature.home.domain.model.states.AllowedState
 import com.anadolstudio.template.feature.home.domain.model.states.AutomationAttributes
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 import com.anadolstudio.template.feature.home.domain.model.states.LightAttribute
+import com.anadolstudio.template.feature.home.domain.model.states.NumberAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.SceneAttributes
 import com.anadolstudio.template.feature.home.domain.model.states.SensorAttributes
 import com.anadolstudio.template.feature.home.domain.model.states.toAutomation
@@ -25,12 +31,14 @@ import com.anadolstudio.template.feature.main.MainGraph.navigateToLightDetail
 import com.anadolstudio.utils.states.LoadingContext
 import com.anadolstudio.utils.states.lce.lceFlow
 import com.anadolstudio.utils.states.lce.lceStateFlow
+import com.anadolstudio.utils.states.lce.mapToLce
 import com.anadolstudio.utils.states.lce.onEachContent
 import com.anadolstudio.utils.states.lce.onEachError
 import com.anadolstudio.utils.states.lce.onEachProgressState
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import java.math.BigDecimal
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.Job
@@ -41,12 +49,29 @@ private const val HISTORY_HOURS_LOOKBACK = 24L
 private const val HISTORY_DISPLAY_LIMIT = 15
 
 internal class DeviceDetailViewModel @AssistedInject constructor(
-        @Assisted deviceId: String,
+        @Assisted device: HomeAssistantDevice,
+        private val resource: ResourceRepository,
         private val websocketRepository: HAWebsocketRepository,
         private val restRepository: HARestRepository,
         private val json: Json,
-) : StatefulViewModel<DeviceDetailScreenState>(DeviceDetailScreenState(deviceId = deviceId)),
-    DeviceDetailController {
+) : StatefulViewModel<DeviceDetailScreenState>(
+        DeviceDetailScreenState(
+                device = device,
+                entityIdToTextFieldDataMap = device.allEntityList
+                        .castEntityList<NumberAttribute>()
+                        .associateBy(
+                                keySelector = { it.entityId },
+                                valueTransform = {
+                                    val attr = it.state.attributes
+
+                                    TextFieldData(
+                                            value = it.state.allowedState.value,
+                                            hintText = resource.getDefaultTextFieldDataHint(attr.min, attr.max)
+                                    )
+                                }
+                        )
+        )
+), DeviceDetailController {
 
     private var historyJob: Job? = null
     private var hasStartedInitialLoad = false
@@ -54,37 +79,30 @@ internal class DeviceDetailViewModel @AssistedInject constructor(
     override fun onSheetExpanded() {
         if (hasStartedInitialLoad) return
         hasStartedInitialLoad = true
-        loadDevice(loadingContext = LoadingContext.INIT_LOADING)
+        loadRelations(loadingContext = LoadingContext.REFRESH)
+        loadHistory(state.device, loadingContext = LoadingContext.REFRESH)
+        observeConnectionState()
     }
 
-    private fun loadDevice(loadingContext: LoadingContext) {
-        updateState {
-            copy(
-                    device = null,
-                    sceneList = emptyList(),
-                    automationList = emptyList(),
-                    historyState = HistoryState(),
-            )
-        }
+    private fun observeConnectionState() {
+        websocketRepository.webSocketConnectionState.mapToLce()
+                .onEachContent { connectionState ->
+                    if (connectionState is WebSocketConnectionState.ConnectedAuthenticated) {
+                        subscribeToStateChangedEvents()
+                    }
+                }
+                .launchIn(viewModelScope)
+    }
 
-        lceFlow { loadDeviceAndRelations() }
+    private fun loadRelations(loadingContext: LoadingContext) {
+        lceFlow { loadRelations(state.device) }
                 .onEachProgressState(
                         previousState = state.progressState,
                         loadingContext = loadingContext,
                         onNewProgressState = { newState -> updateState { copy(progressState = newState) } },
                 )
-                .onEachContent { result ->
-                    updateState {
-                        copy(
-                                device = result?.device,
-                                sceneList = result?.scenes.orEmpty(),
-                                automationList = result?.automations.orEmpty(),
-                        )
-                    }
-                    if (result != null) {
-                        loadHistory(result.device, loadingContext = LoadingContext.INIT_LOADING)
-                        subscribeToStateChangedEvents()
-                    }
+                .onEachContent { relations ->
+                    updateState { copy(sceneList = relations.scenes, automationList = relations.automations) }
                 }
                 .launchIn(viewModelScope)
     }
@@ -98,7 +116,7 @@ internal class DeviceDetailViewModel @AssistedInject constructor(
     }
 
     private fun applyStateChangedEvent(event: HomeAssistantStateChangedEvent) {
-        val device = state.device ?: return
+        val device = state.device
         val entityId = event.entityId
         if (device.allEntityList.none { it.entityId == entityId }) return
 
@@ -110,8 +128,7 @@ internal class DeviceDetailViewModel @AssistedInject constructor(
         updateState { copy(device = device.copy(entityMap = newEntityMap)) }
     }
 
-    private suspend fun loadDeviceAndRelations(): DeviceRelations? {
-        val device = websocketRepository.getDevice(state.deviceId, useCache = true) ?: return null
+    private suspend fun loadRelations(device: HomeAssistantDevice): DeviceRelations {
         val deviceEntityIds = device.allEntityList.map { it.entityId }.toSet()
         val allEntities = websocketRepository.getEntityList()
 
@@ -133,7 +150,7 @@ internal class DeviceDetailViewModel @AssistedInject constructor(
                 .sortedBy { it.name }
                 .toList()
 
-        return DeviceRelations(device = device, scenes = scenes, automations = automations)
+        return DeviceRelations(scenes = scenes, automations = automations)
     }
 
     private fun loadHistory(device: HomeAssistantDevice, loadingContext: LoadingContext) {
@@ -210,7 +227,7 @@ internal class DeviceDetailViewModel @AssistedInject constructor(
 
     override fun onEntityChanged(
             entity: HomeAssistantEntity<HomeAssistantAttribute>,
-            service: HomeAssistantService<*>
+            service: HomeAssistantService<*>,
     ) {
         lceStateFlow {
             websocketRepository.callService(
@@ -221,29 +238,20 @@ internal class DeviceDetailViewModel @AssistedInject constructor(
         }.launchIn(viewModelScope)
     }
 
-    override fun onShowError(message: String) = showError(message)
-
     override fun onLightEntityClicked(entity: HomeAssistantEntity<HomeAssistantAttribute>) {
         val attribute = entity.state.attributes as? LightAttribute ?: return
         val args = LightDetailArgs(
                 entityId = entity.entityId,
                 attribute = attribute,
                 isOn = entity.state.allowedState is AllowedState.On,
-                areaName = state.device?.area?.name,
+                areaName = state.device.area?.name,
         )
         navigateToLightDetail(args)
     }
 
-    override fun onRetryClicked() = loadDevice(loadingContext = LoadingContext.RETRY)
+    override fun onRetryClicked() = loadRelations(loadingContext = LoadingContext.RETRY)
 
-    override fun onHistoryRetryClicked() {
-        val device = state.device
-        if (device == null) {
-            loadDevice(loadingContext = LoadingContext.RETRY)
-        } else {
-            loadHistory(device, loadingContext = LoadingContext.RETRY)
-        }
-    }
+    override fun onHistoryRetryClicked() = loadHistory(state.device, loadingContext = LoadingContext.RETRY)
 
     private fun HomeAssistantEntity<AutomationAttributes>.referencesAnyOf(entityIds: Set<String>): Boolean {
         if (entityIds.isEmpty()) return false
@@ -252,13 +260,87 @@ internal class DeviceDetailViewModel @AssistedInject constructor(
     }
 
     private data class DeviceRelations(
-            val device: HomeAssistantDevice,
             val scenes: List<HomeAssistantEntity<SceneAttributes>>,
             val automations: List<HomeAssistantEntity<AutomationAttributes>>,
     )
 
+    override fun onNumericEntityChanged(
+            value: String,
+            entity: HomeAssistantEntity<NumberAttribute>,
+    ) {
+        val attributes = entity.state.attributes
+        val parsed = value.toDoubleOrNull()
+        val min = attributes.min
+        val max = attributes.max
+        val isError = parsed == null ||
+                (min != null && parsed < min) ||
+                (max != null && parsed > max)
+
+        val minMessage = min?.let { resource.getString(R.string.device_detail_number_min_format, min.toString()) }
+        val maxMessage = max?.let { resource.getString(R.string.device_detail_number_max_format, max.toString()) }
+
+        val errorText = when {
+            parsed == null -> resource.getString(R.string.device_detail_number_invalid)
+            minMessage != null && parsed < min -> minMessage
+            maxMessage != null && parsed > max -> maxMessage
+            else -> null
+        }
+
+        val newEntityIdToTextFieldDataMap = state.entityIdToTextFieldDataMap.toMutableMap()
+        newEntityIdToTextFieldDataMap[entity.entityId] = TextFieldData(
+                value = value,
+                hasError = isError,
+                hintText = errorText ?: resource.getDefaultTextFieldDataHint(min, max)
+        )
+
+        updateState { copy(entityIdToTextFieldDataMap = newEntityIdToTextFieldDataMap) }
+    }
+
+    override fun onNumericEntityFocusLost(entity: HomeAssistantEntity<NumberAttribute>) {
+        val textData = state.entityIdToTextFieldDataMap[entity.entityId] ?: return
+
+        if (!textData.hasError) {
+            onEntityChanged(entity, NumberService.SetValue(textData.value))
+        }
+
+        val attr = entity.state.attributes
+        val newEntityIdToTextFieldDataMap = state.entityIdToTextFieldDataMap.toMutableMap()
+        newEntityIdToTextFieldDataMap[entity.entityId] = TextFieldData(
+                value = textData.value.ifBlank { entity.state.allowedState.value },
+                hasError = false,
+                hintText = resource.getDefaultTextFieldDataHint(attr.min, attr.max)
+        )
+
+        updateState { copy(entityIdToTextFieldDataMap = newEntityIdToTextFieldDataMap) }
+    }
+
     @AssistedFactory
     interface Factory {
-        fun create(deviceId: String): DeviceDetailViewModel
+        fun create(device: HomeAssistantDevice): DeviceDetailViewModel
     }
 }
+
+private fun ResourceRepository.getDefaultTextFieldDataHint(
+        min: Double?,
+        max: Double?,
+): String = if (min != null && max != null) {
+    getString(
+            R.string.device_detail_number_range_format,
+            min.toPlainTrimmed(),
+            max.toPlainTrimmed(),
+    )
+} else {
+    ""
+}
+
+/**
+ * Превращает Double в строку без незначащих нулей в дробной части.
+ *
+ * Примеры:
+ *   1.0   -> "1"
+ *   1.50  -> "1.5"
+ *   -2.5  -> "-2.5"
+ *   100.0 -> "100"
+ *   0.10  -> "0.1"
+ */
+private fun Double.toPlainTrimmed(): String = BigDecimal.valueOf(this).stripTrailingZeros().toPlainString()

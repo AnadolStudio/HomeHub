@@ -9,10 +9,19 @@ import com.anadolstudio.utils.states.ProgressState
 
 @Immutable
 internal data class DeviceDetailScreenState(
-        val deviceId: String,
-        val device: HomeAssistantDevice? = null,
+        val device: HomeAssistantDevice,
+        val entityIdToTextFieldDataMap: Map<String, TextFieldData>,
         val sceneList: List<HomeAssistantEntity<SceneAttributes>> = emptyList(),
         val automationList: List<HomeAssistantEntity<AutomationAttributes>> = emptyList(),
         val historyState: HistoryState = HistoryState(),
-        val progressState: ProgressState = ProgressState.Loading,
+        val progressState: ProgressState = ProgressState.Content,
+) {
+    val deviceId: String get() = device.id
+}
+
+@Immutable
+internal data class TextFieldData(
+        val value: String,
+        val hasError: Boolean = false,
+        val hintText: String = "",
 )
