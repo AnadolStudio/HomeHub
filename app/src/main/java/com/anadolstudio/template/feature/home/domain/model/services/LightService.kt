@@ -26,6 +26,17 @@ sealed class LightService<T : Any>(
         }
     }
 
+    class SetHsColor(hue: Float, saturation: Float) : LightService<List<Float>>(
+            key = "turn_on",
+            valueMap = mapOf("hs_color" to listOf(hue, saturation)),
+    ) {
+        override fun getServiceData(): JsonObject = buildJsonObject {
+            putJsonArray("hs_color") {
+                valueMap.getValue("hs_color").forEach { add(it) }
+            }
+        }
+    }
+
     class SetBrightness(percent: Int) : LightService<Int>(
             key = "turn_on",
             valueMap = mapOf("brightness_pct" to percent),

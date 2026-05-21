@@ -1,7 +1,5 @@
 package com.anadolstudio.template.feature.home.presentation.components
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BrokenImage
@@ -12,7 +10,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
@@ -38,17 +35,11 @@ internal fun DeviceImageView(
 
     when (image) {
         is DeviceImage.HaIconType -> {
-            val targetColor = image.haIcon.tint?.let { Color(it) } ?: AppTheme.colors.colorAccent
-            val tint by animateColorAsState(
-                    targetValue = targetColor,
-                    animationSpec = tween(durationMillis = 300),
-                    label = "HaIconTint",
-            )
             Icon(
                     painter = image.haIcon.toPainter(),
                     contentDescription = null,
                     modifier = modifier,
-                    tint = tint,
+                    tint = AppTheme.colors.colorAccent,
             )
         }
 

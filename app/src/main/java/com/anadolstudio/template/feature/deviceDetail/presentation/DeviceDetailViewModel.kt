@@ -5,6 +5,7 @@ import com.anadolstudio.template.R
 import com.anadolstudio.template.base.viewmodel.StatefulViewModel
 import com.anadolstudio.template.core.websocket.connection.WebSocketConnectionState
 import com.anadolstudio.template.event.showError
+import com.anadolstudio.template.event.showMessage
 import com.anadolstudio.template.feature.common.domain.ResourceRepository
 import com.anadolstudio.template.feature.home.domain.HARestRepository
 import com.anadolstudio.template.feature.home.domain.HAWebsocketRepository
@@ -20,17 +21,14 @@ import com.anadolstudio.template.feature.home.domain.model.states.AllowedState
 import com.anadolstudio.template.feature.home.domain.model.states.AutomationAttributes
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
-import com.anadolstudio.template.feature.home.domain.model.states.LightAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.NumberAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.SceneAttributes
 import com.anadolstudio.template.feature.home.domain.model.states.SensorAttributes
 import com.anadolstudio.template.feature.home.domain.model.states.toAutomation
 import com.anadolstudio.template.feature.home.domain.model.states.toScene
-import com.anadolstudio.template.feature.lightDetail.presentation.LightDetailArgs
-import com.anadolstudio.template.feature.main.MainGraph.navigateToLightDetail
+import com.anadolstudio.template.util.mapIfContains
 import com.anadolstudio.utils.states.LoadingContext
 import com.anadolstudio.utils.states.lce.lceFlow
-import com.anadolstudio.utils.states.lce.lceStateFlow
 import com.anadolstudio.utils.states.lce.mapToLce
 import com.anadolstudio.utils.states.lce.onEachContent
 import com.anadolstudio.utils.states.lce.onEachError
@@ -61,12 +59,13 @@ internal class DeviceDetailViewModel @AssistedInject constructor(
                         .castEntityList<NumberAttribute>()
                         .associateBy(
                                 keySelector = { it.entityId },
-                                valueTransform = {
-                                    val attr = it.state.attributes
+                                valueTransform = { entity ->
+                                    val attr = entity.state.attributes
 
                                     TextFieldData(
-                                            value = it.state.allowedState.value,
-                                            hintText = resource.getDefaultTextFieldDataHint(attr.min, attr.max)
+                                            value = entity.state.allowedState.value,
+                                            hintText = resource.getDefaultTextFieldDataHint(attr.min, attr.max),
+                                            enable = entity.state.allowedState !is AllowedState.Unavailable
                                     )
                                 }
                         )
@@ -121,11 +120,30 @@ internal class DeviceDetailViewModel @AssistedInject constructor(
         if (device.allEntityList.none { it.entityId == entityId }) return
 
         val newEntityMap = device.entityMap.mapValues { (_, entities) ->
-            entities.map { entity ->
-                if (entity.entityId == entityId) entity.copy(state = event.newState) else entity
+            entities.mapIfContains(
+                    condition = { it.entityId == entityId },
+                    provideNewElement = { it.copy(state = event.newState) }
+            )
+        }
+
+        val entityIdToTextFieldDataMap = state.entityIdToTextFieldDataMap.mapValues { (entityId, data) ->
+            if (entityId == event.entityId) {
+                data.copy(
+                        value = event.newState.allowedState.value,
+                        hasError = false,
+                        enable = event.newState.allowedState !is AllowedState.Unavailable,
+                )
+            } else {
+                data
             }
         }
-        updateState { copy(device = device.copy(entityMap = newEntityMap)) }
+
+        updateState {
+            copy(
+                    device = device.copy(entityMap = newEntityMap),
+                    entityIdToTextFieldDataMap = entityIdToTextFieldDataMap
+            )
+        }
     }
 
     private suspend fun loadRelations(device: HomeAssistantDevice): DeviceRelations {
@@ -229,24 +247,13 @@ internal class DeviceDetailViewModel @AssistedInject constructor(
             entity: HomeAssistantEntity<HomeAssistantAttribute>,
             service: HomeAssistantService<*>,
     ) {
-        lceStateFlow {
-            websocketRepository.callService(
-                    entityId = entity.entityId,
-                    domain = entity.domain,
-                    service = service,
-            )
-        }.launchIn(viewModelScope)
-    }
-
-    override fun onLightEntityClicked(entity: HomeAssistantEntity<HomeAssistantAttribute>) {
-        val attribute = entity.state.attributes as? LightAttribute ?: return
-        val args = LightDetailArgs(
-                entityId = entity.entityId,
-                attribute = attribute,
-                isOn = entity.state.allowedState is AllowedState.On,
-                areaName = state.device.area?.name,
-        )
-        navigateToLightDetail(args)
+        lceFlow {
+            websocketRepository.callService(entityId = entity.entityId, domain = entity.domain, service = service)
+        }
+                .onEachContent { isSuccess ->
+                    if (!isSuccess) showMessage("не удалось выполнить ${entity.entityId}/${entity.domain}")
+                }
+                .launchIn(viewModelScope)
     }
 
     override fun onRetryClicked() = loadRelations(loadingContext = LoadingContext.RETRY)
@@ -290,7 +297,8 @@ internal class DeviceDetailViewModel @AssistedInject constructor(
         newEntityIdToTextFieldDataMap[entity.entityId] = TextFieldData(
                 value = value,
                 hasError = isError,
-                hintText = errorText ?: resource.getDefaultTextFieldDataHint(min, max)
+                hintText = errorText ?: resource.getDefaultTextFieldDataHint(min, max),
+                enable = entity.state.allowedState !is AllowedState.Unavailable
         )
 
         updateState { copy(entityIdToTextFieldDataMap = newEntityIdToTextFieldDataMap) }
@@ -305,10 +313,14 @@ internal class DeviceDetailViewModel @AssistedInject constructor(
 
         val attr = entity.state.attributes
         val newEntityIdToTextFieldDataMap = state.entityIdToTextFieldDataMap.toMutableMap()
+        val allowedState = entity.state.allowedState
+        val value = if (textData.hasError) allowedState.value else textData.value
+
         newEntityIdToTextFieldDataMap[entity.entityId] = TextFieldData(
-                value = textData.value.ifBlank { entity.state.allowedState.value },
+                value = value,
                 hasError = false,
-                hintText = resource.getDefaultTextFieldDataHint(attr.min, attr.max)
+                hintText = resource.getDefaultTextFieldDataHint(attr.min, attr.max),
+                enable = entity.state.allowedState !is AllowedState.Unavailable
         )
 
         updateState { copy(entityIdToTextFieldDataMap = newEntityIdToTextFieldDataMap) }

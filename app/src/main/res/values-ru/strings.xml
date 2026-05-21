@@ -77,4 +77,10 @@
     <string name="device_detail_number_range_format">Диапазон: %1$s … %2$s</string>
     <string name="device_detail_number_min_format">Не меньше %1$s</string>
     <string name="device_detail_number_max_format">Не больше %1$s</string>
+
+    <string name="light_color_mode_brightness">Яркость</string>
+    <string name="light_color_mode_hs">Цвет</string>
+    <string name="light_color_mode_temperature">Температура</string>
+    <string name="light_color_mode_rgb">RGB</string>
+    <string name="light_color_mode_xy">XY</string>
 </resources>

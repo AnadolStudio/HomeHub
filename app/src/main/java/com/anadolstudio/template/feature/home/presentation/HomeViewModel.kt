@@ -3,6 +3,7 @@ package com.anadolstudio.template.feature.home.presentation
 import androidx.lifecycle.viewModelScope
 import com.anadolstudio.template.base.viewmodel.StatefulViewModel
 import com.anadolstudio.template.core.websocket.connection.WebSocketConnectionState
+import com.anadolstudio.template.event.showMessage
 import com.anadolstudio.template.event.showTodo
 import com.anadolstudio.template.feature.home.domain.HARestRepository
 import com.anadolstudio.template.feature.home.domain.HAWebsocketRepository
@@ -20,7 +21,6 @@ import com.anadolstudio.template.util.mapIfContains
 import com.anadolstudio.utils.states.LoadingContext
 import com.anadolstudio.utils.states.ProgressState
 import com.anadolstudio.utils.states.lce.lceFlow
-import com.anadolstudio.utils.states.lce.lceStateFlow
 import com.anadolstudio.utils.states.lce.mapContent
 import com.anadolstudio.utils.states.lce.mapToLce
 import com.anadolstudio.utils.states.lce.onEachContent
@@ -141,13 +141,13 @@ internal class HomeViewModel @Inject constructor(
             entity: HomeAssistantEntity<HomeAssistantAttribute>,
             service: HomeAssistantService<*>,
     ) {
-        lceStateFlow {
-            websocketRepository.callService(
-                    entityId = entity.entityId,
-                    domain = entity.domain,
-                    service = service,
-            )
-        }.launchIn(viewModelScope)
+        lceFlow {
+            websocketRepository.callService(entityId = entity.entityId, domain = entity.domain, service = service)
+        }
+                .onEachContent { isSuccess ->
+                    if (!isSuccess) showMessage("не удалось выполнить ${entity.entityId}/${entity.domain}")
+                }
+                .launchIn(viewModelScope)
     }
 
     override fun onDeviceClicked(device: HomeAssistantDevice) {

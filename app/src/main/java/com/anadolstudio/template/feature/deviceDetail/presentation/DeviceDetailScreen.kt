@@ -22,6 +22,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -31,6 +33,7 @@ import androidx.compose.material.Divider
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.outlined.WifiOff
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -47,6 +50,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -76,18 +80,23 @@ import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
 import com.anadolstudio.compose.ui.view.text.LargeTextField
 import com.anadolstudio.template.R
+import com.anadolstudio.template.base.view.HomeHubBrightnessRectangle
+import com.anadolstudio.template.base.view.HomeHubColorRectangle
+import com.anadolstudio.template.base.view.HomeHubColorTemperatureRectangle
+import com.anadolstudio.template.base.view.HomeHubFilterChip
 import com.anadolstudio.template.base.view.HomeHubLoader
 import com.anadolstudio.template.base.view.homeHubSwitchDefaults
+import com.anadolstudio.template.base.view.rememberThrottled
 import com.anadolstudio.template.di.viewmodel.assistedViewModel
 import com.anadolstudio.template.di.viewmodel.rememberViewModelFactory
 import com.anadolstudio.template.event.ObserveEvents
 import com.anadolstudio.template.feature.automation.common.presentation.AutomationItem
 import com.anadolstudio.template.feature.home.domain.model.AllowedDomain
-import com.anadolstudio.template.feature.home.domain.model.DeviceImage
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.entity.EntityCategory
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistantService
+import com.anadolstudio.template.feature.home.domain.model.services.LightService
 import com.anadolstudio.template.feature.home.domain.model.services.SelectService
 import com.anadolstudio.template.feature.home.domain.model.services.SimpleToggleableService
 import com.anadolstudio.template.feature.home.domain.model.states.AllowedState
@@ -96,6 +105,7 @@ import com.anadolstudio.template.feature.home.domain.model.states.ClimateAttribu
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 import com.anadolstudio.template.feature.home.domain.model.states.LightAttribute
+import com.anadolstudio.template.feature.home.domain.model.states.LightEntityColorMode
 import com.anadolstudio.template.feature.home.domain.model.states.NumberAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.SceneAttributes
 import com.anadolstudio.template.feature.home.domain.model.states.SelectAttribute
@@ -112,6 +122,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonObject
 
 private val DEVICE_DETAIL_IMAGE_SIZE = 120.dp
@@ -294,10 +305,7 @@ private fun GeneralInfoSection(device: HomeAssistantDevice) {
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             DeviceImageView(
-                    image = when (val image = device.image) {
-                        is DeviceImage.HaIconType -> image.copy(haIcon = image.haIcon.copy(tint = null))
-                        else -> device.image
-                    },
+                    image = device.image,
                     modifier = Modifier.size(DEVICE_DETAIL_IMAGE_SIZE),
                     imageSize = DEVICE_DETAIL_IMAGE_SIZE,
             )
@@ -329,7 +337,11 @@ private fun EntitySection(
     SectionContainer(title = title) {
         entities.forEach { entity ->
             when (entity.state.attributes) {
-                //                is LightAttribute -> TODO()
+                is LightAttribute -> LightEntityValueRow(
+                        entity = entity as HomeAssistantEntity<LightAttribute>,
+                        onEntityChanged = controller::onEntityChanged
+                )
+
                 is NumberAttribute -> NumericEntityValueRow(
                         entity = entity as HomeAssistantEntity<NumberAttribute>,
                         textFieldData = entityIdToTextFieldDataMap[entity.entityId] ?: TextFieldData(""),
@@ -340,14 +352,156 @@ private fun EntitySection(
                 else -> EntityValueRow(
                         entity = entity,
                         onEntityChanged = controller::onEntityChanged,
-                        onEntityClick = if (entity.state.attributes is LightAttribute) { // TODO
-                            { controller.onLightEntityClicked(entity) }
-                        } else {
-                            null
-                        },
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun LightEntityValueRow(
+        entity: HomeAssistantEntity<LightAttribute>,
+        onEntityChanged: ((HomeAssistantEntity<LightAttribute>, service: HomeAssistantService<*>) -> Unit),
+) {
+    val attributes = entity.state.attributes
+    val drawableRes = entity.state.icon.drawableRes
+    val displayTitle = entity.name
+
+    val modifier = Modifier
+            .fillMaxWidth()
+            .clip(Shapes.largeShimmer)
+            .background(AppTheme.colors.colorPrimary)
+            .heightIn(min = LocalMinimumInteractiveComponentSize.current)
+            .padding(vertical = Dimmens.smallMargin, horizontal = Dimmens.smallMargin)
+
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Dimmens.smallMargin),
+        ) {
+            BaseDescription(drawableRes, displayTitle)
+
+            SwitchAttributeControl(
+                    entity = entity,
+                    onEntityChanged = { _, _ -> onEntityChanged.invoke(entity, LightService.Toggle) }
+            )
+        }
+
+        if (entity.state.allowedState is AllowedState.Unavailable) return@Column
+
+        val colorPages = remember(attributes.colorModeList) {
+            val list = attributes.colorModeList
+            val hasHs = list.any { it is LightEntityColorMode.HS }
+            list.filter { mode ->
+                when (mode) {
+                    is LightEntityColorMode.XY -> false
+                    is LightEntityColorMode.RGB -> !hasHs
+                    else -> true
+                }
+            }
+        }
+
+        val brightnessTrackColor = attributes.color?.let { Color(it) } ?: AppTheme.colors.disable
+        val brightnessPercent = (attributes.brightness * 100 / 255).coerceIn(0, 100)
+
+        Spacer(modifier = Modifier.height(Dimmens.smallMargin))
+        val totalPages = colorPages.size + 1 // первая страница — brightness
+        val pagerState = rememberPagerState(pageCount = { totalPages })
+        val pageModifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .clip(RoundedCornerShape(Dimmens.smallMargin))
+
+        HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxWidth(),
+                pageSpacing = Dimmens.smallMargin,
+        ) { pageIndex ->
+            if (pageIndex == 0) {
+                HomeHubBrightnessRectangle(
+                        value = brightnessPercent,
+                        color = brightnessTrackColor,
+                        onChanged = { percent -> onEntityChanged(entity, LightService.SetBrightness(percent)) },
+                        modifier = pageModifier,
+                )
+            } else {
+                ColorModePage(
+                        mode = colorPages[pageIndex - 1],
+                        onServiceCalled = { service -> onEntityChanged(entity, service) },
+                        modifier = pageModifier,
+                )
+            }
+        }
+
+        if (totalPages > 1) {
+            Spacer(modifier = Modifier.height(Dimmens.smallMargin))
+            val scope = rememberCoroutineScope()
+
+            val labels = buildList {
+                    add(stringResource(R.string.light_color_mode_brightness))
+                    colorPages.forEach { mode ->
+                        when (mode) {
+                            is LightEntityColorMode.HS -> stringResource(R.string.light_color_mode_hs)
+                            is LightEntityColorMode.Temperature -> stringResource(R.string.light_color_mode_temperature)
+                            is LightEntityColorMode.RGB -> stringResource(R.string.light_color_mode_rgb)
+                            is LightEntityColorMode.XY -> stringResource(R.string.light_color_mode_xy)
+                        }.also {
+                            add(it)
+                        }
+                }
+            }
+            Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(Dimmens.smallMargin, Alignment.CenterHorizontally),
+            ) {
+                labels.forEachIndexed { index, label ->
+                    HomeHubFilterChip(
+                            selected = pagerState.currentPage == index,
+                            onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
+                            label = { Text(label) },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ColorModePage(
+        mode: LightEntityColorMode,
+        onServiceCalled: (HomeAssistantService<*>) -> Unit,
+        modifier: Modifier = Modifier,
+) {
+    // Не чаще одного раза в 300 мс, чтобы не спамить устройство во время свайпа по пикеру.
+    val throttledOnService = rememberThrottled<HomeAssistantService<*>>(action = onServiceCalled)
+    when (mode) {
+        is LightEntityColorMode.HS -> HomeHubColorRectangle(
+                hue = mode.hue.toFloat(),
+                saturation = mode.saturation.toFloat(),
+                onChanged = { h, s -> throttledOnService(LightService.SetHsColor(h, s)) },
+                showIndicator = mode.hasValue,
+                modifier = modifier
+        )
+
+        is LightEntityColorMode.RGB -> HomeHubColorRectangle(
+                red = mode.red,
+                green = mode.green,
+                blue = mode.blue,
+                onChanged = { r, g, b -> throttledOnService(LightService.SetRgbColor(r, g, b)) },
+                showIndicator = mode.hasValue,
+                modifier = modifier
+        )
+
+        is LightEntityColorMode.Temperature -> HomeHubColorTemperatureRectangle(
+                value = mode.current,
+                min = mode.min,
+                max = mode.max,
+                onChanged = { kelvin -> throttledOnService(LightService.SetColorTemp(kelvin)) },
+                showIndicator = mode.hasValue,
+                modifier = modifier
+        )
+
+        is LightEntityColorMode.XY -> Unit // отфильтровывается до пейджера
     }
 }
 
@@ -379,7 +533,6 @@ private fun NumericEntityValueRow(
 private fun EntityValueRow(
         entity: HomeAssistantEntity<HomeAssistantAttribute>,
         onEntityChanged: ((HomeAssistantEntity<HomeAssistantAttribute>, service: HomeAssistantService<*>) -> Unit),
-        onEntityClick: (() -> Unit)? = null,
 ) {
     val attributes = entity.state.attributes
     val drawableRes = entity.state.icon.drawableRes
@@ -390,7 +543,6 @@ private fun EntityValueRow(
             .fillMaxWidth()
             .clip(Shapes.largeShimmer)
             .background(AppTheme.colors.colorPrimary)
-            .clickable(enabled = onEntityClick != null, onClick = { onEntityClick?.invoke() })
             .heightIn(min = LocalMinimumInteractiveComponentSize.current)
             .padding(vertical = Dimmens.smallMargin, horizontal = Dimmens.smallMargin)
 
@@ -399,12 +551,10 @@ private fun EntityValueRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Dimmens.smallMargin),
     ) {
-        BaseDescription(drawableRes, attributes, displayTitle)
+        BaseDescription(drawableRes, displayTitle)
 
         when (attributes) {
             is ClimateAttribute -> {}
-            is LightAttribute -> {}
-
             is SelectAttribute -> SelectAttributeControl(
                     entity = entity,
                     attributes = attributes,
@@ -417,6 +567,7 @@ private fun EntityValueRow(
             )
 
             is NumberAttribute -> Unit
+            is LightAttribute -> Unit
 
             else -> Text(
                     text = displayValue,
@@ -432,14 +583,13 @@ private fun EntityValueRow(
 @Composable
 private fun RowScope.BaseDescription(
         drawableRes: Int,
-        attributes: HomeAssistantAttribute,
         displayTitle: String,
 ) {
     Icon(
             painter = painterResource(drawableRes),
             contentDescription = null,
             modifier = Modifier.size(24.dp),
-            tint = (attributes as? LightAttribute)?.color?.let { Color(it) } ?: AppTheme.colors.colorAccent,
+            tint = AppTheme.colors.colorAccent,
     )
     Text(
             modifier = Modifier.weight(1f),
@@ -476,6 +626,7 @@ private fun NumberAttributeControl(
             hintText = textFieldData.hintText,
             showHint = textFieldData.hintText.isNotBlank(),
             isError = textFieldData.hasError,
+            enabled = textFieldData.enable,
             singleLine = true,
             textStyle = style,
             keyboardOptions = KeyboardOptions(
@@ -501,8 +652,10 @@ private fun NumberAttributeControl(
                     },
             keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
             modifier = Modifier.onFocusChanged { focusState ->
+                if (isFocused && !focusState.isFocused && textFieldData.enable){
+                    onNumericEntityFocusLost.invoke(entity)
+                }
                 isFocused = focusState.isFocused
-                if (!isFocused) onNumericEntityFocusLost.invoke(entity)
             },
     )
 }
@@ -512,15 +665,23 @@ private fun SwitchAttributeControl(
         entity: HomeAssistantEntity<HomeAssistantAttribute>,
         onEntityChanged: (HomeAssistantEntity<HomeAssistantAttribute>, HomeAssistantService<*>) -> Unit,
 ) {
-    Switch(
-            modifier = Modifier,
-            checked = entity.state.allowedState.toBooleanOrNull() ?: false,
-            onCheckedChange = { value ->
-                val service = if (value) SimpleToggleableService.On else SimpleToggleableService.Off
-                onEntityChanged(entity, service)
-            },
-            colors = homeHubSwitchDefaults,
-    )
+    val allowedState = entity.state.allowedState
+    if (allowedState is AllowedState.Unavailable) {
+        Icon(
+                imageVector = Icons.Outlined.WifiOff,
+                contentDescription = null,
+                tint = AppTheme.colors.disable
+        )
+    } else {
+        Switch(
+                checked = entity.state.allowedState.toBooleanOrNull() ?: false,
+                onCheckedChange = { value ->
+                    val service = if (value) SimpleToggleableService.On else SimpleToggleableService.Off
+                    onEntityChanged(entity, service)
+                },
+                colors = homeHubSwitchDefaults,
+        )
+    }
 }
 
 @Composable
@@ -742,8 +903,7 @@ private fun SectionContainer(
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(Dimmens.mediumMargin))
                     .background(AppTheme.colors.colorPrimary)
-                    .padding(Dimmens.mediumMargin)
-                    .padding(bottom = Dimmens.extraSmallMargin),
+                    .padding(Dimmens.mediumMargin),
             verticalArrangement = Arrangement.spacedBy(Dimmens.extraSmallMargin),
     ) {
         Text(

@@ -62,7 +62,6 @@ import com.anadolstudio.template.R
 import com.anadolstudio.template.di.viewmodel.daggerViewModel
 import com.anadolstudio.template.event.ObserveEvents
 import com.anadolstudio.template.feature.deviceDetail.presentation.DeviceDetailResult
-import com.anadolstudio.template.feature.home.domain.model.DeviceImage
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.presentation.components.DeviceImageView
@@ -293,10 +292,7 @@ private fun DeviceCardView(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             DeviceImageView(
-                    image = when (val image = card.deviceImage) {
-                        is DeviceImage.HaIconType -> image.copy(haIcon = image.haIcon.copy(tint = null))
-                        else -> image
-                    },
+                    image = card.deviceImage,
                     modifier = Modifier.size(PICKER_DEVICE_IMAGE_SIZE),
                     imageSize = PICKER_DEVICE_IMAGE_SIZE,
             )

@@ -1,10 +1,11 @@
 package com.anadolstudio.template.feature.home.presentation.components
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowColumn
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -19,22 +20,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.HelpOutline
-import androidx.compose.material.icons.outlined.PanoramaFishEye
 import androidx.compose.material.icons.outlined.PowerSettingsNew
-import androidx.compose.material.icons.outlined.RemoveRedEye
 import androidx.compose.material.icons.outlined.WifiOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalDensity
@@ -83,50 +84,49 @@ fun DeviceCard(
             onDeviceClicked = onDeviceClicked,
     ) {
         val size = entityList.size
-        val maxItemsInEachColumn = remember(entityList.size) {
-            val columns = ((size + MAX_PER_COLUMN - 1) / MAX_PER_COLUMN).coerceAtLeast(1)
-            (size + columns - 1) / columns
-        }
 
         FlowColumn(
                 modifier = Modifier.fillMaxWidth(),
-                maxItemsInEachColumn = maxItemsInEachColumn,
+                maxItemsInEachColumn = MAX_PER_COLUMN,
         ) {
             entityList.forEach { entity ->
                 when (val attribute = entity.state.attributes) {
-                    is LightAttribute, is SwitchAttribute -> EntityItem(
-                            icon = when (entity.state.allowedState) {
-                                AllowedState.On,
-                                AllowedState.Unknown,
-                                AllowedState.Off -> Icons.Outlined.PowerSettingsNew
+                    is LightAttribute -> {
+                        // Оборачиваем в Column, чтобы для FlowColumn оба эти composable были
+                        // одним child'ом колонки (иначе maxItemsInEachColumn разводит их по
+                        // соседним колонкам — визуально это «в одну линию»).
+                        Column(verticalArrangement = Arrangement.spacedBy(Dimmens.extraSmallMargin)) {
+                            BaseSwitchEntityItem(
+                                    entity = entity,
+                                    size = size,
+                                    onInnerEntityClicked = onInnerEntityClicked
+                            )
+                            attribute.color?.let { argb ->
+                                val animatedColor by animateColorAsState(
+                                        targetValue = Color(argb),
+                                        label = "light_color",
+                                )
+                                Box(
+                                        modifier = Modifier
+                                                .size(24.dp)
+                                                .clip(CircleShape)
+                                                .background(animatedColor),
+                                )
+                            }
+                        }
+                    }
 
-                                else -> Icons.Outlined.WifiOff
-                            }.let { rememberVectorPainter(it) },
-                            text = entity.name.takeIf { size > 1 },
-                            isEnable = when (entity.state.allowedState) {
-                                AllowedState.On -> true
-                                AllowedState.Unavailable, AllowedState.Unknown, AllowedState.Off -> false
-                                else -> return@forEach
-                            },
-                            onClicked = { onInnerEntityClicked.invoke(entity) },
+                    is SwitchAttribute -> BaseSwitchEntityItem(
+                            entity = entity,
+                            size = size,
+                            onInnerEntityClicked = onInnerEntityClicked
                     )
 
-                    is SensorAttributes -> {
-                        EntityItem(
-                                icon = attribute.icon
-                                        ?.toPainter()
-                                        ?: let {
-                                            val icon = when (entity.state.allowedState) {
-                                                is AllowedState.On -> Icons.Outlined.RemoveRedEye
-                                                is AllowedState.Off -> Icons.Outlined.PanoramaFishEye
-                                                else -> Icons.AutoMirrored.Outlined.HelpOutline
-                                            }
-                                            rememberVectorPainter(icon)
-                                        },
-                                text = "${entity.state.allowedState.value} ${attribute.unitOfMeasurement}",
-                                isEnable = true,
-                        )
-                    }
+                    is SensorAttributes -> EntityItem(
+                            icon = entity.state.icon.toPainter(),
+                            text = "${entity.state.allowedState.value} ${attribute.unitOfMeasurement}",
+                            isEnable = true,
+                    )
 
                     else -> Unit
                 }
@@ -136,7 +136,31 @@ fun DeviceCard(
 }
 
 @Composable
-fun ColumnScope.EntityItem(
+private fun BaseSwitchEntityItem(
+        entity: HomeAssistantEntity<HomeAssistantAttribute>,
+        size: Int,
+        onInnerEntityClicked: (HomeAssistantEntity<HomeAssistantAttribute>) -> Unit,
+) {
+    EntityItem(
+            icon = when (entity.state.allowedState) {
+                AllowedState.On,
+                AllowedState.Unknown,
+                AllowedState.Off -> Icons.Outlined.PowerSettingsNew
+
+                else -> Icons.Outlined.WifiOff
+            }.let { rememberVectorPainter(it) },
+            text = entity.name.takeIf { size > 1 },
+            isEnable = when (entity.state.allowedState) {
+                AllowedState.On -> true
+                AllowedState.Unavailable, AllowedState.Unknown, AllowedState.Off -> false
+                else -> return
+            },
+            onClicked = { onInnerEntityClicked.invoke(entity) },
+    )
+}
+
+@Composable
+fun EntityItem(
         icon: Painter?,
         text: String?,
         isEnable: Boolean = true,
@@ -144,7 +168,6 @@ fun ColumnScope.EntityItem(
 ) {
     Row(
             modifier = Modifier
-                    .weight(1f, false)
                     .heightIn(min = 24.dp)
                     .padding(2.dp)
                     .clip(Shapes.image)

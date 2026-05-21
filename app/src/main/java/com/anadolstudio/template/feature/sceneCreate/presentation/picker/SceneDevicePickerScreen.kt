@@ -43,7 +43,6 @@ import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
 import com.anadolstudio.template.R
 import com.anadolstudio.template.di.viewmodel.daggerViewModel
 import com.anadolstudio.template.event.ObserveEvents
-import com.anadolstudio.template.feature.home.domain.model.DeviceImage
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.presentation.components.AreaChipRow
@@ -199,13 +198,8 @@ private fun DeviceCard(item: DeviceListItem, onClicked: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        // device.image — sealed: HaIconType (mdi-иконка) или ImageUrlType (картинка с zigbee2mqtt).
-        // Точно так же, как в DeviceDetail.GeneralInfoSection, но в меньшем размере.
         DeviceImageView(
-                image = when (val image = device.image) {
-                    is DeviceImage.HaIconType -> image.copy(haIcon = image.haIcon.copy(tint = null))
-                    else -> device.image
-                },
+                image = device.image,
                 modifier = Modifier.size(PICKER_DEVICE_IMAGE_SIZE),
                 imageSize = PICKER_DEVICE_IMAGE_SIZE,
         )

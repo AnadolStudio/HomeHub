@@ -3,6 +3,7 @@ package com.anadolstudio.template.feature.automation.automationList.presentation
 import androidx.lifecycle.viewModelScope
 import com.anadolstudio.template.base.viewmodel.StatefulViewModel
 import com.anadolstudio.template.event.showError
+import com.anadolstudio.template.event.showMessage
 import com.anadolstudio.template.feature.home.domain.HAWebsocketRepository
 import com.anadolstudio.template.feature.home.domain.model.AllowedDomain.AUTOMATION
 import com.anadolstudio.template.feature.home.domain.model.AllowedDomain.SCENE
@@ -22,7 +23,6 @@ import com.anadolstudio.template.feature.main.MainGraph.navigateToSceneEdit
 import com.anadolstudio.template.util.mapIfContains
 import com.anadolstudio.utils.states.LoadingContext
 import com.anadolstudio.utils.states.lce.lceFlow
-import com.anadolstudio.utils.states.lce.lceStateFlow
 import com.anadolstudio.utils.states.lce.onEachContent
 import com.anadolstudio.utils.states.lce.onEachError
 import com.anadolstudio.utils.states.lce.onEachProgressState
@@ -138,12 +138,16 @@ internal class AutomationListViewModel @Inject constructor(
     }
 
     override fun onAutomationItemEnableChanged(entity: HomeAssistantEntity<HomeAssistantAttribute>) {
-        lceStateFlow {
+        lceFlow {
             websocketRepository.callService(
                     entityId = entity.entityId,
                     domain = entity.domain,
                     service = SimpleToggleableService.Toggle,
             )
-        }.launchIn(viewModelScope)
+        }
+                .onEachContent { isSuccess ->
+                    if (!isSuccess) showMessage("не удалось выполнить ${entity.entityId}/${entity.domain}")
+                }
+                .launchIn(viewModelScope)
     }
 }

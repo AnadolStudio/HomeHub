@@ -64,11 +64,11 @@ object HaIcons {
         }
     }
 
-    fun resolve(haIconName: String?, tint: Int? = null): HaIcon? {
+    fun resolve(haIconName: String?): HaIcon? {
         val res = icons[haIconName]
         if (res == null || haIconName == null) return null
 
-        return HaIcon(haIconName, res, tint)
+        return HaIcon(haIconName, res)
     }
 
     private fun fill0(m: MutableMap<String, Int>) {

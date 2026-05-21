@@ -77,4 +77,10 @@
     <string name="device_detail_number_range_format">Range: %1$s … %2$s</string>
     <string name="device_detail_number_min_format">Min: %1$s</string>
     <string name="device_detail_number_max_format">Max: %1$s</string>
+
+    <string name="light_color_mode_brightness">Brightness</string>
+    <string name="light_color_mode_hs">Color</string>
+    <string name="light_color_mode_temperature">Temperature</string>
+    <string name="light_color_mode_rgb">RGB</string>
+    <string name="light_color_mode_xy">XY</string>
 </resources>

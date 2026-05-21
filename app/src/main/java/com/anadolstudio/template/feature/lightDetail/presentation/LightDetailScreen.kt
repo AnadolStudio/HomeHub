@@ -52,6 +52,9 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.anadolstudio.compose.ui.theme.AppTheme
 import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
+import com.anadolstudio.template.base.view.HomeHubBrightnessRectangle
+import com.anadolstudio.template.base.view.HomeHubColorRectangle
+import com.anadolstudio.template.base.view.HomeHubColorTemperatureRectangle
 import com.anadolstudio.template.base.view.homeHubSwitchDefaults
 import com.anadolstudio.template.di.viewmodel.assistedViewModel
 import com.anadolstudio.template.di.viewmodel.rememberViewModelFactory
@@ -130,11 +133,39 @@ private fun LightDetailLayout(
         Spacer(modifier = Modifier.height(12.dp))
 
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            ColorWheel(
+            HomeHubColorRectangle(
                     red = state.red,
                     green = state.green,
                     blue = state.blue,
                     onChanged = controller::onRgbChanged,
+                    modifier = Modifier.size(width = 280.dp, height = 48.dp),
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // TODO: превью HomeHubColorTemperatureRectangle — без реальной логики.
+        var previewTemp by remember { mutableStateOf(3500) }
+        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            HomeHubColorTemperatureRectangle(
+                    value = previewTemp,
+                    min = 2000,
+                    max = 6500,
+                    onChanged = { previewTemp = it },
+                    modifier = Modifier.size(width = 280.dp, height = 48.dp),
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // TODO: превью HomeHubBrightnessRectangle — без реальной логики.
+        var previewBrightness by remember { mutableStateOf(50) }
+        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            HomeHubBrightnessRectangle(
+                    value = previewBrightness,
+                    color = Color(red = state.red, green = state.green, blue = state.blue),
+                    onChanged = { previewBrightness = it },
+                    modifier = Modifier.size(width = 280.dp, height = 48.dp),
             )
         }
 

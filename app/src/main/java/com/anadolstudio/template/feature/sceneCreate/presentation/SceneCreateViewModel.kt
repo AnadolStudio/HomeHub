@@ -5,6 +5,7 @@ import com.anadolstudio.template.R
 import com.anadolstudio.template.base.viewmodel.StatefulViewModel
 import com.anadolstudio.template.event.navigateUp
 import com.anadolstudio.template.event.showError
+import com.anadolstudio.template.event.showMessage
 import com.anadolstudio.template.feature.common.domain.ResourceRepository
 import com.anadolstudio.template.feature.home.domain.HARestRepository
 import com.anadolstudio.template.feature.home.domain.HAWebsocketRepository
@@ -23,7 +24,6 @@ import com.anadolstudio.template.feature.sceneCreate.domain.toSceneEntityState
 import com.anadolstudio.template.feature.sceneCreate.util.slugify
 import com.anadolstudio.utils.states.LoadingContext
 import com.anadolstudio.utils.states.lce.lceFlow
-import com.anadolstudio.utils.states.lce.lceStateFlow
 import com.anadolstudio.utils.states.lce.onEachContent
 import com.anadolstudio.utils.states.lce.onEachError
 import com.anadolstudio.utils.states.lce.onEachProgressState
@@ -283,14 +283,16 @@ internal class SceneCreateViewModel @Inject constructor(
 
     override fun onRunCreatedSceneClicked() {
         val sceneEntityId = state.createdSceneEntityId ?: return
-        lceStateFlow {
+        lceFlow {
             websocketRepository.callService(
                     entityId = sceneEntityId,
                     domain = AllowedDomain.SCENE.prefix,
                     service = SimpleToggleableService.On,
             )
         }
-                .onEachError { showError(it) }
+                .onEachContent { isSuccess ->
+                    if (!isSuccess) showMessage("не удалось выполнить ${sceneEntityId}/${AllowedDomain.SCENE.prefix}")
+                }
                 .launchIn(viewModelScope)
     }
 

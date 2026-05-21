@@ -12,7 +12,6 @@ import kotlinx.serialization.encoding.Encoder
 data class HaIcon(
         val haIcon: String,
         val drawableRes: Int,
-        val tint: Int? = null
 )
 
 object HaIconSerializer : KSerializer<HaIcon> {

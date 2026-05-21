@@ -24,4 +24,5 @@ internal data class TextFieldData(
         val value: String,
         val hasError: Boolean = false,
         val hintText: String = "",
+        val enable: Boolean = true,
 )

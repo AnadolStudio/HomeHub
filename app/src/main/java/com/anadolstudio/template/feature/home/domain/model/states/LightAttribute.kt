@@ -18,22 +18,39 @@ import kotlinx.serialization.json.decodeFromJsonElement
 data class LightAttribute(
         @Transient override val jsonAttributes: JsonObject = JsonObject(emptyMap()),
         @SerialName("friendly_name") override val friendlyName: String = "",
-        @SerialName("min_color_temp_kelvin") val minTempKelvin: Int? = null,
-        @SerialName("max_color_temp_kelvin") val maxTempKelvin: Int? = null,
-        @SerialName("supported_color_modes") val supportedColorModes: List<String>? = null,
+        @SerialName("min_color_temp_kelvin") val minKelvin: Int? = null,
+        @SerialName("max_color_temp_kelvin") val maxKelvin: Int? = null,
+        @SerialName("supported_color_modes") val supportedColorModes: List<String> = emptyList(),
         @SerialName("color_mode") val colorMode: String? = null,
         @SerialName("brightness") val brightness: Int = 0,
-        @SerialName("color_temp_kelvin") val colorTempKelvin: Int? = null,
-        @SerialName("hs_color") val hsColor: List<Double>? = null,
-        @SerialName("rgb_color") val rgbColor: List<Int>? = null,
-        @SerialName("xy_color") val xyColor: List<Double>? = null,
+        @SerialName("color_temp_kelvin") val colorKelvin: Int? = null,
+        @SerialName("hs_color") val hsColor: List<Double> = emptyList(),
+        @SerialName("rgb_color") val rgbColor: List<Int> = emptyList(),
+        @SerialName("xy_color") val xyColor: List<Double> = emptyList(),
 ) : HomeAssistantAttribute, Iconable {
 
     val colorModeList: List<LightEntityColorMode> = listOfNotNull(
-            runCatching { HS(hue = hsColor!!.first(), saturation = hsColor.last()) },
-            runCatching { Temperature(current = colorTempKelvin!!, min = minTempKelvin!!, max = maxTempKelvin!!) },
-            runCatching { XY(x = xyColor!!.first(), y = xyColor.last()) },
-            runCatching { RGB(alpha = brightness, red = rgbColor!![0], green = rgbColor[1], blue = rgbColor[2]) }
+            runCatching {
+                if (!supportedColorModes.contains("hs")) throw IllegalArgumentException("not supported hs")
+                val hue = hsColor.firstOrNull() ?: 0.0
+                val saturation = hsColor.lastOrNull() ?: 0.0
+                HS(hue = hue, saturation = saturation, hasValue = hsColor.size == 2)
+            },
+            runCatching {
+                if (!supportedColorModes.contains("color_temp")) throw IllegalArgumentException("not supported color_temp")
+                val current = colorKelvin ?: 0
+                Temperature(current = current, min = minKelvin!!, max = maxKelvin!!, hasValue = colorKelvin != null)
+            },
+            runCatching {
+                if (!supportedColorModes.contains("xy")) throw IllegalArgumentException("not supported xy")
+                XY(x = xyColor.firstOrNull() ?: 0.0, y = xyColor.lastOrNull() ?: 0.0, hasValue = xyColor.size == 2)
+            },
+            runCatching {
+                val r = rgbColor.getOrNull(0)
+                val g = rgbColor.getOrNull(1)
+                val b = rgbColor.getOrNull(2)
+                RGB(alpha = brightness, red = r ?: 0, green = g ?: 0, blue = b ?: 0, hasValue = rgbColor.size == 3)
+            }
     ).mapNotNull { it.getOrNull() }
 
     val color: Int? = colorModeList
@@ -41,7 +58,7 @@ data class LightAttribute(
             ?.let { it as? RGB }
             ?.color
 
-    override val icon: HaIcon = requireNotNull(HaIcons.resolve(haIconName = "mdi:lightbulb", tint = color))
+    override val icon: HaIcon = requireNotNull(HaIcons.resolve(haIconName = "mdi:lightbulb"))
 }
 
 fun JsonObject.toLight(json: Json): LightAttribute = json
@@ -50,18 +67,38 @@ fun JsonObject.toLight(json: Json): LightAttribute = json
 
 @Serializable
 sealed interface LightEntityColorMode {
+    val hasValue: Boolean
 
     @Serializable
-    data class RGB(val alpha: Int, val red: Int, val green: Int, val blue: Int) : LightEntityColorMode {
+    data class RGB(
+            val alpha: Int,
+            val red: Int,
+            val green: Int,
+            val blue: Int,
+            override val hasValue: Boolean,
+    ) : LightEntityColorMode {
         val color: Int = Color.argb(alpha, red, green, blue)
     }
 
     @Serializable
-    data class XY(val x: Double, val y: Double) : LightEntityColorMode
+    data class XY(
+            val x: Double,
+            val y: Double,
+            override val hasValue: Boolean,
+    ) : LightEntityColorMode
 
     @Serializable
-    data class Temperature(val current: Int, val min: Int, val max: Int) : LightEntityColorMode
+    data class Temperature(
+            val current: Int,
+            val min: Int,
+            val max: Int,
+            override val hasValue: Boolean,
+    ) : LightEntityColorMode
 
     @Serializable
-    data class HS(val hue: Double, val saturation: Double) : LightEntityColorMode
+    data class HS(
+            val hue: Double,
+            val saturation: Double,
+            override val hasValue: Boolean,
+    ) : LightEntityColorMode
 }

@@ -15,8 +15,6 @@ internal interface DeviceDetailController {
 
     fun onEntityChanged(entity: HomeAssistantEntity<HomeAssistantAttribute>, service: HomeAssistantService<*>)
 
-    fun onLightEntityClicked(entity: HomeAssistantEntity<HomeAssistantAttribute>)
-
     fun onNumericEntityChanged(value: String, entity: HomeAssistantEntity<NumberAttribute>)
 
     fun onNumericEntityFocusLost(entity: HomeAssistantEntity<NumberAttribute>)

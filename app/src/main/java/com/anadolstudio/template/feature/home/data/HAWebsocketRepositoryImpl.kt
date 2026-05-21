@@ -5,7 +5,6 @@ import com.anadolstudio.template.core.websocket.connection.WebSocketConnectionSt
 import com.anadolstudio.template.core.websocket.message.Command
 import com.anadolstudio.template.core.websocket.message.WsRequest
 import com.anadolstudio.template.feature.home.data.model.AreaResponse
-import com.anadolstudio.template.feature.home.data.model.CallServiceResult
 import com.anadolstudio.template.feature.home.data.model.DeviceResponse
 import com.anadolstudio.template.feature.home.data.model.EntityRegistryListResult
 import com.anadolstudio.template.feature.home.data.model.ExtractFromTargetResult
@@ -145,7 +144,7 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
             entityId: String,
             domain: String,
             service: HomeAssistantService<*>,
-    ): CallServiceResult {
+    ): Boolean {
         val payload = buildJsonObject {
             put("domain", domain)
             put("service", service.service)
@@ -156,13 +155,14 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
             }
         }
 
-        return webSocketCore.sendCommandForResult(
+        val result =  webSocketCore.sendCommand(
                 request = WsRequest(
                         command = Command.CALL_SERVICE,
                         payload = payload,
                 ),
-                deserializer = CallServiceResult.serializer(),
         )
+
+        return result.success
     }
 
     override suspend fun getAreaList(useCache: Boolean): List<Area> {

@@ -11,9 +11,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.SelectableChipElevation
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,9 +20,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import com.anadolstudio.compose.ui.theme.AppTheme
-import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
 import com.anadolstudio.template.R
+import com.anadolstudio.template.base.view.HomeHubFilterChip
 import com.anadolstudio.template.feature.home.domain.model.Area
 import com.anadolstudio.template.feature.home.presentation.PreviewUtils
 
@@ -66,32 +63,13 @@ private fun AreaChip(
             label = area?.name.orEmpty(),
             transitionSpec = { fadeIn().togetherWith(fadeOut()) }
     ) { targetValue ->
-        FilterChip(
+        HomeHubFilterChip(
                 selected = targetValue,
                 onClick = { onAreaSelected(area) },
                 label = { Text(text = area?.name ?: defaultName) },
-                colors = areaChipColors(),
-                border = null,
-                elevation = SelectableChipElevation(
-                        elevation = Dimmens.baseElevation,
-                        pressedElevation = Dimmens.pressedElevation,
-                        focusedElevation = Dimmens.baseElevation,
-                        hoveredElevation = Dimmens.baseElevation,
-                        draggedElevation = Dimmens.baseElevation,
-                        disabledElevation = 0.dp,
-                )
         )
-
     }
 }
-
-@Composable
-private fun areaChipColors() = FilterChipDefaults.filterChipColors(
-        containerColor = AppTheme.colors.colorPrimary,
-        labelColor = AppTheme.colors.colorAccent,
-        selectedContainerColor = AppTheme.colors.colorAccent,
-        selectedLabelColor = AppTheme.colors.colorPrimary,
-)
 
 @Preview(showBackground = true)
 @Composable

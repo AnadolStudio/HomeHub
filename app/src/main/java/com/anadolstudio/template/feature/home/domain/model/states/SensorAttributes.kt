@@ -102,6 +102,8 @@ data class SensorAttributes(
         // Other
         "monetary" -> "mdi:cash"
         "weight" -> "mdi:weight"
+        "door" -> "mdi:door"
+        "occupancy" -> "mdi:home-account"
 
         // Unknown / no device_class
         else -> null

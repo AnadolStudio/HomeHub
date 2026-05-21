@@ -1,7 +1,6 @@
 package com.anadolstudio.template.feature.home.domain
 
 import com.anadolstudio.template.core.websocket.connection.WebSocketConnectionState
-import com.anadolstudio.template.feature.home.data.model.CallServiceResult
 import com.anadolstudio.template.feature.home.data.model.ExtractFromTargetResult
 import com.anadolstudio.template.feature.home.data.model.services.ServiceResponse
 import com.anadolstudio.template.feature.home.data.model.services.ServiceTarget
@@ -27,7 +26,7 @@ interface HAWebsocketRepository {
     suspend fun getAllStates(): List<HomeAssistantState<HomeAssistantAttribute>>
     suspend fun getServiceMap(useCache: Boolean = false): Map<String, ServiceResponse>
     suspend fun extractFromTarget(target: ServiceTarget, expandGroup: Boolean): ExtractFromTargetResult
-    suspend fun callService(entityId: String, domain: String, service: HomeAssistantService<*>): CallServiceResult
+    suspend fun callService(entityId: String, domain: String, service: HomeAssistantService<*>): Boolean
     suspend fun getAreaList(useCache: Boolean = false): List<Area>
     suspend fun getDeviceList(useCache: Boolean = false): List<HomeAssistantDevice>
     suspend fun getDevice(deviceId: String, useCache: Boolean): HomeAssistantDevice?

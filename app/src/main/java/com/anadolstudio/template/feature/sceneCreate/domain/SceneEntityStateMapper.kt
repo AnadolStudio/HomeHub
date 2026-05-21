@@ -23,7 +23,7 @@ internal fun HomeAssistantEntity<HomeAssistantAttribute>.toSceneEntityState(): S
                 entityId = entityId,
                 on = isOn,
                 brightness = attribute.brightness.takeIf { isOn && it > 0 },
-                colorTempKelvin = attribute.colorTempKelvin?.takeIf { isOn },
+                colorTempKelvin = attribute.colorKelvin?.takeIf { isOn },
                 rgbColor = attribute.rgbColor?.takeIf { isOn && it.size == 3 },
         )
         is SwitchAttribute -> SceneEntityState.Switch(
