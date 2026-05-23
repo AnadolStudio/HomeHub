@@ -11,18 +11,24 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.HdrAuto
 import androidx.compose.material.icons.outlined.Movie
+import androidx.compose.material.icons.outlined.PlayCircle
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -32,14 +38,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import com.anadolstudio.compose.ui.theme.AppTheme
 import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.view.button.FloatTextButton
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
 import com.anadolstudio.template.R
+import com.anadolstudio.template.base.view.homeHubSwitchDefaults
 import com.anadolstudio.template.di.viewmodel.daggerViewModel
 import com.anadolstudio.template.event.ObserveEvents
 import com.anadolstudio.template.feature.automation.common.presentation.AutomationItem
+import com.anadolstudio.template.feature.automation.common.presentation.SceneItem
 import com.anadolstudio.template.feature.main.NavigationController
 import com.anadolstudio.template.feature.sceneCreate.presentation.SCENE_LIST_NEEDS_REFRESH_KEY
 import com.anadolstudio.template.navigation.ObserveResultValue
@@ -155,14 +164,26 @@ private fun LazyListScope.automationItems(
         state: AutomationListScreenState,
         controller: AutomationListController,
 ) {
-    items(state.automationList) { automation ->
+    items(
+            items = state.automationList,
+            key = { it.entityId },
+    ) { automation ->
         AutomationItem(
+                modifier = Modifier.animateItem(),
                 title = automation.name,
                 icon = automation.state.attributes.icon?.toPainter()
                         ?: rememberVectorPainter(Icons.Outlined.HdrAuto),
-                isEnable = automation.state.allowedState.toBooleanOrNull(),
+                draggableActionIcon = Icons.Outlined.DeleteOutline,
                 onClicked = { controller.onAutomationItemClicked() },
-                onEnableClicked = { controller.onAutomationItemEnableChanged(automation) },
+                onDraggableActionClicked = { controller.onAutomationItemDeleteClicked(automation) },
+                trailing = {
+                    Switch(
+                            modifier = Modifier.padding(end = Dimmens.smallMargin),
+                            checked = automation.state.allowedState.toBooleanOrNull() ?: false,
+                            onCheckedChange = { controller.onAutomationItemEnableChanged(automation) },
+                            colors = homeHubSwitchDefaults,
+                    )
+                }
         )
     }
 }
@@ -171,14 +192,29 @@ private fun LazyListScope.sceneItems(
         state: AutomationListScreenState,
         controller: AutomationListController,
 ) {
-    items(state.sceneList) { scene ->
-        AutomationItem(
+    items(
+            items = state.sceneList,
+            key = { it.entityId },
+    ) { scene ->
+        SceneItem(
+                modifier = Modifier.animateItem(),
                 title = scene.name,
                 icon = scene.state.attributes.icon?.toPainter()
                         ?: rememberVectorPainter(Icons.Outlined.Movie),
-                isEnable = null,
                 onClicked = { controller.onSceneItemClicked(scene) },
-                onEnableClicked = {},
+                draggableActionIcon = Icons.Outlined.DeleteOutline,
+                onDraggableActionClicked = { controller.onSceneItemDeleteClicked(scene) },
+                trailing = {
+                    IconButton(
+                            onClick = { controller.onSceneStart(scene) }
+                    ) {
+                        Icon(
+                                modifier = Modifier.size(32.dp),
+                                imageVector = Icons.Outlined.PlayCircle,
+                                contentDescription = null,
+                        )
+                    }
+                }
         )
     }
 }

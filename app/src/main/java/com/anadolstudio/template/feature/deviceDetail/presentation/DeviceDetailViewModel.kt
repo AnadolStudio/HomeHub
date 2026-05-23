@@ -40,6 +40,7 @@ import java.math.BigDecimal
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.serialization.json.Json
 
@@ -108,13 +109,15 @@ internal class DeviceDetailViewModel @AssistedInject constructor(
 
     private fun subscribeToStateChangedEvents() {
         lceFlow {
-            websocketRepository.subscribeToStateChangedEvents().collect { stateChangedEvent ->
+            websocketRepository.subscribeToStateChangedEvents()
+                    .filterIsInstance(HomeAssistantStateChangedEvent.Update::class)
+                    .collect { stateChangedEvent ->
                 applyStateChangedEvent(stateChangedEvent)
             }
         }.launchIn(viewModelScope)
     }
 
-    private fun applyStateChangedEvent(event: HomeAssistantStateChangedEvent) {
+    private fun applyStateChangedEvent(event: HomeAssistantStateChangedEvent.Update) {
         val device = state.device
         val entityId = event.entityId
         if (device.allEntityList.none { it.entityId == entityId }) return

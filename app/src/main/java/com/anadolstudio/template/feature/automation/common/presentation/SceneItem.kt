@@ -9,7 +9,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 
 @Composable
-internal fun AutomationItem(
+internal fun SceneItem(
         icon: Painter,
         title: String,
         modifier: Modifier = Modifier,
@@ -25,6 +25,6 @@ internal fun AutomationItem(
             onClicked = onClicked,
             draggableActionIcon = draggableActionIcon,
             onDraggableActionClicked = onDraggableActionClicked,
-            trailing = trailing,
+            trailing = trailing
     )
 }

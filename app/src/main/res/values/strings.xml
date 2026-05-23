@@ -2,6 +2,9 @@
     <string name="app_name">HomeHub</string>
     <string name="app_name_label">HomeHub</string>
 
+
+    <string name="common_error">Oops, something went wrong</string>
+
     <string name="auto_setup_home_assistant_url_title">Search on\nthe home network</string>
     <string name="auto_setup_home_assistant_url_manual_enter_button">Enter address manually</string>
     <string name="auto_setup_home_assistant_url_loading">Searching for Home Assistant on the local network…</string>
@@ -21,6 +24,7 @@
     <string name="automation_list_tab_scenes">Scenes</string>
     <string name="automation_list_create_automation">Create automation</string>
     <string name="automation_list_create_scene">Create scene</string>
+    <string name="automation_list_action_delete">Delete</string>
 
     <string name="scene_create_title_create">Create scene</string>
     <string name="scene_create_title_edit">Edit scene</string>

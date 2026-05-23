@@ -27,6 +27,7 @@ import com.anadolstudio.utils.states.lce.onEachContent
 import com.anadolstudio.utils.states.lce.onEachProgressState
 import javax.inject.Inject
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.launch
 
@@ -112,11 +113,12 @@ internal class HomeViewModel @Inject constructor(
         subscribeJob?.cancel()
         subscribeJob = viewModelScope.launch {
             websocketRepository.subscribeToStateChangedEvents()
+                    .filterIsInstance(HomeAssistantStateChangedEvent.Update::class)
                     .collect { stateChangedEvent -> updateEntity(stateChangedEvent) }
         }
     }
 
-    private fun updateEntity(stateChangedEvent: HomeAssistantStateChangedEvent) {
+    private fun updateEntity(stateChangedEvent: HomeAssistantStateChangedEvent.Update) {
         val entityId = stateChangedEvent.entityId
         val newState = stateChangedEvent.newState
 

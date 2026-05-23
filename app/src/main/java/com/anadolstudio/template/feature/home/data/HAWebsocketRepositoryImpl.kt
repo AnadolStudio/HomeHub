@@ -21,6 +21,8 @@ import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.entity.EntityCategory
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
+import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent.Remove
+import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent.Update
 import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistantService
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
@@ -155,7 +157,7 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
             }
         }
 
-        val result =  webSocketCore.sendCommand(
+        val result = webSocketCore.sendCommand(
                 request = WsRequest(
                         command = Command.CALL_SERVICE,
                         payload = payload,
@@ -226,15 +228,24 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
                     ),
                     deserializer = StateChangedEventResponse.serializer()
             )
-            .map { it.newState.toDomain(json) }
-            .map { newState -> HomeAssistantStateChangedEvent(newState = newState) }
+            .map {
+                if (it.newState == null) {
+                    Remove(entityId = it.entityId)
+                } else {
+                    Update(it.newState.toDomain(json))
+                }
+            }
             .onEach { event -> applyEventToEntityCache(event) }
 
     private fun applyEventToEntityCache(event: HomeAssistantStateChangedEvent) {
         val entityIdToEntityMap = entityCache.value.toMutableMap()
         val entity = entityIdToEntityMap[event.entityId] ?: return
 
-        entityIdToEntityMap[event.entityId] = entity.copy(state = event.newState)
+        when (event) {
+            is Remove -> entityIdToEntityMap.remove(event.entityId)
+            is Update -> entityIdToEntityMap[event.entityId] = entity.copy(state = event.newState)
+        }
+
         entityCache.value = entityIdToEntityMap
     }
 

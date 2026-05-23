@@ -1,15 +1,18 @@
 package com.anadolstudio.template.feature.automation.automationList.presentation
 
 import androidx.lifecycle.viewModelScope
+import com.anadolstudio.template.R
 import com.anadolstudio.template.base.viewmodel.StatefulViewModel
 import com.anadolstudio.template.event.showError
 import com.anadolstudio.template.event.showMessage
+import com.anadolstudio.template.feature.home.domain.HARestRepository
 import com.anadolstudio.template.feature.home.domain.HAWebsocketRepository
 import com.anadolstudio.template.feature.home.domain.model.AllowedDomain.AUTOMATION
 import com.anadolstudio.template.feature.home.domain.model.AllowedDomain.SCENE
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.entity.mapAttributes
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
+import com.anadolstudio.template.feature.home.domain.model.services.SceneService
 import com.anadolstudio.template.feature.home.domain.model.services.SimpleToggleableService
 import com.anadolstudio.template.feature.home.domain.model.states.AutomationAttributes
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
@@ -32,6 +35,7 @@ import kotlinx.serialization.json.Json
 
 internal class AutomationListViewModel @Inject constructor(
         private val websocketRepository: HAWebsocketRepository,
+        private val restRepository: HARestRepository,
         private val json: Json,
 ) : StatefulViewModel<AutomationListScreenState>(AutomationListScreenState()),
     AutomationListController {
@@ -72,15 +76,25 @@ internal class AutomationListViewModel @Inject constructor(
 
     private fun subscribeToStateChangedEvents() {
         lceFlow {
-            websocketRepository.subscribeToStateChangedEvents().collect { stateChangedEvent ->
-                updateEntity(stateChangedEvent)
+            websocketRepository.subscribeToStateChangedEvents().collect { event ->
+                when (event) {
+                    is HomeAssistantStateChangedEvent.Remove -> removeEntity(event.entityId)
+                    is HomeAssistantStateChangedEvent.Update -> updateEntity(event)
+                }
             }
         }.launchIn(viewModelScope)
     }
 
-    private fun updateEntity(stateChangedEvent: HomeAssistantStateChangedEvent) {
-        val entityId = stateChangedEvent.entityId
+    private fun removeEntity(entityId: String) {
+        val automationList = state.automationList.filterNot { entity -> entity.entityId == entityId }
+        val sceneList = state.sceneList.filterNot { entity -> entity.entityId == entityId }
+
+        updateState { copy(automationList = automationList, sceneList = sceneList) }
+    }
+
+    private fun updateEntity(stateChangedEvent: HomeAssistantStateChangedEvent.Update) {
         val newState = stateChangedEvent.newState
+        val entityId = stateChangedEvent.entityId
 
         when (newState.attributes) {
             is AutomationAttributes -> updateState {
@@ -115,6 +129,18 @@ internal class AutomationListViewModel @Inject constructor(
         loadAutomationStates(LoadingContext.RETRY)
     }
 
+    override fun onSceneStart(scene: HomeAssistantEntity<SceneAttributes>) {
+        lceFlow {
+            websocketRepository.callService(
+                    entityId = scene.entityId,
+                    domain = SCENE.prefix,
+                    service = SceneService.On,
+            )
+        }
+                .onEachContent { isSuccess -> if (!isSuccess) showError(R.string.common_error) }
+                .launchIn(viewModelScope)
+    }
+
     override fun onSceneItemClicked(scene: HomeAssistantEntity<SceneAttributes>) {
         // Постоянная сцена (созданная через /api/config/scene/config) хранит свой config-id
         // в attributes.id. Если его нет (runtime-сцена от scene.create), берём из entity_id
@@ -135,6 +161,22 @@ internal class AutomationListViewModel @Inject constructor(
             AutomationTab.AUTOMATIONS -> navigateToAutomationDetail()
             AutomationTab.SCENES -> navigateToSceneCreate()
         }
+    }
+
+    override fun onAutomationItemDeleteClicked(automation: HomeAssistantEntity<AutomationAttributes>) {
+        // TODO: подключить реальное удаление автоматизации через HA API
+        showMessage("Удаление автоматизации ${automation.name} пока не реализовано")
+    }
+
+    override fun onSceneItemDeleteClicked(scene: HomeAssistantEntity<SceneAttributes>) {
+        val sceneId = scene.state.attributes.id ?: return
+
+        lceFlow { restRepository.deleteSceneConfig(sceneId) }
+                .onEachContent { isSuccess ->
+                    if (!isSuccess) showError(R.string.common_error)
+                }
+                .onEachError(::showError)
+                .launchIn(viewModelScope)
     }
 
     override fun onAutomationItemEnableChanged(entity: HomeAssistantEntity<HomeAssistantAttribute>) {

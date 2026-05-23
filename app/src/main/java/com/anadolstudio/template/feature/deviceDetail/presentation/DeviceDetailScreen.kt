@@ -91,6 +91,7 @@ import com.anadolstudio.template.di.viewmodel.assistedViewModel
 import com.anadolstudio.template.di.viewmodel.rememberViewModelFactory
 import com.anadolstudio.template.event.ObserveEvents
 import com.anadolstudio.template.feature.automation.common.presentation.AutomationItem
+import com.anadolstudio.template.feature.automation.common.presentation.SceneItem
 import com.anadolstudio.template.feature.home.domain.model.AllowedDomain
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.entity.EntityCategory
@@ -755,7 +756,7 @@ private fun AutomationsSection(automations: List<HomeAssistantEntity<AutomationA
 private fun ScenesSection(scenes: List<HomeAssistantEntity<SceneAttributes>>) {
     SectionContainer(title = stringResource(R.string.device_detail_section_scenes)) {
         scenes.forEach { scene ->
-            AutomationItem(
+            SceneItem(
                     title = scene.name,
                     icon = scene.state.icon.toPainter(),
             )

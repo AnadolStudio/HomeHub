@@ -13,7 +13,6 @@ import com.anadolstudio.template.feature.deviceDetail.di.DeviceDetailModule
 import com.anadolstudio.template.feature.history.di.HistoryModule
 import com.anadolstudio.template.feature.home.di.HomeModule
 import com.anadolstudio.template.feature.homeAssistantAuth.di.HomeAssistantAuthModule
-import com.anadolstudio.template.feature.lightDetail.di.LightDetailModule
 import com.anadolstudio.template.feature.manualSetupHomeAssistantUrl.di.ManualSetupHomeAssistantUrlModule
 import com.anadolstudio.template.feature.registerUser.di.RegisterUserModule
 import com.anadolstudio.template.feature.sceneCreate.di.SceneCreateModule
@@ -33,7 +32,6 @@ import javax.inject.Singleton
         AutomationListModule::class,
         AutoSetupHomeAssistantUrlModule::class,
         DeviceDetailModule::class,
-        LightDetailModule::class,
         HistoryModule::class,
         HomeAssistantAuthModule::class,
         HomeModule::class,

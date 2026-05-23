@@ -15,14 +15,11 @@ import com.anadolstudio.template.feature.automation.automationList.presentation.
 import com.anadolstudio.template.feature.automation.automationList.presentation.AutomationListViewModel
 import com.anadolstudio.template.feature.automation.sceneDetail.presentation.SceneDetailScreen
 import com.anadolstudio.template.feature.deviceDetail.presentation.DeviceDetailScreen
-import com.anadolstudio.template.feature.deviceDetail.presentation.DeviceDetailViewModel
 import com.anadolstudio.template.feature.history.presentation.HistoryScreen
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.presentation.HomeScreen
 import com.anadolstudio.template.feature.home.presentation.HomeViewModel
 import com.anadolstudio.template.feature.homeAssistantAuth.presetnation.HomeAssistantAuthScreen
-import com.anadolstudio.template.feature.lightDetail.presentation.LightDetailArgs
-import com.anadolstudio.template.feature.lightDetail.presentation.LightDetailScreen
 import com.anadolstudio.template.feature.manualSetupHomeAssistantUrl.presetnation.ManualSetupHomeAssistantUrlScreen
 import com.anadolstudio.template.feature.registerUser.presentation.RegisterUserScreen
 import com.anadolstudio.template.feature.registerUser.presentation.RegisterUserViewModel
@@ -88,9 +85,6 @@ internal object MainGraph : NavGraphContract() {
             route { "deviceDetail/${Uri.encode(objectToString(device))}" }
 
     private fun lightDetail() = route { "lightDetail/{${lightDetailArgsArgument.name}}" }
-
-    private fun lightDetail(args: LightDetailArgs): String =
-            route { "lightDetail/${Uri.encode(objectToString(args))}" }
 
     private fun registerUser() = route { "registerUser" }
 
@@ -169,18 +163,7 @@ internal object MainGraph : NavGraphContract() {
                     device = device,
             )
         }
-        bottomSheet(
-                route = lightDetail(),
-                arguments = listOf(lightDetailArgsArgument),
-        ) { entry ->
-            if (entry.lifecycle.currentState == Lifecycle.State.DESTROYED) return@bottomSheet
-            val args = entry.requireObject<LightDetailArgs>(lightDetailArgsArgument)
-            LightDetailScreen(
-                    navigator = navigator,
-                    snackbarHostState = snackbarHostState,
-                    args = args,
-            )
-        }
+
         composable(registerUser()) {
             RegisterUserScreen(navigator = navigator, snackbarHostState = snackbarHostState)
         }
@@ -227,9 +210,6 @@ internal object MainGraph : NavGraphContract() {
             navigateTo(deviceDetail(device)) {
                 popUpTo(sceneDevicePicker()) { inclusive = true }
             }
-
-    fun DeviceDetailViewModel.navigateToLightDetail(args: LightDetailArgs) =
-            navigateTo(lightDetail(args))
 
     fun HomeViewModel.navigateToDeviceDetail(device: HomeAssistantDevice) =
             navigateTo(deviceDetail(device))
