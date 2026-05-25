@@ -1,5 +1,7 @@
 package com.anadolstudio.ha_resources
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -8,11 +10,12 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
+@Parcelize
 @Serializable(with = HaIconSerializer::class)
 data class HaIcon(
         val haIcon: String,
         val drawableRes: Int,
-)
+) : Parcelable
 
 object HaIconSerializer : KSerializer<HaIcon> {
     override val descriptor: SerialDescriptor =

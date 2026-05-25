@@ -1,14 +1,17 @@
 package com.anadolstudio.template.feature.home.domain.model.entity
 
+import android.os.Parcelable
 import androidx.compose.runtime.Immutable
 import com.anadolstudio.template.feature.home.domain.model.domain.DomainParser
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 import com.anadolstudio.template.feature.home.domain.model.states.mapAttributes
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
 @Immutable
+@Parcelize
 @Serializable
 data class HomeAssistantEntity<out Attribute : HomeAssistantAttribute>(
         override val entityId: String,
@@ -18,7 +21,7 @@ data class HomeAssistantEntity<out Attribute : HomeAssistantAttribute>(
         val services: Set<String>,
         val entityCategory: EntityCategory,
         val state: HomeAssistantState<Attribute>,
-) : DomainParser
+) : DomainParser, Parcelable
 
 fun <E : HomeAssistantAttribute, T : HomeAssistantAttribute> HomeAssistantEntity<E>.mapAttributes(
         block: (JsonObject) -> T,

@@ -1,14 +1,17 @@
 package com.anadolstudio.template.feature.home.domain.model
 
+import android.os.Parcelable
 import androidx.compose.runtime.Immutable
 import com.anadolstudio.ha_resources.HaIcon
 import com.anadolstudio.template.feature.home.domain.model.DeviceImage.ImageUrlType
 import com.anadolstudio.template.feature.home.domain.model.entity.EntityCategory
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 @Immutable
+@Parcelize
 @Serializable
 data class HomeAssistantDevice(
         val id: String,
@@ -18,7 +21,7 @@ data class HomeAssistantDevice(
         val manufacturer: String?,
         val area: Area?,
         val entityMap: Map<EntityCategory, List<HomeAssistantEntity<HomeAssistantAttribute>>>,
-) {
+) : Parcelable {
 
     val isBindToArea: Boolean get() = area != null
 
