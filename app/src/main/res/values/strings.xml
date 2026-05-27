@@ -18,6 +18,12 @@
 
     <string name="automation_button">Automation</string>
 
+    <string name="add_title">What to add?</string>
+    <string name="add_button_zigbee">Add via Zigbee</string>
+    <string name="add_button_matter">Add via Matter</string>
+    <string name="add_button_person">Add a person</string>
+    <string name="add_button_device_group">Add a device group</string>
+
     <string name="area_filter_all">All</string>
 
     <string name="automation_list_tab_automations">Automations</string>

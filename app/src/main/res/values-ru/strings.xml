@@ -17,6 +17,12 @@
 
     <string name="automation_button">Автоматизации</string>
 
+    <string name="add_title">Что добавить?</string>
+    <string name="add_button_zigbee">Добавить по Zigbee</string>
+    <string name="add_button_matter">Добавить по Matter</string>
+    <string name="add_button_person">Добавить человека</string>
+    <string name="add_button_device_group">Добавить группу устройств</string>
+
     <string name="area_filter_all">Все</string>
 
     <string name="automation_list_tab_automations">Автоматизации</string>

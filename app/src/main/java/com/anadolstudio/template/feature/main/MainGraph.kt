@@ -8,6 +8,12 @@ import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
 import com.anadolstudio.template.event.navigateTo
 import com.anadolstudio.template.event.navigateUp
 import com.anadolstudio.template.feature.add.presentation.AddScreen
+import com.anadolstudio.template.feature.add.presentation.AddViewModel
+import com.anadolstudio.template.feature.addDeviceGroup.presentation.AddDeviceGroupScreen
+import com.anadolstudio.template.feature.addMatter.presentation.AddMatterScreen
+import com.anadolstudio.template.feature.addPerson.presentation.AddPersonScreen
+import com.anadolstudio.template.feature.addZigbee.presentation.AddZigbeeScreen
+import com.anadolstudio.template.feature.addZigbee.presentation.AddZigbeeViewModel
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.model.HomeAssistantInstance
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.presetnation.AutoSetupHomeAssistantUrlScreen
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.presetnation.AutoSetupHomeAssistantUrlViewModel
@@ -68,6 +74,14 @@ internal object MainGraph : NavGraphContract() {
     private fun manualSetupHomeAssistantUrl() = route { "manualSetupHomeAssistantUrl" }
 
     private fun add() = route { "add" }
+
+    private fun addZigbee() = route { "addZigbee" }
+
+    private fun addMatter() = route { "addMatter" }
+
+    private fun addPerson() = route { "addPerson" }
+
+    private fun addDeviceGroup() = route { "addDeviceGroup" }
 
     private fun history() = route { "history" }
 
@@ -137,8 +151,21 @@ internal object MainGraph : NavGraphContract() {
         composable(manualSetupHomeAssistantUrl()) {
             ManualSetupHomeAssistantUrlScreen(navigator = navigator, snackbarHostState = snackbarHostState)
         }
-        composable(add()) {
+        bottomSheet(add()) { entry ->
+            if (entry.lifecycle.currentState == Lifecycle.State.DESTROYED) return@bottomSheet
             AddScreen(navigator = navigator, snackbarHostState = snackbarHostState)
+        }
+        composable(addZigbee()) {
+            AddZigbeeScreen(navigator = navigator, snackbarHostState = snackbarHostState)
+        }
+        composable(addMatter()) {
+            AddMatterScreen(navigator = navigator, snackbarHostState = snackbarHostState)
+        }
+        composable(addPerson()) {
+            AddPersonScreen(navigator = navigator, snackbarHostState = snackbarHostState)
+        }
+        composable(addDeviceGroup()) {
+            AddDeviceGroupScreen(navigator = navigator, snackbarHostState = snackbarHostState)
         }
         composable(history()) {
             HistoryScreen(navigator = navigator, snackbarHostState = snackbarHostState)
@@ -226,6 +253,26 @@ internal object MainGraph : NavGraphContract() {
 
     fun HomeViewModel.navigateToAdd() = navigateTo(add())
 
+    fun AddViewModel.navigateToAddZigbee() {
+        navigateUp()
+        navigateTo(addZigbee())
+    }
+
+    fun AddViewModel.navigateToAddMatter() {
+        navigateUp()
+        navigateTo(addMatter())
+    }
+
+    fun AddViewModel.navigateToAddPerson() {
+        navigateUp()
+        navigateTo(addPerson())
+    }
+
+    fun AddViewModel.navigateToAddDeviceGroup() {
+        navigateUp()
+        navigateTo(addDeviceGroup())
+    }
+
     fun HomeViewModel.navigateToHistory() = navigateTo(history())
 
     fun HomeViewModel.navigateToAutomationList() = navigateTo(automationList())
@@ -256,6 +303,9 @@ internal object MainGraph : NavGraphContract() {
     }
 
     fun HomeViewModel.navigateToDeviceDetail(device: HomeAssistantDevice) =
+            navigateTo(deviceDetail(device))
+
+    fun AddZigbeeViewModel.navigateToDeviceDetail(device: HomeAssistantDevice) =
             navigateTo(deviceDetail(device))
 
     fun RegisterUserViewModel.navigateToHome() = navigateFromRoot(home())

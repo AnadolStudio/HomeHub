@@ -1,3 +1,12 @@
 package com.anadolstudio.template.feature.add.presentation
 
-internal interface AddController
+internal interface AddController {
+
+    fun onZigbeeClicked()
+
+    fun onMatterClicked()
+
+    fun onPersonClicked()
+
+    fun onDeviceGroupClicked()
+}

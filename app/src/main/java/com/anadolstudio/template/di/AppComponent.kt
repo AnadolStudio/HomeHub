@@ -5,6 +5,10 @@ import com.anadolstudio.template.App
 import com.anadolstudio.template.core.network.SessionExpiredNotifier
 import com.anadolstudio.template.di.viewmodel.ViewModelsInjector
 import com.anadolstudio.template.feature.add.di.AddModule
+import com.anadolstudio.template.feature.addDeviceGroup.di.AddDeviceGroupModule
+import com.anadolstudio.template.feature.addMatter.di.AddMatterModule
+import com.anadolstudio.template.feature.addPerson.di.AddPersonModule
+import com.anadolstudio.template.feature.addZigbee.di.AddZigbeeModule
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.di.AutoSetupHomeAssistantUrlModule
 import com.anadolstudio.template.feature.automation.automationDetail.di.AutomationDetailModule
 import com.anadolstudio.template.feature.automation.automationList.di.AutomationListModule
@@ -29,6 +33,10 @@ import javax.inject.Singleton
         NetworkModule::class,
         WebSocketModule::class,
         AddModule::class,
+        AddDeviceGroupModule::class,
+        AddMatterModule::class,
+        AddPersonModule::class,
+        AddZigbeeModule::class,
         AutomationDetailModule::class,
         AutomationListModule::class,
         AutoSetupHomeAssistantUrlModule::class,

@@ -52,7 +52,7 @@ internal data class DeviceState(
     fun areaToDeviceMap(selectedAreaId: String? = null): Map<String, List<HomeAssistantDevice>> = deviceSet
             .asSequence()
             .filter { device -> selectedAreaId == null || device.area?.areaId == selectedAreaId }
-            .groupBy { device -> requireNotNull(device.area).name }
+            .groupBy { device -> device.area?.name.toString() }
             .mapValues { (_, devices) -> devices.sortedDevice().toList() }
             .toSortedMap()
 

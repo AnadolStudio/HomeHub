@@ -8,6 +8,7 @@ import com.anadolstudio.template.feature.home.domain.model.Area
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
+import com.anadolstudio.template.feature.home.domain.model.registry.RegistryDeviceEvent
 import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistantService
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
@@ -30,5 +31,6 @@ interface HAWebsocketRepository {
     suspend fun getAreaList(useCache: Boolean = false): List<Area>
     suspend fun getDeviceList(useCache: Boolean = false): List<HomeAssistantDevice>
     suspend fun getDevice(deviceId: String, useCache: Boolean): HomeAssistantDevice?
-    suspend fun subscribeToStateChangedEvents(): Flow<HomeAssistantStateChangedEvent>
+    fun subscribeToStateChangedEvents(): Flow<HomeAssistantStateChangedEvent>
+    fun subscribeToRegistryNewDeviceEvents(): Flow<RegistryDeviceEvent>
 }

@@ -1,0 +1,3 @@
+package com.anadolstudio.template.feature.addDeviceGroup.presentation
+
+internal interface AddDeviceGroupController

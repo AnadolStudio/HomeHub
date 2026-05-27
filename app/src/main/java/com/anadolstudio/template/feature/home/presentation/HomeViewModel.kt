@@ -77,7 +77,7 @@ internal class HomeViewModel @Inject constructor(
                         }
                 )
                 .mapContent { (deviceList, areas) ->
-                    val deviceSet = deviceList.filter { device -> device.isBindToArea }.toSet()
+                    val deviceSet = deviceList.toSet()
 
                     return@mapContent deviceSet to areas
                 }
@@ -152,9 +152,7 @@ internal class HomeViewModel @Inject constructor(
                 .launchIn(viewModelScope)
     }
 
-    override fun onDeviceClicked(device: HomeAssistantDevice) {
-        navigateToDeviceDetail(device)
-    }
+    override fun onDeviceClicked(device: HomeAssistantDevice) = navigateToDeviceDetail(device)
 
     override fun onAutomationClicked() = navigateToAutomationList()
 

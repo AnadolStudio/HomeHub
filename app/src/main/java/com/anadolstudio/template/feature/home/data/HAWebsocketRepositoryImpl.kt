@@ -3,6 +3,7 @@ package com.anadolstudio.template.feature.home.data
 import com.anadolstudio.template.core.websocket.WebSocketCore
 import com.anadolstudio.template.core.websocket.connection.WebSocketConnectionState
 import com.anadolstudio.template.core.websocket.message.Command
+import com.anadolstudio.template.core.websocket.message.SubscriptionEventType
 import com.anadolstudio.template.core.websocket.message.WsRequest
 import com.anadolstudio.template.feature.home.data.model.AreaResponse
 import com.anadolstudio.template.feature.home.data.model.DeviceResponse
@@ -23,6 +24,7 @@ import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantE
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent.Remove
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent.Update
+import com.anadolstudio.template.feature.home.domain.model.registry.RegistryDeviceEvent
 import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistantService
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
@@ -220,11 +222,13 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
         return getDeviceList(useCache = useCache).firstOrNull { it.id == deviceId }
     }
 
-    override suspend fun subscribeToStateChangedEvents(): Flow<HomeAssistantStateChangedEvent> = webSocketCore
+    override fun subscribeToStateChangedEvents(): Flow<HomeAssistantStateChangedEvent> = webSocketCore
             .subscribe(
                     request = WsRequest(
                             command = Command.SUBSCRIBE_EVENTS,
-                            payload = buildJsonObject { put(PAYLOAD_EVENT_TYPE_KEY, PAYLOAD_EVENT_TYPE_VALUE) }
+                            payload = buildJsonObject {
+                                put(PAYLOAD_EVENT_TYPE_KEY, SubscriptionEventType.STATE_CHANGED.value)
+                            }
                     ),
                     deserializer = StateChangedEventResponse.serializer()
             )
@@ -236,6 +240,17 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
                 }
             }
             .onEach { event -> applyEventToEntityCache(event) }
+
+    override  fun subscribeToRegistryNewDeviceEvents(): Flow<RegistryDeviceEvent> = webSocketCore
+            .subscribe(
+                    request = WsRequest(
+                            command = Command.SUBSCRIBE_EVENTS,
+                            payload = buildJsonObject {
+                                put(PAYLOAD_EVENT_TYPE_KEY, SubscriptionEventType.DEVICE_REGISTRY_UPDATED.value)
+                            }
+                    ),
+                    deserializer = RegistryDeviceEvent.serializer()
+            )
 
     private fun applyEventToEntityCache(event: HomeAssistantStateChangedEvent) {
         val entityIdToEntityMap = entityCache.value.toMutableMap()
@@ -252,7 +267,6 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
     private companion object {
 
         const val PAYLOAD_EVENT_TYPE_KEY = "event_type"
-        const val PAYLOAD_EVENT_TYPE_VALUE = "state_changed"
 
         /** HA-флаги для истории: параметр трактуется как "true" при любом непустом значении. */
     }
