@@ -7,7 +7,7 @@ internal interface SceneCreateController {
 
     fun onNameChanged(value: String)
 
-    fun onAddDeviceClicked()
+    fun onAddClicked()
 
     fun onDeviceEditClicked(deviceDraft: DeviceDraftCard)
 

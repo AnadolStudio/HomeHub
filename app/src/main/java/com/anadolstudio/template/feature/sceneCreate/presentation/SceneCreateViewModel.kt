@@ -96,7 +96,7 @@ internal class SceneCreateViewModel @AssistedInject constructor(
         updateState { copy(name = value, sceneConfigId = sceneConfigId) }
     }
 
-    override fun onAddDeviceClicked() =
+    override fun onAddClicked() =
             navigateToSceneDevicePicker(excludedDeviceIds = state.selectedDeviceDraftSet.map { it.id }.toSet())
 
     override fun onDeviceEditClicked(deviceDraft: DeviceDraftCard) {

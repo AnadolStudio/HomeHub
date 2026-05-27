@@ -194,7 +194,7 @@ private fun SceneCreateContent(
 
         devicesSection(
                 devices = state.selectedDeviceDraftSet,
-                onAddClicked = controller::onAddDeviceClicked,
+                onAddClicked = controller::onAddClicked,
                 onDeviceEditClicked = controller::onDeviceEditClicked,
                 onDeviceRemoved = controller::onDeviceRemoved,
                 onEntityRemoved = controller::onEntityRemoved,

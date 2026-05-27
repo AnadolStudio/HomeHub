@@ -11,7 +11,7 @@ interface HomeController {
     fun onEntityClicked(entity: HomeAssistantEntity<HomeAssistantAttribute>, service: HomeAssistantService<*>)
     fun onDeviceClicked(device: HomeAssistantDevice)
     fun onAutomationClicked()
-    fun onAddDeviceClicked()
+    fun onAddClicked()
     fun onHistoryClicked()
     fun onAreaClicked()
     fun onAreaSelected(area: Area?)

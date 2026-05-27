@@ -1,4 +1,4 @@
-package com.anadolstudio.template.feature.addDevice.presentation
+package com.anadolstudio.template.feature.add.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -17,21 +17,21 @@ import com.anadolstudio.template.event.ObserveEvents
 import com.anadolstudio.template.feature.main.NavigationController
 
 @Composable
-internal fun AddDeviceScreen(
+internal fun AddScreen(
         navigator: NavigationController,
         snackbarHostState: SnackbarHostState,
-        viewModel: AddDeviceViewModel = daggerViewModel(),
+        viewModel: AddViewModel = daggerViewModel(),
 ) {
     val state by viewModel.stateFlow.collectAsState()
     ObserveEvents(viewModel.events, snackbarHostState, navigator)
 
-    AddDeviceLayout(state = state, controller = viewModel)
+    AddLayout(state = state, controller = viewModel)
 }
 
 @Composable
-private fun AddDeviceLayout(
-        @Suppress("UNUSED_PARAMETER") state: AddDeviceScreenState,
-        @Suppress("UNUSED_PARAMETER") controller: AddDeviceController,
+private fun AddLayout(
+        @Suppress("UNUSED_PARAMETER") state: AddScreenState,
+        @Suppress("UNUSED_PARAMETER") controller: AddController,
 ) {
     Box(
             modifier = Modifier
@@ -41,7 +41,7 @@ private fun AddDeviceLayout(
             contentAlignment = Alignment.Center,
     ) {
         Text(
-                text = "AddDevice screen (заглушка)",
+                text = "Add screen (заглушка)",
                 style = AppTheme.typography.textBook18,
                 color = AppTheme.colors.colorAccent,
         )

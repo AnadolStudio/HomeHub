@@ -4,7 +4,7 @@ import android.content.Context
 import com.anadolstudio.template.App
 import com.anadolstudio.template.core.network.SessionExpiredNotifier
 import com.anadolstudio.template.di.viewmodel.ViewModelsInjector
-import com.anadolstudio.template.feature.addDevice.di.AddDeviceModule
+import com.anadolstudio.template.feature.add.di.AddModule
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.di.AutoSetupHomeAssistantUrlModule
 import com.anadolstudio.template.feature.automation.automationDetail.di.AutomationDetailModule
 import com.anadolstudio.template.feature.automation.automationList.di.AutomationListModule
@@ -28,7 +28,7 @@ import javax.inject.Singleton
         AppModule::class,
         NetworkModule::class,
         WebSocketModule::class,
-        AddDeviceModule::class,
+        AddModule::class,
         AutomationDetailModule::class,
         AutomationListModule::class,
         AutoSetupHomeAssistantUrlModule::class,

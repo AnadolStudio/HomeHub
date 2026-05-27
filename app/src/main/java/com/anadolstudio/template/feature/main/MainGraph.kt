@@ -7,7 +7,7 @@ import androidx.navigation.compose.composable
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
 import com.anadolstudio.template.event.navigateTo
 import com.anadolstudio.template.event.navigateUp
-import com.anadolstudio.template.feature.addDevice.presentation.AddDeviceScreen
+import com.anadolstudio.template.feature.add.presentation.AddScreen
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.model.HomeAssistantInstance
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.presetnation.AutoSetupHomeAssistantUrlScreen
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.presetnation.AutoSetupHomeAssistantUrlViewModel
@@ -67,7 +67,7 @@ internal object MainGraph : NavGraphContract() {
 
     private fun manualSetupHomeAssistantUrl() = route { "manualSetupHomeAssistantUrl" }
 
-    private fun addDevice() = route { "addDevice" }
+    private fun add() = route { "add" }
 
     private fun history() = route { "history" }
 
@@ -137,8 +137,8 @@ internal object MainGraph : NavGraphContract() {
         composable(manualSetupHomeAssistantUrl()) {
             ManualSetupHomeAssistantUrlScreen(navigator = navigator, snackbarHostState = snackbarHostState)
         }
-        composable(addDevice()) {
-            AddDeviceScreen(navigator = navigator, snackbarHostState = snackbarHostState)
+        composable(add()) {
+            AddScreen(navigator = navigator, snackbarHostState = snackbarHostState)
         }
         composable(history()) {
             HistoryScreen(navigator = navigator, snackbarHostState = snackbarHostState)
@@ -224,7 +224,7 @@ internal object MainGraph : NavGraphContract() {
     fun AutoSetupHomeAssistantUrlViewModel.navigateToManualSetupHomeAssistantUrl() =
             navigateTo(manualSetupHomeAssistantUrl())
 
-    fun HomeViewModel.navigateToAddDevice() = navigateTo(addDevice())
+    fun HomeViewModel.navigateToAdd() = navigateTo(add())
 
     fun HomeViewModel.navigateToHistory() = navigateTo(history())
 

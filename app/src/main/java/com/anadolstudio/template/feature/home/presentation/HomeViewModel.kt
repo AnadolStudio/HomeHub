@@ -13,7 +13,7 @@ import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantE
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantStateChangedEvent
 import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistantService
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
-import com.anadolstudio.template.feature.main.MainGraph.navigateToAddDevice
+import com.anadolstudio.template.feature.main.MainGraph.navigateToAdd
 import com.anadolstudio.template.feature.main.MainGraph.navigateToAutomationList
 import com.anadolstudio.template.feature.main.MainGraph.navigateToDeviceDetail
 import com.anadolstudio.template.feature.main.MainGraph.navigateToHistory
@@ -158,7 +158,7 @@ internal class HomeViewModel @Inject constructor(
 
     override fun onAutomationClicked() = navigateToAutomationList()
 
-    override fun onAddDeviceClicked() = navigateToAddDevice()
+    override fun onAddClicked() = navigateToAdd()
 
     override fun onHistoryClicked() = navigateToHistory()
 

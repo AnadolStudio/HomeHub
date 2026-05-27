@@ -189,7 +189,7 @@ private fun HomeLayout(
             )
             Badge(
                     vector = Icons.Outlined.Add,
-                    onClick = { controller.onAddDeviceClicked() }
+                    onClick = { controller.onAddClicked() }
             )
         }
 
@@ -448,7 +448,7 @@ private fun createPreviewController(): HomeController = object : HomeController 
     override fun onAreaClicked() = Unit
     override fun onDeviceClicked(device: HomeAssistantDevice) = Unit
     override fun onAutomationClicked() = Unit
-    override fun onAddDeviceClicked() = Unit
+    override fun onAddClicked() = Unit
     override fun onHistoryClicked() = Unit
     override fun onAreaSelected(area: Area?) = Unit
 }
