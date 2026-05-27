@@ -2,7 +2,6 @@ package com.anadolstudio.compose.ui.view.stub
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,187 +18,183 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import com.anadolstudio.compose.ui.theme.AppTheme
 import com.anadolstudio.compose.ui.theme.AppTypography
-import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
 import com.anadolstudio.compose.ui.view.VSpacer
-import com.anadolstudio.compose.ui.view.button.OutlineButtonLarge
 import com.anadolstudio.compose.ui.view.button.PrimaryButtonLarge
 import com.anadolstudio.compose.ui.view.state.Loader
 import com.anadolstudio.compose.ui.view.text.Text
 
 @Composable
 fun PagingItemErrorStub(
-    message: String,
-    buttonTitle: String,
-    onButtonClick: () -> Unit,
-    modifier: Modifier = Modifier,
+        message: String,
+        buttonTitle: String,
+        onButtonClick: () -> Unit,
+        modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            modifier = modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = message,
-            style = AppTypography.captionBook16,
-            color = AppTheme.colors.textSecondary,
+                text = message,
+                style = AppTypography.captionBook16,
+                color = AppTheme.colors.textSecondary,
         )
-        Text(
-            text = buttonTitle,
-            style = AppTypography.captionBook16,
-            color = AppTheme.colors.template,
-            modifier = Modifier
-                .padding(top = 4.dp)
-                .clickable(onClick = onButtonClick),
+
+        PrimaryButtonLarge(
+                text = buttonTitle,
+                onClick = onButtonClick,
+                modifier = Modifier.padding(Dimmens.mainMargin),
         )
     }
 }
 
 @Composable
 fun PagingItemLoadingStub(
-    modifier: Modifier = Modifier,
+        modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier.fillMaxWidth()) {
         Loader(
-            modifier = Modifier
-                .padding(vertical = 24.dp)
-                .align(Alignment.Center)
+                modifier = Modifier
+                        .padding(vertical = 24.dp)
+                        .align(Alignment.Center)
         )
     }
 }
 
 @Composable
 fun EmptyStub(
-    title: String,
-    message: String,
-    image: Painter,
-    modifier: Modifier = Modifier,
-    buttonTitle: String? = null,
-    onButtonClick: () -> Unit = {},
-    fillMaxSize: Boolean = true,
+        title: String,
+        message: String,
+        image: Painter,
+        modifier: Modifier = Modifier,
+        buttonTitle: String? = null,
+        onButtonClick: () -> Unit = {},
+        fillMaxSize: Boolean = true,
 ) = BaseStub(
-    modifier = modifier,
-    title = title,
-    message = message,
-    image = image,
-    buttonTitle = buttonTitle,
-    onButtonClick = onButtonClick,
-    fillMaxSize = fillMaxSize,
+        modifier = modifier,
+        title = title,
+        message = message,
+        image = image,
+        buttonTitle = buttonTitle,
+        onButtonClick = onButtonClick,
+        fillMaxSize = fillMaxSize,
 )
 
 @Composable
 fun ErrorStub(
-    errorTitle: String,
-    errorMessage: String,
-    buttonTitle: String,
-    image: Painter,
-    onRefreshClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    fillMaxSize: Boolean = true,
+        errorTitle: String,
+        errorMessage: String,
+        buttonTitle: String?,
+        onRefreshClick: (() -> Unit)?,
+        modifier: Modifier = Modifier,
+        fillMaxSize: Boolean = true,
+        image: Painter? = null,
 ) = BaseStub(
-    modifier = modifier,
-    title = errorTitle,
-    message = errorMessage,
-    image = image,
-    buttonTitle = buttonTitle,
-    onButtonClick = onRefreshClick,
-    fillMaxSize = fillMaxSize,
+        modifier = modifier,
+        title = errorTitle,
+        message = errorMessage,
+        image = image,
+        buttonTitle = buttonTitle,
+        onButtonClick = onRefreshClick,
+        fillMaxSize = fillMaxSize,
 )
 
 @Composable
 fun SuccessStub(
-    title: String,
-    image: Painter,
-    buttonTitle: String,
-    onButtonClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    message: String? = null,
+        title: String,
+        image: Painter?,
+        buttonTitle: String,
+        onButtonClick: () -> Unit,
+        modifier: Modifier = Modifier,
+        message: String? = null,
 ) {
     Column(modifier = modifier) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(1f),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+                modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
         ) {
-            Image(
-                painter = image,
-                contentDescription = null
-            )
+            image?.let { Image(painter = it, contentDescription = null) }
+
             VSpacer(size = 24.dp)
             Text(
-                text = title,
-                style = AppTypography.titleBook28,
+                    text = title,
+                    style = AppTypography.titleBook28,
             )
             if (message != null) {
                 Text(
-                    text = message,
-                    style = AppTypography.textBook18,
-                    modifier = Modifier.padding(top = 12.dp),
-                    textAlign = TextAlign.Center,
+                        text = message,
+                        style = AppTypography.textBook18,
+                        modifier = Modifier.padding(top = 12.dp),
+                        textAlign = TextAlign.Center,
                 )
             }
         }
         PrimaryButtonLarge(
-            text = buttonTitle,
-            onClick = onButtonClick,
-            modifier = Modifier.padding(Dimension.mainMargin),
+                text = buttonTitle,
+                onClick = onButtonClick,
+                modifier = Modifier.padding(Dimmens.mainMargin),
         )
     }
 }
 
 @Composable
 fun BaseStub(
-    title: String,
-    message: String,
-    image: Painter,
-    buttonTitle: String?,
-    onButtonClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    fillMaxSize: Boolean = true,
+        title: String,
+        message: String,
+        image: Painter?,
+        buttonTitle: String?,
+        onButtonClick: (() -> Unit)?,
+        modifier: Modifier = Modifier,
+        fillMaxSize: Boolean = true,
 ) {
-    Column(modifier = modifier) {
-        val innerModifier = Modifier
-            .padding(Dimension.mainMargin)
-            .align(Alignment.CenterHorizontally)
-            .run {
-                if (fillMaxSize) {
-                    this
-                        .fillMaxSize()
-                        .weight(1f)
-                } else {
-                    this
-                }
-            }
-        Column(
-            modifier = innerModifier,
+    Column(
+            modifier = modifier,
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
+    ) {
+        val innerModifier = Modifier
+                .padding(Dimmens.mainMargin)
+                .align(Alignment.CenterHorizontally)
+                .run {
+                    if (fillMaxSize) {
+                        this
+                                .fillMaxSize()
+                                .weight(1f)
+                    } else {
+                        this
+                    }
+                }
+        Column(
+                modifier = innerModifier,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
         ) {
-            Image(
-                painter = image,
-                contentDescription = null
+            image?.let { Image(painter = it, contentDescription = null) }
+            Text(
+                    text = title,
+                    style = AppTypography.titleBook28,
+                    modifier = Modifier.padding(top = 24.dp),
+                    textAlign = TextAlign.Center,
             )
             Text(
-                text = title,
-                style = AppTypography.titleBook28,
-                modifier = Modifier.padding(top = 24.dp),
-                textAlign = TextAlign.Center,
-            )
-            Text(
-                text = message,
-                style = AppTypography.textBook18,
-                modifier = Modifier.padding(top = 12.dp),
-                textAlign = TextAlign.Center,
+                    text = message,
+                    style = AppTypography.textBook18,
+                    modifier = Modifier.padding(top = 12.dp),
+                    textAlign = TextAlign.Center,
             )
         }
-        if (!buttonTitle.isNullOrBlank()) {
-            OutlineButtonLarge(
-                text = buttonTitle,
-                onClick = onButtonClick,
-                modifier = Modifier.padding(Dimension.mainMargin),
+        if (!buttonTitle.isNullOrBlank() && onButtonClick != null) {
+            PrimaryButtonLarge(
+                    text = buttonTitle,
+                    onClick = onButtonClick,
+                    modifier = Modifier.padding(Dimmens.mainMargin),
             )
         }
     }
@@ -209,16 +204,24 @@ fun BaseStub(
 @Composable
 private fun PreviewPagingStubs(@PreviewParameter(ThemePreviewParameter::class) useDarkMode: Boolean) {
     AppTheme(useDarkMode) {
-        Column {
-            PagingItemLoadingStub(
-                modifier = Modifier.background(AppTheme.colors.colorSecondary),
-            )
+        Column(
+                modifier = Modifier.background(AppTheme.colors.colorSecondary)
+        ) {
+            PagingItemLoadingStub()
 
             PagingItemErrorStub(
-                modifier = Modifier.background(AppTheme.colors.colorSecondary),
-                message = "Не удалось загрузить список элементов",
-                buttonTitle = "Повторить",
-                onButtonClick = {}
+                    message = "Не удалось загрузить список элементов",
+                    buttonTitle = "Повторить",
+                    onButtonClick = {}
+            )
+
+            ErrorStub(
+                    errorTitle = "Заголовок ошибки",
+                    errorMessage = "Описание ошибки",
+                    buttonTitle = "Название кнопки",
+                    onRefreshClick = {},
+                    fillMaxSize = false,
+                    modifier = Modifier.fillMaxWidth()
             )
         }
     }

@@ -15,12 +15,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonColors
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.ButtonElevation
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
-import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.State
@@ -53,31 +54,31 @@ import androidx.compose.material.TextButton as MaterialTextButton
 fun PrimaryButtonLarge(
     text: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.fillMaxWidth(),
     enabled: Boolean = true,
     colors: AppButtonColors = AppButtonColors.primaryButtonColors(),
     maxLines: Int = 1,
     shape: Shape = MaterialTheme.shapes.tiny,
     contentPadding: PaddingValues = LargeButtonContentPadding,
     loading: Boolean = false,
+    elevation: ButtonElevation? = ButtonDefaults.elevation(),
     icon: Painter? = null,
 ) {
     Button(
         onClick = onClick,
         modifier = modifier
-            .fillMaxWidth()
             .defaultMinSize(minHeight = LargeButtonHeight)
             .consumeTouches(loading)
             .rememberMinSize { _, _ -> !loading }
             .indication(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = rememberRipple(
+                indication = ripple(
                     color = AppTheme.colors.buttonPrimaryRipple,
                     radius = 10.dp
                 )
             ),
         enabled = enabled,
-        elevation = null,
+        elevation = elevation,
         shape = shape,
         colors = colors,
         contentPadding = contentPadding,
@@ -245,7 +246,7 @@ private fun ButtonsPreview(@PreviewParameter(ThemePreviewParameter::class) useDa
     AppTheme(useDarkMode) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.background(AppTheme.colors.colorPrimary)
+            modifier = Modifier.background(AppTheme.colors.colorSecondary)
         ) {
             PrimaryButtonLarge(
                 text = "PrimaryButtonLarge",
@@ -340,9 +341,9 @@ data class AppButtonColors(
 
         @Composable
         fun primaryButtonColors(
-            backgroundColor: Color = AppTheme.colors.template,
-            contentColor: Color = AppTheme.colors.template,
-            disabledBackgroundColor: Color = AppTheme.colors.template,
+            backgroundColor: Color = AppTheme.colors.colorPrimary,
+            contentColor: Color = AppTheme.colors.colorAccent,
+            disabledBackgroundColor: Color = AppTheme.colors.disable,
             disabledContentColor: Color = contentColor,
         ): AppButtonColors = AppButtonColors(
             backgroundColor = backgroundColor,
@@ -354,19 +355,19 @@ data class AppButtonColors(
         @Composable
         fun outlineButtonColors(
             backgroundColor: Color = Color.Transparent,
-            contentColor: Color = AppTheme.colors.template,
+            contentColor: Color = AppTheme.colors.colorAccent,
         ): AppButtonColors = AppButtonColors(
             backgroundColor = backgroundColor,
             contentColor = contentColor,
             disabledBackgroundColor = backgroundColor,
-            disabledContentColor = contentColor,
+            disabledContentColor = contentColor.copy(alpha = ContentAlpha.disabled),
         )
 
         @Composable
         fun textButtonColors(
             backgroundColor: Color = Color.Transparent,
-            contentColor: Color = AppTheme.colors.template,
-            disabledContentColor: Color = AppTheme.colors.template
+            contentColor: Color = AppTheme.colors.colorAccent,
+            disabledContentColor: Color = AppTheme.colors.colorAccent
                 .copy(alpha = ContentAlpha.disabled),
         ): AppButtonColors = AppButtonColors(
             backgroundColor = backgroundColor,

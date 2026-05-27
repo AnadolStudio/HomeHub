@@ -5,10 +5,12 @@
 
 package com.anadolstudio.template.feature.main
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.ModalBottomSheetDefaults
 import androidx.compose.material.Scaffold
 import androidx.compose.material.rememberScaffoldState
@@ -18,8 +20,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
@@ -30,6 +34,7 @@ import com.anadolstudio.compose.ui.theme.shape
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHost
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
 import com.anadolstudio.compose.ui.view.snackbar.rememberSnackbarHostState
+import com.anadolstudio.template.base.viewmodel.ObserveViewModelLifecycle
 import com.anadolstudio.template.di.viewmodel.daggerViewModel
 import com.anadolstudio.template.event.ObserveEvents
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
@@ -44,6 +49,7 @@ internal fun MainScreen(
     val snackbarHostState = rememberSnackbarHostState(scaffoldState.snackbarHostState)
 
     ObserveEvents(viewModel.events, snackbarHostState, navigator)
+    ObserveViewModelLifecycle(viewModel)
 
     val state by viewModel.stateFlow.collectAsState()
     MainLayout(navigator, state, viewModel)
@@ -64,22 +70,24 @@ private fun MainLayout(
         modifier = Modifier.semantics { testTagsAsResourceId = true },
         scaffoldState = scaffoldState,
         backgroundColor = AppTheme.colors.colorSecondary,
-        snackbarHost = { hostState ->
+        snackbarHost = { },
+    ) { paddingValues ->
+        Box(modifier = Modifier.fillMaxSize()) {
+            ModalBottomSheet(
+                    navigator,
+                    snackbarHostState,
+                    paddingValues,
+                    scrollBottomBehavior
+            )
             SnackbarHost(
-                hostState = hostState,
+                hostState = scaffoldState.snackbarHostState,
                 modifier = Modifier
-                    .padding(bottom = 16.dp)
-                    .navigationBarsPadding()
+                    .align(Alignment.TopCenter)
+                    .padding(top = 16.dp)
+                    .statusBarsPadding()
                     .imePadding(),
             )
-        },
-    ) { paddingValues ->
-        ModalBottomSheet(
-                navigator,
-                snackbarHostState,
-                paddingValues,
-                scrollBottomBehavior
-        )
+        }
     }
 }
 
@@ -94,7 +102,7 @@ private fun ModalBottomSheet(
         bottomSheetNavigator = navigator.bottomSheetNavigator,
         sheetShape = ModalBottomSheetDefaults.shape,
         scrimColor = AppTheme.colors.textPrimary.copy(alpha = 0.32f),
-        sheetBackgroundColor = AppTheme.colors.colorPrimary
+        sheetBackgroundColor = Color.Transparent,
     ) {
         NavHost(
             navController = navigator,

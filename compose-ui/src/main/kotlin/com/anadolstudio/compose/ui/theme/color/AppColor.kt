@@ -21,15 +21,18 @@ internal object AppColor {
     internal val white: Color = Color(0xFFFFFFFF)
     internal val black: Color = Color(0xFF000000)
     internal val gray: Color = Color(0xFF7E7E7E)
+    internal val error: Color = Color(0xFF980000)
     internal val template: Color = Color(0xFFEE00FF)
 
     internal val colorPrimaryLight: Color = Color(0xFFFAFAFA)
     internal val colorSecondaryLight: Color = Color(0xFFEBEBEB)
     internal val colorAccentLight: Color = Color(0xFF1B1B1B)
+    internal val colorDisableLight: Color = Color(0xFFB7B7B7)
 
     internal val colorPrimaryDark: Color = Color(0xFF424242)
     internal val colorSecondaryDark: Color = Color(0xFF616161)
     internal val colorAccentDark: Color = Color(0xFFFAFAFA)
+    internal val colorDisableDark: Color = Color(0xFF7E7E7E)
 
     internal val colorOverlay: Color = Color(0x801B1B1B)
 
@@ -61,6 +64,8 @@ private fun PalettePreview() = Column {
         ColorPreview(AppColor.colorPrimaryLight, name = "Primary")
         ColorPreview(AppColor.colorSecondaryLight, name = "Secondary")
         ColorPreview(AppColor.colorAccentLight, name = "Accent")
+        ColorPreview(AppColor.colorDisableLight, name = "Disable")
+        ColorPreview(AppColor.error, name = "Error")
     }
 
     Header("Dark")
@@ -68,6 +73,8 @@ private fun PalettePreview() = Column {
         ColorPreview(AppColor.colorPrimaryDark, name = "Primary")
         ColorPreview(AppColor.colorSecondaryDark, name = "Secondary")
         ColorPreview(AppColor.colorAccentDark, name = "Accent")
+        ColorPreview(AppColor.colorDisableDark, name = "Disable")
+        ColorPreview(AppColor.error, name = "Error")
     }
 }
 

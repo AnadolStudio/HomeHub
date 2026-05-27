@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -18,7 +18,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.anadolstudio.compose.ui.theme.AppTypography
-import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.view.text.Text
 
 @Composable
@@ -88,7 +88,7 @@ private fun BaseCheckbox(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
-                .padding(vertical = 12.dp, horizontal = Dimension.mainMargin)
+                .padding(vertical = 12.dp, horizontal = Dimmens.mainMargin)
         ) {
             val icon = if (isEnabled) isEnabledIcon else isDisabledIcon
 
@@ -97,7 +97,7 @@ private fun BaseCheckbox(
                 contentDescription = null,
                 modifier = Modifier.indication(
                     interactionSource = interactionSource,
-                    indication = rememberRipple(bounded = false, radius = RippleRadius),
+                    indication = ripple(bounded = false, radius = RippleRadius),
                 )
             )
 

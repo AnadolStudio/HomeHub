@@ -2,7 +2,6 @@ package com.anadolstudio.template.feature.splash.di
 
 import androidx.lifecycle.ViewModel
 import com.anadolstudio.template.di.viewmodel.ViewModelKey
-import com.anadolstudio.template.feature.home.presetnation.HomeViewModel
 import com.anadolstudio.template.feature.splash.SplashViewModel
 import dagger.Binds
 import dagger.Module

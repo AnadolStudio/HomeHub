@@ -61,15 +61,14 @@ internal fun EventsDispatcher.showMessage(
 
 internal fun EventsDispatcher.showError(message: String) {
     showEvent(ErrorMessageEvent(Text.Plain(message)))
+    Timber.e(message)
 }
 
 internal fun EventsDispatcher.showError(@StringRes resourceId: Int) {
     showEvent(ErrorMessageEvent(Text.Resource(resourceId)))
 }
 
-internal fun EventsDispatcher.showError(error: Throwable?) {
-    showEvent(ErrorMessageEvent(Text.Plain(error?.message.orEmpty())))
-}
+internal fun EventsDispatcher.showError(error: Throwable?) = showError(error?.message.orEmpty())
 
 private val todoMessages = listOf(
         "Извините, этот функционал пока не реализован \uD83D\uDE43",

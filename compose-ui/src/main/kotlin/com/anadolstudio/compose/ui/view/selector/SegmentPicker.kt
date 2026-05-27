@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.anadolstudio.compose.ui.theme.AppTheme
 import com.anadolstudio.compose.ui.theme.AppTypography
-import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.theme.Shapes
 import com.anadolstudio.compose.ui.theme.largeBlock
 import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
@@ -87,7 +87,7 @@ private fun RowScope.Segment(
                 .height(height)
                 .clip(Shapes.largeBlock)
                 .clickable(enabled) { onSegmentClick.invoke() }
-                .padding(horizontal = Dimension.mainMargin)
+                .padding(horizontal = Dimmens.mainMargin)
         ) {
             WSpacer()
             Text(

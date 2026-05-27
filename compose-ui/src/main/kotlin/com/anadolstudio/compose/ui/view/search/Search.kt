@@ -42,7 +42,7 @@ import com.anadolstudio.compose.ui.animation.IconAnimatedVisibility
 import com.anadolstudio.compose.ui.drawable.Icons
 import com.anadolstudio.compose.ui.theme.AppTheme
 import com.anadolstudio.compose.ui.theme.AppTypography
-import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.theme.Shapes
 import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
 import com.anadolstudio.compose.ui.theme.tiny
@@ -59,11 +59,12 @@ fun Search(
     enabled: Boolean = true,
     isError: Boolean = false,
     textStyle: TextStyle = AppTypography.textBook18,
-    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() }
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+    modifier: Modifier = Modifier.padding(16.dp)
 ) {
     val borderColor by animateColorAsState(getBorderlineColor(isError, enabled))
 
-    Column(modifier = Modifier.padding(16.dp)) {
+    Column(modifier = modifier) {
         Row(
             modifier = Modifier
                 .background(AppTheme.colors.colorSecondary, shape = Shapes.tiny)
@@ -174,7 +175,7 @@ private fun SearchFieldDecorationBox(
             IconAnimatedVisibility(visible = textFieldValue.text.isNotEmpty()) {
                 IconButton(
                     onClick = onValueResetClick,
-                    modifier = Modifier.size(Dimension.minTouchSize)
+                    modifier = Modifier.size(Dimmens.minTouchSize)
                 ) {
                     Icon(
                         modifier = Modifier.size(10.dp),

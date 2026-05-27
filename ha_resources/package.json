@@ -1,0 +1,11 @@
+{
+  "name": "ha-resources-icons",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "download:ha-icons": "node scripts/download-ha-icons.mjs"
+  },
+  "dependencies": {
+    "@mdi/svg": "7.4.47"
+  }
+}

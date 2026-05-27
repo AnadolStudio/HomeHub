@@ -20,6 +20,7 @@ include(
         ":app",
         ":core:compose-ui",
         ":core:utils",
+        ":ha_resources",
 )
 project(":core:compose-ui").projectDir = File(rootDir, "/compose-ui")
 project(":core:utils").projectDir = File(rootDir, "/AndroidCoreBase/utils")

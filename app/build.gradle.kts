@@ -2,9 +2,12 @@ plugins {
     id(libs.plugins.android.application.get().pluginId)
     id(libs.plugins.kotlin.android.get().pluginId)
     id(libs.plugins.kotlin.kapt.get().pluginId)
+    id(libs.plugins.kotlin.parcelize.get().pluginId)
 //    id("com.google.firebase.crashlytics") // TODO
 //    id("com.google.gms.google-services") // TODO
 }
+
+apply(plugin = libs.plugins.kotlin.serialization.get().pluginId)
 
 android {
 
@@ -94,6 +97,7 @@ android {
 dependencies {
     implementation(project(":core:compose-ui"))
     implementation(project(":core:utils"))
+    implementation(project(":ha_resources"))
 
     implementation(libs.bundles.android.ui)
     annotationProcessor(libs.lifecycle.compiler)
@@ -102,6 +106,15 @@ dependencies {
     implementation(platform(libs.firebase.bom))
 
     implementation(libs.bundles.utils)
+
+    implementation(libs.webkit)
+    implementation(libs.accompanist.webview)
+
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.kotlinx.serialization)
+    implementation(libs.retrofit.scalars)
 
     implementation(libs.dagger)
     kapt(libs.dagger.compiler)

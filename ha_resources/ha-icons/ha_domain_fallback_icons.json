@@ -1,0 +1,13 @@
+{
+  "automation": "mdi:robot",
+  "scene": "mdi:palette",
+  "script": "mdi:script-text",
+  "light": "mdi:lightbulb",
+  "switch": "mdi:toggle-switch",
+  "sensor": "mdi:eye",
+  "climate": "mdi:thermostat",
+  "calendar": "mdi:calendar",
+  "person": "mdi:account",
+  "weather": "mdi:weather-partly-cloudy",
+  "zone": "mdi:map-marker-radius"
+}

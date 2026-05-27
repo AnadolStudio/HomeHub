@@ -18,7 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.anadolstudio.compose.ui.theme.AppTheme
 import com.anadolstudio.compose.ui.theme.AppTypography
-import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.Dimmens
 
 @Composable
 fun PopupMenu(
@@ -72,7 +72,7 @@ private fun GroupActionsItem(
     tint: Color = AppTheme.colors.textPrimary,
 ) {
     Row(
-        modifier = Modifier.padding(end = Dimension.mediumMargin)
+        modifier = Modifier.padding(end = Dimmens.smallMargin)
     ) {
         Icon(
             modifier = Modifier
@@ -85,7 +85,7 @@ private fun GroupActionsItem(
         Text(
             modifier = Modifier
                 .weight(1f)
-                .padding(start = Dimension.mainMargin)
+                .padding(start = Dimmens.mainMargin)
                 .align(Alignment.CenterVertically),
             text = stringResource(textRes),
             style = AppTypography.textBook18,

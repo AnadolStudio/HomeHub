@@ -33,7 +33,7 @@ import com.anadolstudio.compose.ui.drawable.Icons
 import com.anadolstudio.compose.ui.modifier.surface
 import com.anadolstudio.compose.ui.theme.AppTheme
 import com.anadolstudio.compose.ui.theme.AppTypography
-import com.anadolstudio.compose.ui.theme.Dimension
+import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
 import com.anadolstudio.compose.ui.view.button.AppButtonColors
 import com.anadolstudio.compose.ui.view.search.Search
@@ -75,7 +75,7 @@ fun Toolbar(
 
             Column(
                 Modifier
-                    .padding(horizontal = Dimension.mainMargin)
+                    .padding(horizontal = Dimmens.mainMargin)
                     .weight(1f),
             ) {
                 Text(text = title, style = AppTypography.textMedium18)
@@ -112,7 +112,7 @@ fun Toolbar(
 
                 Column(
                     Modifier
-                        .padding(horizontal = Dimension.mainMargin)
+                        .padding(horizontal = Dimmens.mainMargin)
                         .weight(1f),
                 ) {
                     Text(text = title, style = AppTypography.textMedium18)
@@ -167,7 +167,7 @@ fun Toolbar(
 }
 
 val AppBarHeight: Dp = 56.dp
-private val IconCornerPadding = Dimension.toolbarHorizontalMargin - (Dimension.minTouchSize - 32.dp) / 2
+private val IconCornerPadding = Dimmens.toolbarHorizontalMargin - (Dimmens.minTouchSize - 32.dp) / 2
 
 enum class NavigationIcon(
     private val painter: @Composable () -> Painter,

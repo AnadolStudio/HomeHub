@@ -1,0 +1,3 @@
+package com.anadolstudio.template.feature.automation.automationDetail.presentation
+
+internal interface AutomationDetailController

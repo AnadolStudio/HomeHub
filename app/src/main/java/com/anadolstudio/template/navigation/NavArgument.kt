@@ -7,11 +7,18 @@ import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import kotlinx.serialization.decodeFromString
+import com.anadolstudio.template.util.serializer.OffsetDateTimeSerializer
+import java.time.OffsetDateTime
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
 
-private val jsonDefaultsFormat = Json { encodeDefaults = true }
+private val jsonDefaultsFormat = Json {
+    encodeDefaults = true
+    serializersModule = SerializersModule {
+        contextual(OffsetDateTime::class, OffsetDateTimeSerializer)
+    }
+}
 
 /** Returns placeholder that should be used in route in place of argument value. */
 internal val NamedNavArgument.placeholder: String
