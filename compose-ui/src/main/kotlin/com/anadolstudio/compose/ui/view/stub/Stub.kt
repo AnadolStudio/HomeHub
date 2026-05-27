@@ -88,8 +88,8 @@ fun EmptyStub(
 fun ErrorStub(
         errorTitle: String,
         errorMessage: String,
-        buttonTitle: String,
-        onRefreshClick: () -> Unit,
+        buttonTitle: String?,
+        onRefreshClick: (() -> Unit)?,
         modifier: Modifier = Modifier,
         fillMaxSize: Boolean = true,
         image: Painter? = null,
@@ -150,7 +150,7 @@ fun BaseStub(
         message: String,
         image: Painter?,
         buttonTitle: String?,
-        onButtonClick: () -> Unit,
+        onButtonClick: (() -> Unit)?,
         modifier: Modifier = Modifier,
         fillMaxSize: Boolean = true,
 ) {
@@ -190,7 +190,7 @@ fun BaseStub(
                     textAlign = TextAlign.Center,
             )
         }
-        if (!buttonTitle.isNullOrBlank()) {
+        if (!buttonTitle.isNullOrBlank() && onButtonClick != null) {
             PrimaryButtonLarge(
                     text = buttonTitle,
                     onClick = onButtonClick,

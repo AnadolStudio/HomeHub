@@ -2,6 +2,7 @@ package com.anadolstudio.template.feature.home.data
 
 import ServiceDomainResponse
 import com.anadolstudio.template.feature.home.data.model.UpdateStateRequest
+import com.anadolstudio.template.feature.home.data.model.scene.toDomain
 import com.anadolstudio.template.feature.home.domain.HARestRepository
 import com.anadolstudio.template.feature.home.domain.model.AllowedDomain
 import com.anadolstudio.template.feature.home.domain.model.ApiStatus
@@ -9,17 +10,19 @@ import com.anadolstudio.template.feature.home.domain.model.Config
 import com.anadolstudio.template.feature.home.domain.model.Message
 import com.anadolstudio.template.feature.home.domain.model.UpdateState
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantEventType
+import com.anadolstudio.template.feature.home.domain.model.scene.SceneConfig
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAttributes
 import com.anadolstudio.template.feature.home.domain.model.states.mapAttributes
 import com.anadolstudio.template.feature.home.domain.model.states.toHome
 import com.anadolstudio.template.feature.homeAssistantAuth.data.api.AuthHomeAssistantApi
-import com.anadolstudio.template.feature.sceneCreate.data.mapper.toSceneConfigPayload
-import com.anadolstudio.template.feature.sceneCreate.domain.model.SceneDraft
 import javax.inject.Inject
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonObject
 
 internal class HARestRepositoryImpl @Inject constructor(
         private val api: AuthHomeAssistantApi,
@@ -74,7 +77,10 @@ internal class HARestRepositoryImpl @Inject constructor(
             significantChangesOnly = HISTORY_FLAG.takeIf { significantChangesOnly },
     ).map { period -> period.map { it.toDomain(json) } }
 
-    override suspend fun updateState(entityId: String, update: UpdateState): HomeAssistantState<HomeAssistantAttribute> =
+    override suspend fun updateState(
+            entityId: String,
+            update: UpdateState,
+    ): HomeAssistantState<HomeAssistantAttribute> =
             api.updateState(entityId = entityId, body = UpdateStateRequest.from(update)).toDomain(json)
 
     override suspend fun fireEvent(eventType: String, eventData: JsonObject?): Message =
@@ -93,13 +99,46 @@ internal class HARestRepositoryImpl @Inject constructor(
     override suspend fun deleteState(entityId: String): Message =
             api.deleteState(entityId).toDomain()
 
-    override suspend fun getSceneConfig(sceneConfigId: String): JsonObject =
-            api.getSceneConfig(sceneId = sceneConfigId)
+    override suspend fun getSceneConfig(sceneConfigId: String): SceneConfig =
+            api.getSceneConfig(sceneId = sceneConfigId).toDomain(json)
 
-    override suspend fun saveSceneConfig(draft: SceneDraft): Boolean = api.saveSceneConfig(
-            sceneId = draft.sceneConfigId,
-            body = draft.toSceneConfigPayload(),
-    ).isOk
+    override suspend fun saveSceneConfig(
+            name: String,
+            sceneConfigId: String,
+            entityStates: List<HomeAssistantState<*>>,
+    ): Boolean {
+        val body = buildJsonObject {
+            put("name", name)
+            put("id", sceneConfigId)
+            putJsonObject("entities") {
+                entityStates.forEach {
+                    putJsonObject(it.entityId) {
+                        it.attributes.jsonAttributes.forEach { (k, v) -> put(k, v) }
+
+                        put("state", it.allowedState.value)
+                    }
+                }
+            }
+        }
+        return api.saveSceneConfig(sceneId = sceneConfigId, body = body).isOk
+    }
+
+    override suspend fun applyScene(
+            entityStates: List<HomeAssistantState<*>>,
+    ): Boolean {
+        val body = buildJsonObject {
+            putJsonObject("entities") {
+                entityStates.forEach {
+                    putJsonObject(it.entityId) {
+                        it.attributes.jsonAttributes.forEach { (k, v) -> put(k, v) }
+
+                        put("state", it.allowedState.value)
+                    }
+                }
+            }
+        }
+        return api.applyScene(body = body).isOk
+    }
 
     override suspend fun deleteSceneConfig(sceneConfigId: String): Boolean =
             api.deleteSceneConfig(sceneId = sceneConfigId).isOk

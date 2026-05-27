@@ -27,14 +27,15 @@ data class LightAttribute(
         @SerialName("max_color_temp_kelvin") val maxKelvin: Int? = null,
         @SerialName("supported_color_modes") val supportedColorModes: List<String> = emptyList(),
         @SerialName("color_mode") val colorMode: String? = null,
-        @SerialName("brightness") val brightness: Int = 0,
+        @SerialName("brightness") val brightness: Int? = null,
         @SerialName("color_temp_kelvin") val colorKelvin: Int? = null,
         @SerialName("hs_color") val hsColor: List<Double> = emptyList(),
         @SerialName("rgb_color") val rgbColor: List<Int> = emptyList(),
         @SerialName("xy_color") val xyColor: List<Double> = emptyList(),
+        @Transient override val icon: HaIcon = requireNotNull(HaIcons.resolve(haIconName = "mdi:lightbulb"))
 ) : HomeAssistantAttribute, Iconable {
 
-    val colorModeList: List<LightEntityColorMode> = listOfNotNull(
+    val colorModeList: List<LightEntityColorMode> get() = listOfNotNull(
             runCatching {
                 if (!supportedColorModes.contains("hs")) throw IllegalArgumentException("not supported hs")
                 val hue = hsColor.firstOrNull() ?: 0.0
@@ -54,16 +55,15 @@ data class LightAttribute(
                 val r = rgbColor.getOrNull(0)
                 val g = rgbColor.getOrNull(1)
                 val b = rgbColor.getOrNull(2)
-                RGB(alpha = brightness, red = r ?: 0, green = g ?: 0, blue = b ?: 0, hasValue = rgbColor.size == 3)
+                val a = brightness ?: 0
+                RGB(alpha = a, red = r ?: 0, green = g ?: 0, blue = b ?: 0, hasValue = rgbColor.size == 3)
             }
     ).mapNotNull { it.getOrNull() }
 
-    val color: Int? = colorModeList
+    val color: Int? get() = colorModeList
             .firstOrNull { it is RGB }
             ?.let { it as? RGB }
             ?.color
-
-    override val icon: HaIcon = requireNotNull(HaIcons.resolve(haIconName = "mdi:lightbulb"))
 }
 
 fun JsonObject.toLight(json: Json): LightAttribute = json

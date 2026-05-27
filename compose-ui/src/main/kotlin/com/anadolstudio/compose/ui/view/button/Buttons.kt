@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonColors
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.ButtonElevation
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
@@ -60,6 +61,7 @@ fun PrimaryButtonLarge(
     shape: Shape = MaterialTheme.shapes.tiny,
     contentPadding: PaddingValues = LargeButtonContentPadding,
     loading: Boolean = false,
+    elevation: ButtonElevation? = ButtonDefaults.elevation(),
     icon: Painter? = null,
 ) {
     Button(
@@ -76,7 +78,7 @@ fun PrimaryButtonLarge(
                 )
             ),
         enabled = enabled,
-        elevation = null,
+        elevation = elevation,
         shape = shape,
         colors = colors,
         contentPadding = contentPadding,
@@ -340,8 +342,8 @@ data class AppButtonColors(
         @Composable
         fun primaryButtonColors(
             backgroundColor: Color = AppTheme.colors.colorPrimary,
-            contentColor: Color = AppTheme.colors.textPrimary,
-            disabledBackgroundColor: Color = AppTheme.colors.colorPrimary,
+            contentColor: Color = AppTheme.colors.colorAccent,
+            disabledBackgroundColor: Color = AppTheme.colors.disable,
             disabledContentColor: Color = contentColor,
         ): AppButtonColors = AppButtonColors(
             backgroundColor = backgroundColor,
@@ -358,7 +360,7 @@ data class AppButtonColors(
             backgroundColor = backgroundColor,
             contentColor = contentColor,
             disabledBackgroundColor = backgroundColor,
-            disabledContentColor = contentColor,
+            disabledContentColor = contentColor.copy(alpha = ContentAlpha.disabled),
         )
 
         @Composable

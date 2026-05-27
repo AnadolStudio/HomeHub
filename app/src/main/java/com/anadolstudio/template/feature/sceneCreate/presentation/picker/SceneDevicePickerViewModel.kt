@@ -7,16 +7,19 @@ import com.anadolstudio.template.event.showError
 import com.anadolstudio.template.feature.home.domain.HAWebsocketRepository
 import com.anadolstudio.template.feature.home.domain.model.Area
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
-import com.anadolstudio.template.feature.main.MainGraph.navigateToDeviceDetailFromPicker
+import com.anadolstudio.template.feature.main.MainGraph.navigateToDemoDeviceDetailFromPicker
 import com.anadolstudio.utils.states.LoadingContext
 import com.anadolstudio.utils.states.lce.lceFlow
 import com.anadolstudio.utils.states.lce.onEachContent
 import com.anadolstudio.utils.states.lce.onEachError
 import com.anadolstudio.utils.states.lce.onEachProgressState
-import javax.inject.Inject
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.launchIn
 
-internal class SceneDevicePickerViewModel @Inject constructor(
+internal class SceneDevicePickerViewModel @AssistedInject constructor(
+        @Assisted private val excludedDeviceIds: Set<String>,
         private val websocketRepository: HAWebsocketRepository,
 ) : StatefulViewModel<SceneDevicePickerScreenState>(SceneDevicePickerScreenState()),
     SceneDevicePickerController {
@@ -28,6 +31,7 @@ internal class SceneDevicePickerViewModel @Inject constructor(
     private fun load(loadingContext: LoadingContext) {
         lceFlow {
             val devices = websocketRepository.getDeviceList()
+                    .filterNot { device -> excludedDeviceIds.contains(device.id) }
             val areas = websocketRepository.getAreaList()
             devices to areas
         }
@@ -55,11 +59,15 @@ internal class SceneDevicePickerViewModel @Inject constructor(
     override fun onAreaSelected(area: Area?) = updateState { copy(selectedAreaId = area?.areaId) }
 
     override fun onDeviceClicked(device: HomeAssistantDevice) {
-        // Сразу попаем picker — после возврата из DeviceDetail юзер окажется на SceneCreate.
-        navigateToDeviceDetailFromPicker(device)
+        navigateToDemoDeviceDetailFromPicker(device = device, selectedEntitySet = emptySet())
     }
 
     override fun onRetryClicked() = load(LoadingContext.RETRY)
 
     override fun onCloseClicked() = navigateUp()
+
+    @AssistedFactory
+    interface Factory {
+        fun create(excludedDeviceIds: Set<String>): SceneDevicePickerViewModel
+    }
 }

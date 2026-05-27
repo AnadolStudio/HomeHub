@@ -8,6 +8,7 @@ import com.anadolstudio.template.feature.home.data.model.ResultResponse
 import com.anadolstudio.template.feature.home.data.model.StateResponse
 import com.anadolstudio.template.feature.home.data.model.UpdateStateRequest
 import com.anadolstudio.template.feature.home.data.model.events.EventListenerResponse
+import com.anadolstudio.template.feature.home.data.model.scene.SceneConfigResponse
 import kotlinx.serialization.json.JsonObject
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -115,7 +116,7 @@ interface AuthHomeAssistantApi {
      * подключено `scene: !include scenes.yaml` и активирован `config:` редактор.
      */
     @GET("api/config/scene/config/{scene_id}")
-    suspend fun getSceneConfig(@Path("scene_id") sceneId: String): JsonObject
+    suspend fun getSceneConfig(@Path("scene_id") sceneId: String): SceneConfigResponse
 
     /**
      * POST /api/config/scene/config/{scene_id} — сохранить постоянную сцену.
@@ -128,6 +129,9 @@ interface AuthHomeAssistantApi {
             @Path("scene_id") sceneId: String,
             @Body body: JsonObject,
     ): ResultResponse
+
+    @POST("api/services/scene/apply")
+    suspend fun applyScene(@Body body: JsonObject): ResultResponse
 
     /**
      * DELETE /api/config/scene/config/{scene_id} — удалить постоянную сцену.

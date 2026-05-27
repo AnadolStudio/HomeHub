@@ -1,7 +1,7 @@
-package com.anadolstudio.template.feature.deviceDetail.di
+package com.anadolstudio.template.feature.deviceDetail.ordinary.di
 
 import com.anadolstudio.template.di.viewmodel.ViewModelFactoryKey
-import com.anadolstudio.template.feature.deviceDetail.presentation.DeviceDetailViewModel
+import com.anadolstudio.template.feature.deviceDetail.ordinary.presentation.DeviceDetailViewModel
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap

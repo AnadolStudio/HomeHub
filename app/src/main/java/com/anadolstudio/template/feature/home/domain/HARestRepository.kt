@@ -6,10 +6,10 @@ import com.anadolstudio.template.feature.home.domain.model.Config
 import com.anadolstudio.template.feature.home.domain.model.Message
 import com.anadolstudio.template.feature.home.domain.model.UpdateState
 import com.anadolstudio.template.feature.home.domain.model.events.HomeAssistantEventType
+import com.anadolstudio.template.feature.home.domain.model.scene.SceneConfig
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAttributes
-import com.anadolstudio.template.feature.sceneCreate.domain.model.SceneDraft
 import kotlinx.serialization.json.JsonObject
 
 interface HARestRepository {
@@ -83,15 +83,16 @@ interface HARestRepository {
 
     /**
      * GET /api/config/scene/config/{scene_id} — получить конфигурацию сохранённой сцены.
-     * Сырое тело конфигурации; парсинг в [SceneDraft] на стороне use-case (пока не реализован).
      */
-    suspend fun getSceneConfig(sceneConfigId: String): JsonObject
+    suspend fun getSceneConfig(sceneConfigId: String): SceneConfig
 
     /**
      * POST /api/config/scene/config/{scene_id} — сохранить постоянную сцену.
      * @return true если HA вернул `{"result":"ok"}`.
      */
-    suspend fun saveSceneConfig(draft: SceneDraft): Boolean
+    suspend fun saveSceneConfig(name: String, sceneConfigId: String, entityStates: List<HomeAssistantState<*>>): Boolean
+
+    suspend fun applyScene(entityStates: List<HomeAssistantState<*>>): Boolean
 
     /**
      * DELETE /api/config/scene/config/{scene_id} — удалить постоянную сцену.

@@ -1,7 +1,6 @@
 package com.anadolstudio.template.feature.sceneCreate.di
 
-import androidx.lifecycle.ViewModel
-import com.anadolstudio.template.di.viewmodel.ViewModelKey
+import com.anadolstudio.template.di.viewmodel.ViewModelFactoryKey
 import com.anadolstudio.template.feature.sceneCreate.presentation.SceneCreateViewModel
 import com.anadolstudio.template.feature.sceneCreate.presentation.picker.SceneDevicePickerViewModel
 import dagger.Binds
@@ -13,11 +12,11 @@ internal interface SceneCreateModule {
 
     @Binds
     @IntoMap
-    @ViewModelKey(SceneCreateViewModel::class)
-    fun bindSceneCreateViewModel(impl: SceneCreateViewModel): ViewModel
+    @ViewModelFactoryKey(SceneCreateViewModel.Factory::class)
+    fun bindSceneCreateViewModelFactory(factory: SceneCreateViewModel.Factory): Any
 
     @Binds
     @IntoMap
-    @ViewModelKey(SceneDevicePickerViewModel::class)
-    fun bindSceneDevicePickerViewModel(impl: SceneDevicePickerViewModel): ViewModel
+    @ViewModelFactoryKey(SceneDevicePickerViewModel.Factory::class)
+    fun bindSceneDevicePickerViewModelFactory(factory: SceneDevicePickerViewModel.Factory): Any
 }

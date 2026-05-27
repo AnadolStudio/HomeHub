@@ -45,6 +45,7 @@ import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.theme.Shapes
 import com.anadolstudio.compose.ui.theme.largeShimmer
 import com.anadolstudio.template.R
+import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -126,7 +127,7 @@ internal fun BaseAutomationItem(
 
         BaseAutomationItemRow(
                 modifier = Modifier
-                        .offset { IntOffset(swipeState.requireOffset().toInt(), 0) }
+                        .offset { IntOffset(swipeState.requireOffset().roundToInt(), 0) }
                         .anchoredDraggable(state = swipeState, orientation = Orientation.Horizontal),
                 icon = icon,
                 title = title,

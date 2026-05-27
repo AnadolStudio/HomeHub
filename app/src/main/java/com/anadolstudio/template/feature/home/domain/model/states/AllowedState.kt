@@ -55,6 +55,7 @@ sealed class AllowedState : Parcelable {
         else -> null
     }
 
+
     companion object {
         fun getAllowedStateByName(name: String): AllowedState = when {
             name == "on" -> On

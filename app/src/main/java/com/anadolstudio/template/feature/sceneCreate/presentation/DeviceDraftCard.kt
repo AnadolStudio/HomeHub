@@ -1,9 +1,9 @@
 package com.anadolstudio.template.feature.sceneCreate.presentation
 
-import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Immutable
 import com.anadolstudio.template.feature.home.domain.model.DeviceImage
-import com.anadolstudio.template.feature.sceneCreate.domain.model.SceneEntityState
+import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
+import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 
 /**
  * Группировка целевых состояний по устройству для UI карточки.
@@ -11,24 +11,24 @@ import com.anadolstudio.template.feature.sceneCreate.domain.model.SceneEntitySta
  */
 @Immutable
 internal data class DeviceDraftCard(
-        val deviceId: String,
+        val id: String,
         val name: String,
         val deviceImage: DeviceImage?,
-        val manufacturer: String?,
         val model: String?,
         val areaName: String?,
-        val entities: List<DeviceDraftEntityItem>,
+        val changeEntityStates: List<HomeAssistantState<*>>,
+        val allEntityIdToNameMap: Map<String, String>,
 ) {
-    /** entityId → state — нужно для финального payload и для быстрого lookup. */
-    val entityStates: Map<String, SceneEntityState>
-        get() = entities.associate { it.entityId to it.state }
+    val entityToStatesMap: Map<String, HomeAssistantState<*>>
+        get() = changeEntityStates.associateBy { it.entityId }
 }
 
-/** Одна строка entity внутри карточки устройства: иконка + имя + target state. */
-@Immutable
-internal data class DeviceDraftEntityItem(
-        val entityId: String,
-        val displayName: String,
-        @DrawableRes val drawableRes: Int,
-        val state: SceneEntityState,
+internal fun HomeAssistantDevice.toDeviceDraftCard(entityStates: List<HomeAssistantState<*>>) = DeviceDraftCard(
+        id = id,
+        name = name,
+        deviceImage = image,
+        model = model,
+        areaName = area?.name,
+        changeEntityStates = entityStates,
+        allEntityIdToNameMap = allEntityList.associate { it.entityId to it.name }
 )

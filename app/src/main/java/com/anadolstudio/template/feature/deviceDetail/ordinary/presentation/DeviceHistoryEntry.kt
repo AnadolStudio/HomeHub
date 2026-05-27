@@ -1,4 +1,4 @@
-package com.anadolstudio.template.feature.deviceDetail.presentation
+package com.anadolstudio.template.feature.deviceDetail.ordinary.presentation
 
 import androidx.compose.runtime.Immutable
 import com.anadolstudio.utils.states.ProgressState

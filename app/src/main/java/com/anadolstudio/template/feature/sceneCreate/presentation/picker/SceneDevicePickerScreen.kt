@@ -41,22 +41,23 @@ import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.view.search.Search
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
 import com.anadolstudio.template.R
-import com.anadolstudio.template.di.viewmodel.daggerViewModel
+import com.anadolstudio.template.di.viewmodel.assistedViewModel
+import com.anadolstudio.template.di.viewmodel.rememberViewModelFactory
 import com.anadolstudio.template.event.ObserveEvents
-import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
-import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.presentation.components.AreaChipRow
 import com.anadolstudio.template.feature.home.presentation.components.DeviceImageView
 import com.anadolstudio.template.feature.main.NavigationController
-import com.anadolstudio.template.feature.sceneCreate.presentation.SCENE_DEVICE_SNAPSHOT_KEY
 import com.anadolstudio.utils.states.ProgressState
 
 @Composable
 internal fun SceneDevicePickerScreen(
         navigator: NavigationController,
         snackbarHostState: SnackbarHostState,
-        viewModel: SceneDevicePickerViewModel = daggerViewModel(),
+        excludedDeviceIds: Set<String>,
 ) {
+    val factory = rememberViewModelFactory<SceneDevicePickerViewModel.Factory>()
+    val viewModel = assistedViewModel { factory.create(excludedDeviceIds) }
+
     val state by viewModel.stateFlow.collectAsState()
     ObserveEvents(viewModel.events, snackbarHostState, navigator)
 
@@ -65,16 +66,7 @@ internal fun SceneDevicePickerScreen(
     SceneDevicePickerLayout(
             state = state,
             controller = viewModel,
-            onDeviceClicked = { item ->
-                // Снапшот пишем напрямую в savedStateHandle родителя (SceneCreate),
-                // потому что VM не имеет доступа к navigator. SceneCreate подберёт через
-                // ObserveResultValue<SCENE_DEVICE_SNAPSHOT_KEY> и сохранит в pendingSnapshots.
-                navigator.previousBackStackEntry?.savedStateHandle?.set(
-                        SCENE_DEVICE_SNAPSHOT_KEY,
-                        ArrayList<HomeAssistantEntity<HomeAssistantAttribute>>(item.device.allEntityList),
-                )
-                viewModel.onDeviceClicked(item.device)
-            },
+            onDeviceClicked = { item -> viewModel.onDeviceClicked(item.device) },
     )
 }
 

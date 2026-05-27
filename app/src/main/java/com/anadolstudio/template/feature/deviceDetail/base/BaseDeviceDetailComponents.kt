@@ -1,4 +1,4 @@
-package com.anadolstudio.template.feature.deviceDetail.presentation
+package com.anadolstudio.template.feature.deviceDetail.base
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -6,12 +6,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -29,12 +28,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Divider
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.outlined.WifiOff
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -42,11 +39,8 @@ import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,6 +50,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
@@ -64,34 +59,24 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.anadolstudio.compose.ui.theme.AppTheme
 import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.theme.Shapes
 import com.anadolstudio.compose.ui.theme.largeShimmer
 import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
-import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
 import com.anadolstudio.compose.ui.view.text.LargeTextField
 import com.anadolstudio.template.R
 import com.anadolstudio.template.base.view.HomeHubBrightnessRectangle
 import com.anadolstudio.template.base.view.HomeHubColorRectangle
 import com.anadolstudio.template.base.view.HomeHubColorTemperatureRectangle
 import com.anadolstudio.template.base.view.HomeHubFilterChip
-import com.anadolstudio.template.base.view.HomeHubLoader
 import com.anadolstudio.template.base.view.homeHubSwitchDefaults
 import com.anadolstudio.template.base.view.rememberThrottled
-import com.anadolstudio.template.di.viewmodel.assistedViewModel
-import com.anadolstudio.template.di.viewmodel.rememberViewModelFactory
-import com.anadolstudio.template.event.ObserveEvents
-import com.anadolstudio.template.feature.automation.common.presentation.AutomationItem
-import com.anadolstudio.template.feature.automation.common.presentation.SceneItem
 import com.anadolstudio.template.feature.home.domain.model.AllowedDomain
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.domain.model.entity.EntityCategory
@@ -101,26 +86,19 @@ import com.anadolstudio.template.feature.home.domain.model.services.LightService
 import com.anadolstudio.template.feature.home.domain.model.services.SelectService
 import com.anadolstudio.template.feature.home.domain.model.services.SimpleToggleableService
 import com.anadolstudio.template.feature.home.domain.model.states.AllowedState
-import com.anadolstudio.template.feature.home.domain.model.states.AutomationAttributes
 import com.anadolstudio.template.feature.home.domain.model.states.ClimateAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 import com.anadolstudio.template.feature.home.domain.model.states.LightAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.LightEntityColorMode
 import com.anadolstudio.template.feature.home.domain.model.states.NumberAttribute
-import com.anadolstudio.template.feature.home.domain.model.states.SceneAttributes
 import com.anadolstudio.template.feature.home.domain.model.states.SelectAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.SensorAttributes
 import com.anadolstudio.template.feature.home.domain.model.states.SwitchAttribute
 import com.anadolstudio.template.feature.home.presentation.components.DeviceImageView
 import com.anadolstudio.template.feature.main.NavigationController
-import com.anadolstudio.template.util.toPainter
-import com.anadolstudio.utils.states.ProgressState
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import java.time.OffsetDateTime
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -128,122 +106,37 @@ import kotlinx.serialization.json.JsonObject
 
 private val DEVICE_DETAIL_IMAGE_SIZE = 120.dp
 
-internal object DeviceDetailResult {
-    const val KEY = "deviceDetailResult"
-}
-
 @OptIn(ExperimentalMaterialNavigationApi::class)
 @Composable
-internal fun DeviceDetailScreen(
+internal fun BaseDeviceDetailScreenSetup(
         navigator: NavigationController,
-        snackbarHostState: SnackbarHostState,
-        device: HomeAssistantDevice,
+        controller: BaseDeviceDetailController,
 ) {
-    // Workaround for accompanist navigation-material: при анимации перехода между bot-sheet'ами
-    // sheetContent может пересоставиться с уже-DESTROYED NavBackStackEntry, и viewModel(...)
-    // упадёт через LocalViewModelStoreOwner.current. Гард в MainGraph не ловит этот случай
-    // (внутренний RecomposeScope пересоставляется независимо), поэтому проверяем здесь.
-    if (LocalLifecycleOwner.current.lifecycle.currentState == Lifecycle.State.DESTROYED) return
-
-    val factory = rememberViewModelFactory<DeviceDetailViewModel.Factory>()
-    val viewModel = assistedViewModel { factory.create(device) }
-
-    val state by viewModel.stateFlow.collectAsState()
-    ObserveEvents(viewModel.events, snackbarHostState, navigator)
 
     val sheetState = navigator.bottomSheetNavigator.navigatorSheetState
+
     LaunchedEffect(Unit) {
         snapshotFlow { sheetState.currentValue }
                 .filter { it == ModalBottomSheetValue.Expanded }
                 .first()
-        viewModel.onSheetExpanded()
+        controller.onSheetExpanded()
+
+        snapshotFlow { sheetState.targetValue }
+                .filter { it == ModalBottomSheetValue.Hidden }
+                .first()
+        controller.onSheetHidden()
     }
 
-    BackHandler(enabled = sheetState.isVisible) {
-        navigator.navigateUp()
-    }
-
-    val previousBackStackEntry = remember { navigator.previousBackStackEntry }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            val currentDevice = viewModel.stateFlow.value.device
-            val result = ArrayList(currentDevice.targetEntityList + currentDevice.configEntityList)
-            previousBackStackEntry?.savedStateHandle?.set(DeviceDetailResult.KEY, result)
-        }
-    }
-
-    DeviceDetailLayout(state = state, controller = viewModel)
+    BackHandler(enabled = sheetState.isVisible) { controller.onBackClicked() }
 }
 
 @Composable
-private fun DeviceDetailLayout(
-        state: DeviceDetailScreenState,
-        controller: DeviceDetailController,
-) {
-    Box(
-            modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                            color = AppTheme.colors.colorSecondary,
-                            shape = RoundedCornerShape(topStart = Dimmens.mainMargin, topEnd = Dimmens.mainMargin)
-                    )
-                    .padding(horizontal = 16.dp),
-    ) {
-        when (state.progressState) {
-            is ProgressState.Loading,
-            is ProgressState.LoadingFromError -> LoadingContent()
-
-            is ProgressState.Error -> ErrorContent(onRetryClicked = controller::onRetryClicked)
-            else -> DeviceContent(
-                    state = state,
-                    device = state.device,
-                    controller = controller,
-            )
-        }
-    }
-}
-
-@Composable
-private fun LoadingContent() {
-    Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center,
-    ) {
-        HomeHubLoader()
-    }
-}
-
-@Composable
-private fun ErrorContent(onRetryClicked: () -> Unit) {
-    Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center,
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                    text = stringResource(R.string.device_detail_error_generic),
-                    style = AppTheme.typography.textBook18,
-                    color = AppTheme.colors.colorAccent,
-                    textAlign = TextAlign.Center,
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            TextButton(onClick = onRetryClicked) {
-                Text(
-                        text = stringResource(R.string.device_detail_retry),
-                        style = AppTheme.typography.textMedium18,
-                        color = AppTheme.colors.template,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun DeviceContent(
-        state: DeviceDetailScreenState,
+internal fun DeviceContent(
+        state: BaseDeviceDetailState<*>,
         device: HomeAssistantDevice,
-        controller: DeviceDetailController,
+        controller: BaseDeviceDetailController,
+        selectedEntitySet: Set<String> = device.allEntityList.map { it.entityId }.toSet(),
+        belowMainInfo: @Composable ColumnScope.() -> Unit = {},
 ) {
     Column(
             modifier = Modifier
@@ -255,40 +148,37 @@ private fun DeviceContent(
 
         GeneralInfoSection(device = device)
 
+        val selectedEntity = remember(selectedEntitySet) { selectedEntitySet }
+
         EntitySection(
                 title = stringResource(R.string.device_detail_section_control),
                 entities = device.targetEntityList.filter { it.allowedDomain != AllowedDomain.SENSOR },
                 controller = controller,
-                entityIdToTextFieldDataMap = state.entityIdToTextFieldDataMap
+                entityIdToTextFieldDataMap = state.entityIdToTextFieldDataMap,
+                selectedEntity = selectedEntity
         )
         EntitySection(
                 title = stringResource(R.string.device_detail_section_sensors),
                 entities = device.targetEntityList.filter { it.allowedDomain == AllowedDomain.SENSOR },
                 controller = controller,
-                entityIdToTextFieldDataMap = state.entityIdToTextFieldDataMap
+                entityIdToTextFieldDataMap = state.entityIdToTextFieldDataMap,
+                selectedEntity = selectedEntity
         )
         EntitySection(
                 title = stringResource(R.string.device_detail_section_config),
                 entities = device.configEntityList,
                 controller = controller,
-                entityIdToTextFieldDataMap = state.entityIdToTextFieldDataMap
+                entityIdToTextFieldDataMap = state.entityIdToTextFieldDataMap,
+                selectedEntity = selectedEntity
         )
         EntitySection(
                 title = stringResource(R.string.device_detail_section_diagnostic),
                 entities = device.diagnosticEntityList,
                 controller = controller,
-                entityIdToTextFieldDataMap = state.entityIdToTextFieldDataMap
+                entityIdToTextFieldDataMap = state.entityIdToTextFieldDataMap,
+                selectedEntity = selectedEntity
         )
-        if (state.automationList.isNotEmpty()) {
-            AutomationsSection(automations = state.automationList)
-        }
-        if (state.sceneList.isNotEmpty()) {
-            ScenesSection(scenes = state.sceneList)
-        }
-        HistorySection(
-                historyState = state.historyState,
-                onRetryClicked = controller::onHistoryRetryClicked,
-        )
+        belowMainInfo.invoke(this)
 
         Spacer(modifier = Modifier.navigationBarsPadding())
     }
@@ -327,20 +217,44 @@ private fun GeneralInfoSection(device: HomeAssistantDevice) {
 }
 
 @Composable
+private fun KeyValueRow(key: Int, value: String?) {
+    if (value.isNullOrBlank()) return
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+                text = stringResource(key),
+                style = AppTheme.typography.captionMedium16,
+                fontWeight = FontWeight.Bold,
+                color = AppTheme.colors.colorAccent,
+        )
+        Text(
+                text = value,
+                style = AppTheme.typography.captionMedium14,
+                color = AppTheme.colors.colorAccent,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 2,
+        )
+    }
+}
+
+@Composable
 private fun EntitySection(
         title: String,
         entities: List<HomeAssistantEntity<HomeAssistantAttribute>>,
-        controller: DeviceDetailController,
+        controller: BaseDeviceDetailController,
         entityIdToTextFieldDataMap: Map<String, TextFieldData>,
+        selectedEntity: Set<String> = emptySet(),
 ) {
     if (entities.isEmpty()) return
 
     SectionContainer(title = title) {
         entities.forEach { entity ->
+            val isChoose = selectedEntity.contains(entity.entityId)
             when (entity.state.attributes) {
                 is LightAttribute -> LightEntityValueRow(
                         entity = entity as HomeAssistantEntity<LightAttribute>,
-                        onEntityChanged = controller::onEntityChanged
+                        onEntityChanged = controller::onEntityChanged,
+                        isChoose = isChoose
                 )
 
                 is NumberAttribute -> NumericEntityValueRow(
@@ -348,11 +262,13 @@ private fun EntitySection(
                         textFieldData = entityIdToTextFieldDataMap[entity.entityId] ?: TextFieldData(""),
                         onNumericEntityChanged = controller::onNumericEntityChanged,
                         onNumericEntityFocusLost = controller::onNumericEntityFocusLost,
+                        isChoose = isChoose
                 )
 
                 else -> EntityValueRow(
                         entity = entity,
                         onEntityChanged = controller::onEntityChanged,
+                        isChoose = isChoose
                 )
             }
         }
@@ -363,6 +279,7 @@ private fun EntitySection(
 private fun LightEntityValueRow(
         entity: HomeAssistantEntity<LightAttribute>,
         onEntityChanged: ((HomeAssistantEntity<LightAttribute>, service: HomeAssistantService<*>) -> Unit),
+        isChoose: Boolean = true,
 ) {
     val attributes = entity.state.attributes
     val drawableRes = entity.state.icon.drawableRes
@@ -370,10 +287,9 @@ private fun LightEntityValueRow(
 
     val modifier = Modifier
             .fillMaxWidth()
-            .clip(Shapes.largeShimmer)
-            .background(AppTheme.colors.colorPrimary)
+            .setChoose(isChoose)
             .heightIn(min = LocalMinimumInteractiveComponentSize.current)
-            .padding(vertical = Dimmens.smallMargin, horizontal = Dimmens.smallMargin)
+            .padding(vertical = Dimmens.extraSmallMargin, horizontal = Dimmens.smallMargin)
 
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Row(
@@ -403,7 +319,8 @@ private fun LightEntityValueRow(
         }
 
         val brightnessTrackColor = attributes.color?.let { Color(it) } ?: AppTheme.colors.disable
-        val brightnessPercent = (attributes.brightness * 100 / 255).coerceIn(0, 100)
+        val brightness = attributes.brightness ?: 0
+        val brightnessPercent = (brightness * 100 / 255).coerceIn(0, 100)
 
         Spacer(modifier = Modifier.height(Dimmens.smallMargin))
         val totalPages = colorPages.size + 1 // первая страница — brightness
@@ -439,16 +356,16 @@ private fun LightEntityValueRow(
             val scope = rememberCoroutineScope()
 
             val labels = buildList {
-                    add(stringResource(R.string.light_color_mode_brightness))
-                    colorPages.forEach { mode ->
-                        when (mode) {
-                            is LightEntityColorMode.HS -> stringResource(R.string.light_color_mode_hs)
-                            is LightEntityColorMode.Temperature -> stringResource(R.string.light_color_mode_temperature)
-                            is LightEntityColorMode.RGB -> stringResource(R.string.light_color_mode_rgb)
-                            is LightEntityColorMode.XY -> stringResource(R.string.light_color_mode_xy)
-                        }.also {
-                            add(it)
-                        }
+                add(stringResource(R.string.light_color_mode_brightness))
+                colorPages.forEach { mode ->
+                    when (mode) {
+                        is LightEntityColorMode.HS -> stringResource(R.string.light_color_mode_hs)
+                        is LightEntityColorMode.Temperature -> stringResource(R.string.light_color_mode_temperature)
+                        is LightEntityColorMode.RGB -> stringResource(R.string.light_color_mode_rgb)
+                        is LightEntityColorMode.XY -> stringResource(R.string.light_color_mode_xy)
+                    }.also {
+                        add(it)
+                    }
                 }
             }
             Row(
@@ -512,13 +429,13 @@ private fun NumericEntityValueRow(
         textFieldData: TextFieldData,
         onNumericEntityChanged: (value: String, HomeAssistantEntity<NumberAttribute>) -> Unit,
         onNumericEntityFocusLost: (HomeAssistantEntity<NumberAttribute>) -> Unit,
+        isChoose: Boolean = true,
 ) {
     val modifier = Modifier
             .fillMaxWidth()
-            .clip(Shapes.largeShimmer)
-            .background(AppTheme.colors.colorPrimary)
+            .setChoose(isChoose)
             .heightIn(min = LocalMinimumInteractiveComponentSize.current)
-            .padding(vertical = Dimmens.smallMargin, horizontal = Dimmens.smallMargin)
+            .padding(vertical = Dimmens.extraSmallMargin, horizontal = Dimmens.smallMargin)
 
     Column(modifier = modifier) {
         NumberAttributeControl(
@@ -528,77 +445,6 @@ private fun NumericEntityValueRow(
                 onNumericEntityFocusLost = onNumericEntityFocusLost
         )
     }
-}
-
-@Composable
-private fun EntityValueRow(
-        entity: HomeAssistantEntity<HomeAssistantAttribute>,
-        onEntityChanged: ((HomeAssistantEntity<HomeAssistantAttribute>, service: HomeAssistantService<*>) -> Unit),
-) {
-    val attributes = entity.state.attributes
-    val drawableRes = entity.state.icon.drawableRes
-    val displayTitle = entity.name
-    val displayValue = entityValueDisplay(entity)
-
-    val rowModifier = Modifier
-            .fillMaxWidth()
-            .clip(Shapes.largeShimmer)
-            .background(AppTheme.colors.colorPrimary)
-            .heightIn(min = LocalMinimumInteractiveComponentSize.current)
-            .padding(vertical = Dimmens.smallMargin, horizontal = Dimmens.smallMargin)
-
-    Row(
-            modifier = rowModifier,
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Dimmens.smallMargin),
-    ) {
-        BaseDescription(drawableRes, displayTitle)
-
-        when (attributes) {
-            is ClimateAttribute -> {}
-            is SelectAttribute -> SelectAttributeControl(
-                    entity = entity,
-                    attributes = attributes,
-                    onEntityChanged = onEntityChanged,
-            )
-
-            is SwitchAttribute -> SwitchAttributeControl(
-                    entity = entity,
-                    onEntityChanged = onEntityChanged,
-            )
-
-            is NumberAttribute -> Unit
-            is LightAttribute -> Unit
-
-            else -> Text(
-                    text = displayValue,
-                    style = AppTheme.typography.captionBook16,
-                    color = AppTheme.colors.colorAccent,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-            )
-        }
-    }
-}
-
-@Composable
-private fun RowScope.BaseDescription(
-        drawableRes: Int,
-        displayTitle: String,
-) {
-    Icon(
-            painter = painterResource(drawableRes),
-            contentDescription = null,
-            modifier = Modifier.size(24.dp),
-            tint = AppTheme.colors.colorAccent,
-    )
-    Text(
-            modifier = Modifier.weight(1f),
-            text = displayTitle,
-            style = AppTheme.typography.captionBook16,
-            color = AppTheme.colors.colorAccent,
-            overflow = TextOverflow.Ellipsis,
-    )
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -653,12 +499,87 @@ private fun NumberAttributeControl(
                     },
             keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
             modifier = Modifier.onFocusChanged { focusState ->
-                if (isFocused && !focusState.isFocused && textFieldData.enable){
+                if (isFocused && !focusState.isFocused && textFieldData.enable) {
                     onNumericEntityFocusLost.invoke(entity)
                 }
                 isFocused = focusState.isFocused
             },
     )
+}
+
+@Composable
+private fun EntityValueRow(
+        entity: HomeAssistantEntity<HomeAssistantAttribute>,
+        onEntityChanged: ((HomeAssistantEntity<HomeAssistantAttribute>, service: HomeAssistantService<*>) -> Unit),
+        isChoose: Boolean = true,
+) {
+    val attributes = entity.state.attributes
+    val drawableRes = entity.state.icon.drawableRes
+    val displayTitle = entity.name
+    val displayValue = entityValueDisplay(entity)
+
+    val rowModifier = Modifier
+            .fillMaxWidth()
+            .setChoose(isChoose)
+            .heightIn(min = LocalMinimumInteractiveComponentSize.current)
+            .padding(vertical = Dimmens.extraSmallMargin, horizontal = Dimmens.smallMargin)
+
+    Row(
+            modifier = rowModifier,
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Dimmens.smallMargin),
+    ) {
+        BaseDescription(drawableRes, displayTitle)
+
+        when (attributes) {
+            is ClimateAttribute -> {}
+            is SelectAttribute -> SelectAttributeControl(
+                    entity = entity,
+                    attributes = attributes,
+                    onEntityChanged = onEntityChanged,
+            )
+
+            is SwitchAttribute -> SwitchAttributeControl(
+                    entity = entity,
+                    onEntityChanged = onEntityChanged,
+            )
+
+            is NumberAttribute -> Unit
+            is LightAttribute -> Unit
+
+            else -> Text(
+                    text = displayValue,
+                    style = AppTheme.typography.captionBook16,
+                    color = AppTheme.colors.colorAccent,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+@Composable
+private fun Modifier.setChoose(isChoose: Boolean): Modifier {
+    return if (isChoose) {
+        this.background(AppTheme.colors.colorPrimary)
+    } else {
+        this
+                .shadow(2.dp, Shapes.largeShimmer)
+                .background(AppTheme.colors.colorSecondary)
+    }
+}
+
+private fun entityValueDisplay(entity: HomeAssistantEntity<HomeAssistantAttribute>): String {
+    val rawValue = entity.state.allowedState.value
+
+    return when (val attribute = entity.state.attributes) {
+        is SensorAttributes -> {
+            val unit = attribute.unitOfMeasurement
+            if (unit.isBlank()) rawValue else "$rawValue $unit"
+        }
+
+        else -> rawValue
+    }
 }
 
 @Composable
@@ -694,8 +615,10 @@ private fun SelectAttributeControl(
     var expanded by remember { mutableStateOf(false) }
     val currentValue = entity.state.allowedState.value
     Box {
+        val enable = entity.state.allowedState !is AllowedState.Unavailable
+
         Row(
-                modifier = Modifier.clickable { expanded = true },
+                modifier = Modifier.clickable(enabled = enable) { expanded = true },
                 verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
@@ -725,6 +648,7 @@ private fun SelectAttributeControl(
                                     color = AppTheme.colors.colorAccent,
                             )
                         },
+                        enabled = entity.state.allowedState !is AllowedState.Unavailable,
                         onClick = {
                             expanded = false
                             onEntityChanged(entity, SelectService.Option(option))
@@ -741,161 +665,27 @@ private fun SelectAttributeControl(
 }
 
 @Composable
-private fun AutomationsSection(automations: List<HomeAssistantEntity<AutomationAttributes>>) {
-    SectionContainer(title = stringResource(R.string.device_detail_section_automations)) {
-        automations.forEach { automation ->
-            AutomationItem(
-                    title = automation.name,
-                    icon = automation.state.icon.toPainter(),
-            )
-        }
-    }
-}
-
-@Composable
-private fun ScenesSection(scenes: List<HomeAssistantEntity<SceneAttributes>>) {
-    SectionContainer(title = stringResource(R.string.device_detail_section_scenes)) {
-        scenes.forEach { scene ->
-            SceneItem(
-                    title = scene.name,
-                    icon = scene.state.icon.toPainter(),
-            )
-        }
-    }
-}
-
-private fun entityValueDisplay(entity: HomeAssistantEntity<HomeAssistantAttribute>): String {
-    val rawValue = entity.state.allowedState.value
-
-    return when (val attribute = entity.state.attributes) {
-        is SensorAttributes -> {
-            val unit = attribute.unitOfMeasurement
-            if (unit.isBlank()) rawValue else "$rawValue $unit"
-        }
-
-        else -> rawValue
-    }
-}
-
-@Composable
-private fun HistorySection(
-        historyState: HistoryState,
-        onRetryClicked: () -> Unit,
+private fun RowScope.BaseDescription(
+        drawableRes: Int,
+        displayTitle: String,
 ) {
-    SectionContainer(title = stringResource(R.string.device_detail_section_history)) {
-        when (historyState.progressState) {
-            is ProgressState.Loading,
-            is ProgressState.LoadingFromError,
-            is ProgressState.Refresh -> Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center,
-            ) {
-                CircularProgressIndicator(
-                        modifier = Modifier.size(28.dp),
-                        color = AppTheme.colors.colorAccent,
-                )
-            }
-
-            is ProgressState.Error -> Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text(
-                        text = stringResource(R.string.device_detail_history_error),
-                        style = AppTheme.typography.captionBook14,
-                        color = AppTheme.colors.textSecondary,
-                        textAlign = TextAlign.Center,
-                )
-                TextButton(onClick = onRetryClicked) {
-                    Text(
-                            text = stringResource(R.string.device_detail_retry),
-                            style = AppTheme.typography.captionBook14,
-                            color = AppTheme.colors.template,
-                    )
-                }
-            }
-
-            is ProgressState.Content -> {
-                if (historyState.entries.isEmpty()) {
-                    Text(
-                            text = stringResource(R.string.device_detail_history_empty),
-                            style = AppTheme.typography.captionBook14,
-                            color = AppTheme.colors.textSecondary,
-                    )
-                } else {
-                    historyState.entries.forEach { entry -> HistoryEntryRow(entry = entry) }
-                    if (historyState.entries.size < historyState.totalCount) {
-                        Divider(
-                                modifier = Modifier.padding(bottom = Dimmens.smallMargin),
-                                color = AppTheme.colors.colorSecondary
-                        )
-                        Text(
-                                text = stringResource(
-                                        R.string.device_detail_history_truncated_format,
-                                        historyState.entries.size,
-                                        historyState.totalCount,
-                                ),
-                                style = AppTheme.typography.captionBook14,
-                                color = AppTheme.colors.textSecondary,
-                        )
-                    }
-                }
-            }
-        }
-    }
+    Icon(
+            painter = painterResource(drawableRes),
+            contentDescription = null,
+            modifier = Modifier.size(24.dp),
+            tint = AppTheme.colors.colorAccent,
+    )
+    Text(
+            modifier = Modifier.weight(1f),
+            text = displayTitle,
+            style = AppTheme.typography.captionBook16,
+            color = AppTheme.colors.colorAccent,
+            overflow = TextOverflow.Ellipsis,
+    )
 }
 
 @Composable
-private fun HistoryEntryRow(entry: DeviceHistoryEntry) {
-    val formatter = remember { DateTimeFormatter.ofPattern("HH:mm dd.MM.yyyy", Locale.getDefault()) }
-    val formattedTime = remember(entry.timestamp) {
-        entry.timestamp.atZoneSameInstant(ZoneId.systemDefault()).format(formatter)
-    }
-
-    Row(
-            modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = LocalMinimumInteractiveComponentSize.current)
-                    .padding(vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-    ) {
-        if (entry.drawableRes != null) {
-            Icon(
-                    painter = painterResource(entry.drawableRes),
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = AppTheme.colors.colorAccent,
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-        }
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                    text = entry.friendlyName,
-                    style = AppTheme.typography.captionBook14,
-                    color = AppTheme.colors.colorAccent,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                    text = formattedTime,
-                    style = AppTheme.typography.captionBook14,
-                    color = AppTheme.colors.textSecondary,
-            )
-        }
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-                text = entry.value,
-                style = AppTheme.typography.captionMedium14,
-                color = AppTheme.colors.colorAccent,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-        )
-    }
-}
-
-@Composable
-private fun SectionContainer(
+internal fun SectionContainer(
         title: String,
         content: @Composable () -> Unit,
 ) {
@@ -905,7 +695,7 @@ private fun SectionContainer(
                     .clip(RoundedCornerShape(Dimmens.mediumMargin))
                     .background(AppTheme.colors.colorPrimary)
                     .padding(Dimmens.mediumMargin),
-            verticalArrangement = Arrangement.spacedBy(Dimmens.extraSmallMargin),
+            verticalArrangement = Arrangement.spacedBy(Dimmens.smallMargin),
     ) {
         Text(
                 text = title,
@@ -916,29 +706,6 @@ private fun SectionContainer(
         content.invoke()
     }
 }
-
-@Composable
-private fun KeyValueRow(key: Int, value: String?) {
-    if (value.isNullOrBlank()) return
-
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-                text = stringResource(key),
-                style = AppTheme.typography.captionMedium16,
-                fontWeight = FontWeight.Bold,
-                color = AppTheme.colors.colorAccent,
-        )
-        Text(
-                text = value,
-                style = AppTheme.typography.captionMedium14,
-                color = AppTheme.colors.colorAccent,
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 2,
-        )
-    }
-}
-
-// region Previews
 
 private fun previewNumberEntity(
         value: String,
@@ -1016,5 +783,3 @@ private fun NumberAttributeControlOutOfRangePreview(
         }
     }
 }
-
-// endregion

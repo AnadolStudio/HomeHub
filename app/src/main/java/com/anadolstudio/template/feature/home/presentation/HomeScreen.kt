@@ -65,7 +65,6 @@ import com.anadolstudio.template.base.view.HomeHubLoader
 import com.anadolstudio.template.base.viewmodel.ObserveViewModelLifecycle
 import com.anadolstudio.template.di.viewmodel.daggerViewModel
 import com.anadolstudio.template.event.ObserveEvents
-import com.anadolstudio.template.feature.deviceDetail.presentation.DeviceDetailResult
 import com.anadolstudio.template.feature.home.domain.model.Area
 import com.anadolstudio.template.feature.home.domain.model.DeviceImage
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
@@ -76,9 +75,7 @@ import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantA
 import com.anadolstudio.template.feature.home.presentation.components.AreaChipRow
 import com.anadolstudio.template.feature.home.presentation.components.DeviceCard
 import com.anadolstudio.template.feature.main.NavigationController
-import com.anadolstudio.template.navigation.ObserveResultValue
 import com.anadolstudio.utils.states.ProgressState
-import timber.log.Timber
 
 private val DEVICE_IMAGE_SIZE = 60.dp
 private val HEADER_MAX_HEIGHT = 320.dp
@@ -97,17 +94,7 @@ internal fun HomeScreen(
     ObserveEvents(viewModel.events, snackbarHostState, navigator)
     ObserveViewModelLifecycle(viewModel)
 
-    ObserveResultValue<List<HomeAssistantEntity<HomeAssistantAttribute>>>(
-            navigator = navigator,
-            key = DeviceDetailResult.KEY,
-    ) { result ->
-        Timber.d("DeviceDetailResult received: ${result.size} entities -> ${result.map { it.entityId }}")
-    }
-
-    HomeLayout(
-            state = state,
-            controller = viewModel,
-    )
+    HomeLayout(state = state, controller = viewModel)
 }
 
 @Composable
@@ -455,7 +442,7 @@ private fun GroupHeader(
 
 private fun createPreviewController(): HomeController = object : HomeController {
     override fun onEntityClicked(
-            entity: HomeAssistantEntity<HomeAssistantAttribute>, service: HomeAssistantService<*>
+            entity: HomeAssistantEntity<HomeAssistantAttribute>, service: HomeAssistantService<*>,
     ) = Unit
 
     override fun onAreaClicked() = Unit

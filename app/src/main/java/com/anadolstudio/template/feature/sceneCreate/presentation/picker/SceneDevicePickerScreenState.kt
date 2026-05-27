@@ -11,7 +11,6 @@ internal data class SceneDevicePickerScreenState(
         val allDevices: List<HomeAssistantDevice> = emptyList(),
         val availableAreas: List<Area> = emptyList(),
         val searchQuery: String = "",
-        /** null = "Все комнаты". */
         val selectedAreaId: String? = null,
         val progressState: ProgressState = ProgressState.Loading,
 ) {

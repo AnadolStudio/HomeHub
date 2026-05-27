@@ -3,46 +3,38 @@ package com.anadolstudio.template.feature.sceneCreate.presentation
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 import com.anadolstudio.template.R
-import com.anadolstudio.template.feature.sceneCreate.domain.model.SceneDraft
-import com.anadolstudio.template.feature.sceneCreate.domain.model.SceneEntityState
+import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
+import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantState
 import com.anadolstudio.utils.states.ProgressState
 
 @Immutable
 internal data class SceneCreateScreenState(
+        val mode: SceneCreateMode,
         val name: String = "",
-        /** Slug для URL endpoint'а. Авто-генерится из [name], пока юзер не правил его вручную. */
         val sceneConfigId: String = "",
-        val isIdManuallyEdited: Boolean = false,
-        val icon: String? = null,
-        /** Группировка по устройству (deviceId → карточка). */
-        val devices: Map<String, DeviceDraftCard> = emptyMap(),
-        val isPreviewExpanded: Boolean = false,
-        val progressState: ProgressState = ProgressState.Content,
-        /** Заполняется после успешного сохранения — entity_id найденной scene.* сущности. */
+        val icon: String? = null, // TODO интегрировать 7к иконок
+        val selectedDeviceDraftSet: Set<DeviceDraftCard> = emptySet(),
+        val snapshotDevices: Set<HomeAssistantDevice> = emptySet(),
+        val hasChanged: Boolean = false,
+        val isSaved: Boolean = false,
         val createdSceneEntityId: String? = null,
-        /** Ошибка валидации (string-resource id) или null если всё ок. */
-        @StringRes val validationError: Int? = null,
-        /** true когда экран открыт для редактирования существующей сцены (id зафиксирован). */
-        val isEditMode: Boolean = false,
+        val progressState: ProgressState = ProgressState.Content,
 ) {
+    val isEditMode: Boolean get() = mode == SceneCreateMode.EDIT
 
     /** Все целевые состояния, плоско по entity_id. */
-    val entities: Map<String, SceneEntityState>
-        get() = devices.values
-                .flatMap { card -> card.entityStates.values }
+    val entities: Map<String, HomeAssistantState<*>>
+        get() = selectedDeviceDraftSet
+                .flatMap { card -> card.entityToStatesMap.values }
                 .associateBy { it.entityId }
 
     val canSave: Boolean
-        get() = validate() == null && progressState !is ProgressState.Loading
-
-    /** Снимок текущего состояния как готового к сериализации [SceneDraft]. */
-    val draft: SceneDraft
-        get() = SceneDraft(
-                name = name.trim(),
-                sceneConfigId = sceneConfigId,
-                icon = icon,
-                entities = entities,
-        )
+        get() = listOf(
+                validate() == null,
+                progressState !is ProgressState.Loading,
+                hasChanged,
+                !isSaved
+        ).all { isTrue -> isTrue }
 
     /**
      * Возвращает первую найденную ошибку (для текста в UI), либо null если всё валидно.

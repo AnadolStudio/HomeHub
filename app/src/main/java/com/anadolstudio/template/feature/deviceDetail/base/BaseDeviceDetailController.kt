@@ -1,17 +1,17 @@
-package com.anadolstudio.template.feature.deviceDetail.presentation
+package com.anadolstudio.template.feature.deviceDetail.base
 
 import com.anadolstudio.template.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.template.feature.home.domain.model.services.HomeAssistantService
 import com.anadolstudio.template.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.template.feature.home.domain.model.states.NumberAttribute
 
-internal interface DeviceDetailController {
+internal interface BaseDeviceDetailController {
+
+    fun onBackClicked()
 
     fun onSheetExpanded()
 
-    fun onRetryClicked()
-
-    fun onHistoryRetryClicked()
+    fun onSheetHidden()
 
     fun onEntityChanged(entity: HomeAssistantEntity<HomeAssistantAttribute>, service: HomeAssistantService<*>)
 

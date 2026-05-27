@@ -19,8 +19,8 @@ data class HomeAssistantState<out Attributes : HomeAssistantAttribute>(
         override val entityId: String,
         val attributes: Attributes,
         val allowedState: AllowedState,
-        @Contextual val lastChanged: OffsetDateTime,
-        @Contextual val lastUpdated: OffsetDateTime?,
+        @Contextual val lastChanged: OffsetDateTime? = null,
+        @Contextual val lastUpdated: OffsetDateTime? = null,
 ) : DomainParser, Iconable, Parcelable {
 
     override val icon: HaIcon

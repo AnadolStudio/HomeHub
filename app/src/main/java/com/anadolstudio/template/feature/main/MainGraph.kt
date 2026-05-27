@@ -6,6 +6,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
 import com.anadolstudio.template.event.navigateTo
+import com.anadolstudio.template.event.navigateUp
 import com.anadolstudio.template.feature.addDevice.presentation.AddDeviceScreen
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.domain.model.HomeAssistantInstance
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.presetnation.AutoSetupHomeAssistantUrlScreen
@@ -14,7 +15,8 @@ import com.anadolstudio.template.feature.automation.automationDetail.presentatio
 import com.anadolstudio.template.feature.automation.automationList.presentation.AutomationListScreen
 import com.anadolstudio.template.feature.automation.automationList.presentation.AutomationListViewModel
 import com.anadolstudio.template.feature.automation.sceneDetail.presentation.SceneDetailScreen
-import com.anadolstudio.template.feature.deviceDetail.presentation.DeviceDetailScreen
+import com.anadolstudio.template.feature.deviceDetail.demo.DemoDeviceDetailScreen
+import com.anadolstudio.template.feature.deviceDetail.ordinary.presentation.DeviceDetailScreen
 import com.anadolstudio.template.feature.history.presentation.HistoryScreen
 import com.anadolstudio.template.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.template.feature.home.presentation.HomeScreen
@@ -23,6 +25,7 @@ import com.anadolstudio.template.feature.homeAssistantAuth.presetnation.HomeAssi
 import com.anadolstudio.template.feature.manualSetupHomeAssistantUrl.presetnation.ManualSetupHomeAssistantUrlScreen
 import com.anadolstudio.template.feature.registerUser.presentation.RegisterUserScreen
 import com.anadolstudio.template.feature.registerUser.presentation.RegisterUserViewModel
+import com.anadolstudio.template.feature.sceneCreate.presentation.SCENE_DEVICE_SNAPSHOT_KEY
 import com.anadolstudio.template.feature.sceneCreate.presentation.SceneCreateScreen
 import com.anadolstudio.template.feature.sceneCreate.presentation.SceneCreateViewModel
 import com.anadolstudio.template.feature.sceneCreate.presentation.picker.SceneDevicePickerScreen
@@ -45,9 +48,13 @@ internal object MainGraph : NavGraphContract() {
 
     private val deviceArgument = stringArgument(name = "device")
 
+    private val selectedEntitySetArgument = stringArgument(name = "selectedEntitySet")
+
     private val lightDetailArgsArgument = stringArgument(name = "lightDetailArgs")
 
     private val sceneConfigIdArgument = stringArgument(name = "sceneConfigId")
+
+    private val excludedDeviceIdsArgument = stringArgument(name = "excludedDeviceIds")
 
     private fun autoSetupHomeAssistantUrl() = route { "autoSetupHomeAssistantUrl" }
 
@@ -77,12 +84,26 @@ internal object MainGraph : NavGraphContract() {
     private fun sceneEdit(sceneConfigId: String): String =
             route { "sceneEdit/${Uri.encode(sceneConfigId)}" }
 
-    private fun sceneDevicePicker() = route { "sceneDevicePicker" }
+    private fun sceneDevicePicker() = route { "sceneDevicePicker/{${excludedDeviceIdsArgument.name}}" }
+
+    private fun sceneDevicePicker(excludedDeviceIds: Set<String>): String =
+            route { "sceneDevicePicker/${Uri.encode(objectToString(excludedDeviceIds))}" }
 
     private fun deviceDetail() = route { "deviceDetail/{${deviceArgument.name}}" }
 
     private fun deviceDetail(device: HomeAssistantDevice): String =
             route { "deviceDetail/${Uri.encode(objectToString(device))}" }
+
+    private fun demoDeviceDetail() = route {
+        "demoDeviceDetail/{${deviceArgument.name}}/{${selectedEntitySetArgument.name}}"
+    }
+
+    private fun demoDeviceDetail(device: HomeAssistantDevice, selectedEntitySet: Set<String>): String =
+            route {
+                "demoDeviceDetail/" +
+                        "${Uri.encode(objectToString(device))}/" +
+                        Uri.encode(objectToString(selectedEntitySet))
+            }
 
     private fun lightDetail() = route { "lightDetail/{${lightDetailArgsArgument.name}}" }
 
@@ -145,8 +166,16 @@ internal object MainGraph : NavGraphContract() {
                     editSceneConfigId = sceneConfigId,
             )
         }
-        composable(sceneDevicePicker()) {
-            SceneDevicePickerScreen(navigator = navigator, snackbarHostState = snackbarHostState)
+        composable(
+                route = sceneDevicePicker(),
+                arguments = listOf(excludedDeviceIdsArgument),
+        ) { entry ->
+            val excludedDeviceIds = entry.requireObject<Set<String>>(excludedDeviceIdsArgument)
+            SceneDevicePickerScreen(
+                    navigator = navigator,
+                    snackbarHostState = snackbarHostState,
+                    excludedDeviceIds = excludedDeviceIds,
+            )
         }
         bottomSheet(
                 route = deviceDetail(),
@@ -161,6 +190,20 @@ internal object MainGraph : NavGraphContract() {
                     navigator = navigator,
                     snackbarHostState = snackbarHostState,
                     device = device,
+            )
+        }
+        bottomSheet(
+                route = demoDeviceDetail(),
+                arguments = listOf(deviceArgument, selectedEntitySetArgument),
+        ) { entry ->
+            if (entry.lifecycle.currentState == Lifecycle.State.DESTROYED) return@bottomSheet
+            val device = entry.requireObject<HomeAssistantDevice>(deviceArgument)
+            val selectedEntitySet = entry.requireObject<Set<String>>(selectedEntitySetArgument)
+            DemoDeviceDetailScreen(
+                    navigator = navigator,
+                    snackbarHostState = snackbarHostState,
+                    device = device,
+                    selectedEntitySet = selectedEntitySet,
             )
         }
 
@@ -196,20 +239,21 @@ internal object MainGraph : NavGraphContract() {
     fun AutomationListViewModel.navigateToSceneEdit(sceneConfigId: String) =
             navigateTo(sceneEdit(sceneConfigId))
 
-    fun SceneCreateViewModel.navigateToSceneDevicePicker() = navigateTo(sceneDevicePicker())
+    fun SceneCreateViewModel.navigateToSceneDevicePicker(excludedDeviceIds: Set<String>) =
+            navigateTo(sceneDevicePicker(excludedDeviceIds))
 
-    /** Изменение уже добавленного устройства: открываем DeviceDetail напрямую из SceneCreate. */
-    fun SceneCreateViewModel.navigateToDeviceDetailFromSceneCreate(device: HomeAssistantDevice) =
-            navigateTo(deviceDetail(device))
+    fun SceneCreateViewModel.navigateToDemoDeviceDetailFromSceneCreate(
+            device: HomeAssistantDevice,
+            selectedEntitySet: Set<String>,
+    ) = navigateTo(demoDeviceDetail(device, selectedEntitySet))
 
-    /**
-     * Из picker'а попадаем в DeviceDetail с popUpTo picker (inclusive): после закрытия
-     * DeviceDetail юзер возвращается на SceneCreate, а не на picker.
-     */
-    fun SceneDevicePickerViewModel.navigateToDeviceDetailFromPicker(device: HomeAssistantDevice) =
-            navigateTo(deviceDetail(device)) {
-                popUpTo(sceneDevicePicker()) { inclusive = true }
-            }
+    fun SceneDevicePickerViewModel.navigateToDemoDeviceDetailFromPicker(
+            device: HomeAssistantDevice,
+            selectedEntitySet: Set<String>,
+    ) {
+        navigateUp(SCENE_DEVICE_SNAPSHOT_KEY to device)
+        navigateTo(demoDeviceDetail(device, selectedEntitySet))
+    }
 
     fun HomeViewModel.navigateToDeviceDetail(device: HomeAssistantDevice) =
             navigateTo(deviceDetail(device))
@@ -236,3 +280,4 @@ internal object MainGraph : NavGraphContract() {
         }
     }
 }
+

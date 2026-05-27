@@ -27,14 +27,15 @@ data class StateResponse(
         @SerialName("entity_id") override val entityId: String,
         @SerialName("state") val state: String,
         @SerialName("attributes") val attributes: JsonObject,
-        @SerialName("last_changed") val lastChanged: String,
+        @SerialName("last_changed") val lastChanged: String? = null,
         @SerialName("last_updated") val lastUpdated: String? = null,
 ) : DomainParser {
+
     fun toDomain(json: Json): HomeAssistantState<HomeAssistantAttribute> = HomeAssistantState(
             entityId = entityId,
             allowedState = getAllowedStateByName(state),
             attributes = parseAttributes(json),
-            lastChanged = OffsetDateTime.parse(lastChanged),
+            lastChanged = lastChanged?.let { OffsetDateTime.parse(it) },
             lastUpdated = lastUpdated?.let { OffsetDateTime.parse(it) },
     )
 
