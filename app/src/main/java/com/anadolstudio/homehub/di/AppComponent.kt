@@ -6,10 +6,10 @@ import com.anadolstudio.homehub.core.network.SessionExpiredNotifier
 import com.anadolstudio.homehub.di.viewmodel.ViewModelsInjector
 import com.anadolstudio.homehub.feature.add.di.AddModule
 import com.anadolstudio.homehub.feature.addDeviceGroup.di.AddDeviceGroupModule
-import com.anadolstudio.homehub.feature.addMatter.di.AddMatterModule
-import com.anadolstudio.homehub.feature.addMatter.gms.MatterCommissioningService
 import com.anadolstudio.homehub.feature.addPerson.di.AddPersonModule
-import com.anadolstudio.homehub.feature.addZigbee.di.AddZigbeeModule
+import com.anadolstudio.homehub.feature.add_device.addMatter.di.AddMatterModule
+import com.anadolstudio.homehub.feature.add_device.addMatter.gms.MatterCommissioningService
+import com.anadolstudio.homehub.feature.add_device.addZigbee.di.AddZigbeeModule
 import com.anadolstudio.homehub.feature.autoSetupHomeAssistantUrl.di.AutoSetupHomeAssistantUrlModule
 import com.anadolstudio.homehub.feature.automation.automationDetail.di.AutomationDetailModule
 import com.anadolstudio.homehub.feature.automation.automationList.di.AutomationListModule

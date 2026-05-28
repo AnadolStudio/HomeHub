@@ -24,16 +24,18 @@
 
     <!-- AddMatter screen -->
     <string name="add_matter_title">Add Matter device</string>
-    <string name="add_matter_idle_description">Power on the device and make sure it is in pairing mode (LED is blinking). Then tap the button below — Google will help you scan the QR code and connect to Wi-Fi, and Home Assistant will accept the device into its network.</string>
+    <string name="add_matter_idle_description">Power on the device and make sure it is in pairing mode (LED is blinking).\nThen tap the button below — Google will help you scan the QR code and connect to Wi-Fi, and Home Assistant will accept the device into its network.</string>
     <string name="add_matter_start_button">Start pairing</string>
     <string name="add_matter_preparing_title">Preparing Google UI…</string>
     <string name="add_matter_preparing_description">The system pairing window is about to open.</string>
     <string name="add_matter_google_active_title">Pairing via Google</string>
     <string name="add_matter_google_active_description">Follow the instructions in the Google window. Do not leave the app.</string>
     <string name="add_matter_finalizing_title">Registering in Home Assistant…</string>
-    <string name="add_matter_finalizing_description">Handing the device over to your Home Assistant. This can take up to 30 seconds.</string>
+    <string name="add_matter_finalizing_description">Handing the device over to your Home Assistant.\nThis can take up to 30 seconds.</string>
     <string name="add_matter_done_title">Device added</string>
     <string name="add_matter_done_description">The device will appear in Home Assistant within a few seconds.</string>
+    <string name="add_matter_new_devices_title">Newly added devices</string>
+    <string name="add_matter_new_devices_empty">No new devices in Home Assistant yet.\nThey will show up here as soon as Home Assistant registers them.</string>
     <string name="add_matter_add_another_button">Add another</string>
     <string name="add_matter_finish_button">Done</string>
     <string name="add_matter_failed_title">Something went wrong</string>

@@ -10,10 +10,10 @@ import com.anadolstudio.homehub.event.navigateUp
 import com.anadolstudio.homehub.feature.add.presentation.AddScreen
 import com.anadolstudio.homehub.feature.add.presentation.AddViewModel
 import com.anadolstudio.homehub.feature.addDeviceGroup.presentation.AddDeviceGroupScreen
-import com.anadolstudio.homehub.feature.addMatter.presentation.AddMatterScreen
 import com.anadolstudio.homehub.feature.addPerson.presentation.AddPersonScreen
-import com.anadolstudio.homehub.feature.addZigbee.presentation.AddZigbeeScreen
-import com.anadolstudio.homehub.feature.addZigbee.presentation.AddZigbeeViewModel
+import com.anadolstudio.homehub.feature.add_device.addMatter.presentation.AddMatterScreen
+import com.anadolstudio.homehub.feature.add_device.addZigbee.presentation.AddZigbeeScreen
+import com.anadolstudio.homehub.feature.add_device.common.BaseAddDeviceViewModel
 import com.anadolstudio.homehub.feature.autoSetupHomeAssistantUrl.domain.model.HomeAssistantInstance
 import com.anadolstudio.homehub.feature.autoSetupHomeAssistantUrl.presetnation.AutoSetupHomeAssistantUrlScreen
 import com.anadolstudio.homehub.feature.autoSetupHomeAssistantUrl.presetnation.AutoSetupHomeAssistantUrlViewModel
@@ -305,7 +305,7 @@ internal object MainGraph : NavGraphContract() {
     fun HomeViewModel.navigateToDeviceDetail(device: HomeAssistantDevice) =
             navigateTo(deviceDetail(device))
 
-    fun AddZigbeeViewModel.navigateToDeviceDetail(device: HomeAssistantDevice) =
+    fun BaseAddDeviceViewModel<*>.navigateToDeviceDetail(device: HomeAssistantDevice) =
             navigateTo(deviceDetail(device))
 
     fun RegisterUserViewModel.navigateToHome() = navigateFromRoot(home())

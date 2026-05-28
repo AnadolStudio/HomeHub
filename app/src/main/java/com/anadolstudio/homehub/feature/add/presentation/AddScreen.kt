@@ -27,7 +27,7 @@ import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
 import com.anadolstudio.homehub.R
 import com.anadolstudio.homehub.di.viewmodel.daggerViewModel
 import com.anadolstudio.homehub.event.ObserveEvents
-import com.anadolstudio.homehub.feature.addMatter.gms.isMatterCommissioningSupported
+import com.anadolstudio.homehub.feature.add_device.addMatter.gms.isMatterCommissioningSupported
 import com.anadolstudio.homehub.feature.main.NavigationController
 
 @Composable

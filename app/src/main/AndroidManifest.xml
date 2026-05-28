@@ -51,11 +51,7 @@
             </intent-filter>
         </activity>
 
-        <!--
-            Matter commissioning callback от Google Play Services.
-            android:exported="true" обязательно — GMS делает signature verification,
-            но всё равно требует binding снаружи (см. home-assistant/android PR #5509).
-        -->
+        <!-- exported=true обязательно (см. home-assistant/android PR #5509). -->
         <service
             android:name=".feature.addMatter.gms.MatterCommissioningService"
             android:exported="true"

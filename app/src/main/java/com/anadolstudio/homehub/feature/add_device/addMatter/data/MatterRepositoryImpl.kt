@@ -1,12 +1,12 @@
-package com.anadolstudio.homehub.feature.addMatter.data
+package com.anadolstudio.homehub.feature.add_device.addMatter.data
 
 import com.anadolstudio.homehub.R
 import com.anadolstudio.homehub.core.websocket.WebSocketCore
 import com.anadolstudio.homehub.core.websocket.message.Command
 import com.anadolstudio.homehub.core.websocket.message.WsRequest
 import com.anadolstudio.homehub.event.Text
-import com.anadolstudio.homehub.feature.addMatter.domain.repository.MatterRepository
-import com.anadolstudio.homehub.feature.addMatter.domain.repository.MatterRepository.Outcome
+import com.anadolstudio.homehub.feature.add_device.addMatter.domain.repository.MatterRepository
+import com.anadolstudio.homehub.feature.add_device.addMatter.domain.repository.MatterRepository.Outcome
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CancellationException
@@ -49,12 +49,6 @@ internal class MatterRepositoryImpl @Inject constructor(
         _outcomes.resetReplayCache()
     }
 
-    /**
-     * Отправляет WS-команду и публикует соответствующий [Outcome] в [_outcomes].
-     * Сетевые/таймаут-ошибки превращаются в [Outcome.Failure] и НЕ пробрасываются —
-     * сервис в любом случае должен ответить GMS либо `complete`, либо `error`
-     * по boolean-результату.
-     */
     private suspend fun runAndPublish(request: WsRequest): Boolean {
         return try {
             webSocketCore.sendCommand(request).also { response ->
@@ -69,11 +63,8 @@ internal class MatterRepositoryImpl @Inject constructor(
                 }
             }.success
         } catch (cancellation: CancellationException) {
-            // Отмена — не наш кейс, не публикуем outcome, пробрасываем.
             throw cancellation
         } catch (error: Throwable) {
-            // localizedMessage от системы оставляем как есть (Plain);
-            // если ничего не пришло — обобщённый ресурс с подставленной командой.
             val text: Text = error.localizedMessage?.let(Text::Plain)
                     ?: error.message?.let(Text::Plain)
                     ?: Text.ResourceWithArg(R.string.add_matter_error_network, request.type)

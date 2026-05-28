@@ -23,6 +23,32 @@
     <string name="add_button_person">Добавить человека</string>
     <string name="add_button_device_group">Добавить группу устройств</string>
 
+    <!-- AddMatter screen -->
+    <string name="add_matter_title">Добавление Matter-устройства</string>
+    <string name="add_matter_idle_description">Включите устройство и убедитесь, что оно в режиме сопряжения (LED мигает).\nЗатем нажмите кнопку ниже — Google поможет со сканированием QR-кода и подключением к Wi-Fi, а Home Assistant примет устройство в свою сеть.</string>
+    <string name="add_matter_start_button">Начать сопряжение</string>
+    <string name="add_matter_preparing_title">Готовим Google UI…</string>
+    <string name="add_matter_preparing_description">Сейчас откроется системное окно сопряжения.</string>
+    <string name="add_matter_google_active_title">Сопряжение через Google</string>
+    <string name="add_matter_google_active_description">Следуйте инструкциям в окне Google. Не выходите из приложения.</string>
+    <string name="add_matter_finalizing_title">Регистрируем в Home Assistant…</string>
+    <string name="add_matter_finalizing_description">Передаём устройство в ваш Home Assistant.\nЭто занимает до 30 секунд.</string>
+    <string name="add_matter_done_title">Устройство добавлено</string>
+    <string name="add_matter_done_description">Устройство появится в Home Assistant в течение нескольких секунд.</string>
+    <string name="add_matter_new_devices_title">Новые устройства</string>
+    <string name="add_matter_new_devices_empty">Пока новых устройств в Home Assistant нет.\nОни появятся здесь, как только Home Assistant их зарегистрирует.</string>
+    <string name="add_matter_add_another_button">Добавить ещё одно</string>
+    <string name="add_matter_finish_button">Готово</string>
+    <string name="add_matter_failed_title">Не получилось</string>
+    <string name="add_matter_retry_button">Попробовать снова</string>
+    <string name="add_matter_cancel_button">Отмена</string>
+    <string name="add_matter_error_unsupported_android">Matter доступен начиная с Android 8.1</string>
+    <string name="add_matter_error_user_cancelled">Сопряжение отменено</string>
+    <string name="add_matter_error_intent_failed">Не удалось открыть commissioning UI</string>
+    <string name="add_matter_error_unknown">Не удалось добавить устройство</string>
+    <string name="add_matter_error_ha_rejected">Home Assistant отклонил %1$s</string>
+    <string name="add_matter_error_network">Сетевая ошибка при %1$s</string>
+
     <string name="area_filter_all">Все</string>
 
     <string name="automation_list_tab_automations">Автоматизации</string>

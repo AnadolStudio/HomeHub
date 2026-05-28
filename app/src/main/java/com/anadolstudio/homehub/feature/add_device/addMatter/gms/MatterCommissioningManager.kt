@@ -1,4 +1,4 @@
-package com.anadolstudio.homehub.feature.addMatter.gms
+package com.anadolstudio.homehub.feature.add_device.addMatter.gms
 
 import android.content.ComponentName
 import android.content.Context
@@ -12,20 +12,6 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.suspendCancellableCoroutine
 
-/**
- * Тонкая обёртка над `CommissioningClient` Google Home Mobile SDK.
- *
- * Запрашивает у Google `IntentSender`, который Compose-слой запустит как
- * activity-result. После этого Google показывает свой системный bottom-sheet:
- *   • сканирует QR / просит ввести pairing code;
- *   • устанавливает BLE-сессию с устройством;
- *   • передаёт устройству Wi-Fi credentials (или Thread, если есть border router);
- *   • дожидается, пока устройство окажется в сети;
- *   • биндится к нашему [MatterCommissioningService] и отдаёт `pin` + `ip`.
- *
- * `setCommissioningService(...)` — обязательно. Без этого устройство уехало бы
- * в Google fabric, а не в наш (то есть в HA).
- */
 internal class MatterCommissioningManager @Inject constructor(
         private val context: Context,
 ) {

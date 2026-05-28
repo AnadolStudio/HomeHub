@@ -1,4 +1,4 @@
-package com.anadolstudio.homehub.feature.addZigbee.presentation
+package com.anadolstudio.homehub.feature.add_device.addZigbee.presentation
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -27,6 +27,7 @@ import com.anadolstudio.homehub.R
 import com.anadolstudio.homehub.base.view.HomeHubLoader
 import com.anadolstudio.homehub.di.viewmodel.daggerViewModel
 import com.anadolstudio.homehub.event.ObserveEvents
+import com.anadolstudio.homehub.feature.add_device.common.BaseAddDeviceState
 import com.anadolstudio.homehub.feature.home.domain.model.services.SimpleToggleableService
 import com.anadolstudio.homehub.feature.home.presentation.components.DeviceCard
 import com.anadolstudio.homehub.feature.main.NavigationController
@@ -46,7 +47,7 @@ internal fun AddZigbeeScreen(
 
 @Composable
 private fun AddZigbeeLayout(
-        state: AddZigbeeScreenState,
+        state: BaseAddDeviceState<AddZigbeeScreenState>,
         controller: AddZigbeeController,
 ) {
     Box(
@@ -55,7 +56,7 @@ private fun AddZigbeeLayout(
                     .background(AppTheme.colors.colorSecondary)
                     .systemBarsPadding(),
     ) {
-        when (val progressState = state.progressState) {
+        when (val progressState = state.extraState.progressState) {
             ProgressState.Content -> AddZigbeeContent(state = state, controller = controller)
             is ProgressState.Error -> AddZigbeeError(progressState)
             ProgressState.Loading -> AddZigbeeLoading()
@@ -67,10 +68,10 @@ private fun AddZigbeeLayout(
 @OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 private fun AddZigbeeContent(
-        state: AddZigbeeScreenState,
+        state: BaseAddDeviceState<AddZigbeeScreenState>,
         controller: AddZigbeeController,
 ) {
-    val zigbeeBridgeDevice = state.zigbeeBridgeDevice ?: return
+    val zigbeeBridgeDevice = state.extraState.zigbeeBridgeDevice ?: return
 
     Column(
             modifier = Modifier
@@ -96,14 +97,14 @@ private fun AddZigbeeContent(
 
         Divider(modifier = Modifier.fillMaxWidth(), color = AppTheme.colors.divider)
 
-        if (state.isSearching && state.newDeviceList.isEmpty()) {
+        if (state.extraState.isSearching && state.newDeviceList.isEmpty()) {
             HomeHubLoader(modifier = Modifier.fillMaxWidth())
         } else {
             FlowRow(
                     modifier = Modifier.fillMaxSize(),
                     horizontalArrangement = Arrangement.spacedBy(
                             space = Dimmens.smallMargin,
-                            alignment = Alignment.CenterHorizontally,
+                            alignment = Alignment.Start,
                     ),
                     verticalArrangement = Arrangement.spacedBy(
                             space = Dimmens.mediumMargin,
