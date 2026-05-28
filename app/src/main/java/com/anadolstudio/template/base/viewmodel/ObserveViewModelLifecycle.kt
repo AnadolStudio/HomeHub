@@ -13,7 +13,7 @@ internal fun ObserveViewModelLifecycle(viewModel: BaseViewModel) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_START -> viewModel.onStart()
-                Lifecycle.Event.ON_STOP -> viewModel.onStop()
+                Lifecycle.Event.ON_DESTROY -> viewModel.onStop()
                 else -> Unit
             }
         }

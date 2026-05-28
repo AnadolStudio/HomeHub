@@ -50,6 +50,8 @@ internal abstract class BaseViewModel :
 
     open fun onStop() = Unit
 
+    open fun onDestroy() = Unit
+
     protected fun showInformationAlertDialog(
         titleTextResId: Int,
         descriptionTextResId: Int? = null,

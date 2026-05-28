@@ -121,6 +121,10 @@ dependencies {
 
     implementation(libs.room)
     kapt(libs.room.compiler)
+
+    // Matter commissioning через Google Home Mobile SDK (Commissioning API).
+    implementation(libs.play.services.home)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.bundles.android.test)
 }

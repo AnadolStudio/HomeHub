@@ -1,4 +1,4 @@
-package com.anadolstudio.template.feature.add.presentation
+package com.anadolstudio.homehub.feature.add.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -24,10 +24,11 @@ import com.anadolstudio.compose.ui.theme.AppTheme
 import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.view.button.OutlineButtonLarge
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
-import com.anadolstudio.template.R
-import com.anadolstudio.template.di.viewmodel.daggerViewModel
-import com.anadolstudio.template.event.ObserveEvents
-import com.anadolstudio.template.feature.main.NavigationController
+import com.anadolstudio.homehub.R
+import com.anadolstudio.homehub.di.viewmodel.daggerViewModel
+import com.anadolstudio.homehub.event.ObserveEvents
+import com.anadolstudio.homehub.feature.addMatter.gms.isMatterCommissioningSupported
+import com.anadolstudio.homehub.feature.main.NavigationController
 
 @Composable
 internal fun AddScreen(
@@ -70,11 +71,14 @@ private fun AddLayout(
                 icon = rememberVectorPainter(Icons.Outlined.SettingsRemote),
         )
 
-        OutlineButtonLarge(
-                text = stringResource(R.string.add_button_matter),
-                onClick = controller::onMatterClicked,
-                icon = rememberVectorPainter(Icons.Outlined.Hub),
-        )
+        // Google Home Mobile SDK требует API 27+: на Android 8.0 кнопка просто не показывается.
+        if (isMatterCommissioningSupported()) {
+            OutlineButtonLarge(
+                    text = stringResource(R.string.add_button_matter),
+                    onClick = controller::onMatterClicked,
+                    icon = rememberVectorPainter(Icons.Outlined.Hub),
+            )
+        }
 
         OutlineButtonLarge(
                 text = stringResource(R.string.add_button_person),

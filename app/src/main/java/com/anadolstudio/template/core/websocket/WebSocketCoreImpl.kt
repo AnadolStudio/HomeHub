@@ -25,10 +25,14 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.json.Json
 import okhttp3.WebSocket
@@ -163,14 +167,14 @@ class WebSocketCoreImpl @Inject constructor(
     }
 
     override suspend fun sendCommand(request: WsRequest): WsResultMessage {
-        return messageController.sendCommand(requireNotNull(webSocket), request)
+        return messageController.sendCommand(ensureWebSocketConnected(), request)
     }
 
     override suspend fun <T> sendCommandForResult(
             request: WsRequest,
             deserializer: DeserializationStrategy<T>,
     ): T = messageController.sendCommandForResult(
-            webSocket = requireNotNull(webSocket),
+            webSocket = ensureWebSocketConnected(),
             request = request,
             deserializer = deserializer
     )
@@ -178,12 +182,35 @@ class WebSocketCoreImpl @Inject constructor(
     override fun <T> subscribe(
             request: WsRequest,
             deserializer: DeserializationStrategy<T>,
-    ): Flow<T> = messageController.subscribe(
-            webSocket = requireNotNull(webSocket),
-            scope = scope,
-            subscriptionRequest = request,
-            deserializer = deserializer
-    )
+    ): Flow<T> = flow {
+        emitAll(
+                messageController.subscribe(
+                        webSocket = ensureWebSocketConnected(),
+                        scope = scope,
+                        subscriptionRequest = request,
+                        deserializer = deserializer,
+                ),
+        )
+    }
+
+    private suspend fun ensureWebSocketConnected(): WebSocket {
+        webSocket?.let { return it }
+
+        val totalTimeout = with(dependencies.config) { connectTimeoutMs + authTimeoutMs }
+
+        withTimeout(totalTimeout) {
+            connect()
+            // Дожидаемся аутентифицированного состояния или терминальной ошибки.
+            val terminal = connectionState.first { state ->
+                state is WebSocketConnectionState.ConnectedAuthenticated ||
+                        state is WebSocketConnectionState.Failed
+            }
+            if (terminal is WebSocketConnectionState.Failed) throw terminal.reason
+        }
+
+        return webSocket
+                ?: throw WebSocketCoreException.ConnectionError("WebSocket не инициализирован после connect()")
+    }
 
     private fun reconnect() {
         if (reconnectJob?.isActive == true || isPause.get()) return

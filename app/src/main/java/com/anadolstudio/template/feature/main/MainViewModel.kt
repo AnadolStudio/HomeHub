@@ -39,8 +39,8 @@ internal class MainViewModel @Inject constructor(
         ifAuthenticated { webSocketRepository.onStartWebsocket() }
     }
 
-    override fun onStop() {
-        super.onStop()
+    override fun onDestroy() {
+        super.onDestroy()
         ifAuthenticated { webSocketRepository.onStopWebsocket() }
     }
 

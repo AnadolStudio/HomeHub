@@ -7,6 +7,7 @@ import com.anadolstudio.template.di.viewmodel.ViewModelsInjector
 import com.anadolstudio.template.feature.add.di.AddModule
 import com.anadolstudio.template.feature.addDeviceGroup.di.AddDeviceGroupModule
 import com.anadolstudio.template.feature.addMatter.di.AddMatterModule
+import com.anadolstudio.template.feature.addMatter.gms.MatterCommissioningService
 import com.anadolstudio.template.feature.addPerson.di.AddPersonModule
 import com.anadolstudio.template.feature.addZigbee.di.AddZigbeeModule
 import com.anadolstudio.template.feature.autoSetupHomeAssistantUrl.di.AutoSetupHomeAssistantUrlModule
@@ -66,4 +67,6 @@ internal interface AppComponent {
     }
 
     fun inject(entry: App)
+
+    fun inject(service: MatterCommissioningService)
 }

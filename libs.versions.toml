@@ -10,6 +10,7 @@ androidGradlePlugin = "8.2.2"
 googleServicesPlugin = "4.4.2"
 firebaseCrashPlugin = "3.0.2"
 playServicesGsmLocation = "21.3.0"
+playServicesHome = "16.0.0"
 
 core-ktx = "1.13.1"
 appcompat = "1.7.0"
@@ -147,6 +148,9 @@ androidx-espresso = { group = "com.android.support.test.espresso", name = "espre
 #Other
 google-services = { module = "com.google.gms:google-services", version.ref = "googleServicesPlugin" }
 play-services-gsm-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesGsmLocation" }
+
+# Matter commissioning: Google Home Mobile SDK (Commissioning API через Google Play Services).
+play-services-home = { module = "com.google.android.gms:play-services-home", version.ref = "playServicesHome" }
 firebase-crashlytics-plugin = { module = "com.google.firebase:firebase-crashlytics-gradle", version.ref = "firebaseCrashPlugin" }
 
 [plugins]
