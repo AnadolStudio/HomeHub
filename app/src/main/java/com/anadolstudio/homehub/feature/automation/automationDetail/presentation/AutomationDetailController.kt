@@ -1,0 +1,3 @@
+package com.anadolstudio.homehub.feature.automation.automationDetail.presentation
+
+internal interface AutomationDetailController

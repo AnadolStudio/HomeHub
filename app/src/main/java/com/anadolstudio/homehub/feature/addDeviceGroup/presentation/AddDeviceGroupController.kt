@@ -1,0 +1,3 @@
+package com.anadolstudio.homehub.feature.addDeviceGroup.presentation
+
+internal interface AddDeviceGroupController

@@ -91,7 +91,7 @@ android {
         generateStubs = true
     }
 
-    namespace = "com.anadolstudio.template"
+    namespace = "com.anadolstudio.homehub"
 }
 
 dependencies {

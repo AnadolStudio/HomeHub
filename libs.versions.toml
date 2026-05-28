@@ -53,7 +53,7 @@ compose-coil = "2.6.0"
 landscapist = "2.3.2"
 accompanist = "0.31.3-beta"
 
-appId = "com.anadolstudio.template"
+appId = "com.anadolstudio.homehub"
 testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
 [libraries]
