@@ -80,7 +80,7 @@ internal fun DeviceImageView(
             )
         }
 
-        null -> {
+        else -> {
             Icon(
                     imageVector = defaultIcon,
                     contentDescription = null,

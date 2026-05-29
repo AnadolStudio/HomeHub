@@ -96,8 +96,7 @@ internal class SceneCreateViewModel @AssistedInject constructor(
         updateState { copy(name = value, sceneConfigId = sceneConfigId) }
     }
 
-    override fun onAddClicked() =
-            navigateToSceneDevicePicker(excludedDeviceIds = state.selectedDeviceDraftSet.map { it.id }.toSet())
+    override fun onAddClicked() = navigateToSceneDevicePicker(state.selectedDeviceDraftSet.map { it.id }.toSet())
 
     override fun onDeviceEditClicked(deviceDraft: DeviceDraftCard) {
         lceFlow { websocketRepository.getDevice(deviceId = deviceDraft.id, useCache = true) }

@@ -8,6 +8,7 @@ import com.anadolstudio.homehub.feature.home.domain.HAWebsocketRepository
 import com.anadolstudio.homehub.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.homehub.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.homehub.feature.home.domain.model.events.HomeAssistantStateChangedEvent
+import com.anadolstudio.homehub.feature.home.domain.model.registry.RegistryDeviceEvent
 import com.anadolstudio.homehub.feature.home.domain.model.services.HomeAssistantService
 import com.anadolstudio.homehub.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.homehub.feature.main.MainGraph.navigateToDeviceDetail
@@ -15,7 +16,6 @@ import com.anadolstudio.homehub.util.mapIfContains
 import com.anadolstudio.utils.states.lce.lceFlow
 import com.anadolstudio.utils.states.lce.mapToLce
 import com.anadolstudio.utils.states.lce.onEachContent
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.launchIn
 
@@ -41,16 +41,25 @@ internal abstract class BaseAddDeviceViewModel<S : ExtraAddDeviceState>(
     }
 
     protected open fun onWebSocketConnected() {
-        subscribeToNewDevices()
+        subscribeToDeviceChanges()
         subscribeToStateChangedEvents()
     }
 
-    private fun subscribeToNewDevices() {
+    private fun subscribeToDeviceChanges() {
         websocketRepository.subscribeToRegistryNewDeviceEvents()
-                .filter { it.action == DEVICE_REGISTRY_ACTION_CREATE }
                 .mapToLce()
-                .onEachContent { event -> loadNewDevice(event.deviceId) }
+                .onEachContent { event ->
+                    when (event) {
+                        is RegistryDeviceEvent.Create, is RegistryDeviceEvent.Update -> loadNewDevice(event.deviceId)
+                        is RegistryDeviceEvent.Remove -> removeDevice(event.deviceId)
+                        is RegistryDeviceEvent.Unknown -> Unit
+                    }
+                }
                 .launchIn(viewModelScope)
+    }
+
+    protected open fun removeDevice(deviceId: String) = updateState {
+        copy(newDeviceSet = newDeviceSet.filter { it.id != deviceId }.toSet())
     }
 
     private fun subscribeToStateChangedEvents() {
@@ -63,9 +72,7 @@ internal abstract class BaseAddDeviceViewModel<S : ExtraAddDeviceState>(
 
     private fun loadNewDevice(id: String) {
         lceFlow { websocketRepository.getDevice(deviceId = id, useCache = false) }
-                .onEachContent { newDevice ->
-                    if (newDevice != null) onNewDeviceFound(newDevice)
-                }
+                .onEachContent { newDevice -> if (newDevice != null) onNewDeviceFound(newDevice) }
                 .launchIn(viewModelScope)
     }
 
@@ -82,15 +89,15 @@ internal abstract class BaseAddDeviceViewModel<S : ExtraAddDeviceState>(
         }
 
         val newDevice = changedDevice.copy(entityMap = newEntityList)
-        val newDeviceSet = state.newDeviceList.toMutableSet().apply {
+        val newDeviceSet = state.newDeviceSet.toMutableSet().apply {
             remove(changedDevice)
             add(newDevice)
         }
-        updateState { copy(newDeviceList = newDeviceSet) }
+        updateState { copy(newDeviceSet = newDeviceSet) }
     }
 
-    protected open fun onNewDeviceFound(device: HomeAssistantDevice) {
-        updateState { copy(newDeviceList = newDeviceList + device) }
+    protected open fun onNewDeviceFound(device: HomeAssistantDevice) = updateState {
+        copy(newDeviceSet = newDeviceSet + device)
     }
 
     override fun onDeviceClicked(device: HomeAssistantDevice) = navigateToDeviceDetail(device)
@@ -111,8 +118,5 @@ internal abstract class BaseAddDeviceViewModel<S : ExtraAddDeviceState>(
     protected fun updateExtraState(transform: S.() -> S) {
         val extraState = transform.invoke(extraState)
         updateState { copy(extraState = extraState) }
-    }
-    private companion object {
-        const val DEVICE_REGISTRY_ACTION_CREATE = "create"
     }
 }

@@ -1,5 +1,6 @@
 package com.anadolstudio.homehub.feature.home.presentation
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
@@ -38,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -59,6 +62,7 @@ import com.anadolstudio.compose.ui.theme.AppTheme
 import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
 import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
+import com.anadolstudio.compose.ui.view.state.Loader
 import com.anadolstudio.compose.ui.view.stub.ErrorStub
 import com.anadolstudio.homehub.R
 import com.anadolstudio.homehub.base.view.HomeHubLoader
@@ -103,7 +107,6 @@ private fun HomeLayout(
         controller: HomeController,
 ) {
     val progressState = remember(state) { state.progressState }
-    val homeName = state.homeOverviewState.homeState?.attributes?.friendlyName.toString()
 
     val density = LocalDensity.current
     val maxHeaderPx = with(density) { HEADER_MAX_HEIGHT.toPx() }
@@ -201,30 +204,22 @@ private fun HomeLayout(
                         .background(color = AppTheme.colors.colorSecondary),
         ) {
 
-            Text(
-                    text = homeName,
-                    style = AppTheme.typography.textBook23,
-                    fontWeight = FontWeight.Bold,
-                    color = AppTheme.colors.colorAccent,
-                    modifier = Modifier
-                            .fillMaxWidth()
-                            .statusBarsPadding()
-                            .padding(horizontal = Dimmens.mainMargin)
-                            .padding(bottom = Dimmens.smallMargin, top = Dimmens.smallMargin),
-            )
-
-            if (state.deviceState.availableAreas.isNotEmpty()) {
-                AreaChipRow(
-                        selectedAreaId = state.selectedAreaId,
-                        areas = state.deviceState.availableAreas,
-                        onAreaSelected = controller::onAreaSelected,
-                        contentPadding = PaddingValues(horizontal = Dimmens.mainMargin),
-                        modifier = Modifier.padding(bottom = Dimmens.smallMargin),
+            if (state.homeName != null) {
+                Text(
+                        text = state.homeName,
+                        style = AppTheme.typography.textBook23,
+                        fontWeight = FontWeight.Bold,
+                        color = AppTheme.colors.colorAccent,
+                        modifier = Modifier
+                                .fillMaxWidth()
+                                .statusBarsPadding()
+                                .padding(horizontal = Dimmens.mainMargin)
+                                .padding(bottom = Dimmens.smallMargin, top = Dimmens.smallMargin),
                 )
             }
 
             when (progressState) {
-                ProgressState.Content -> HomeContent(state = state, controller = controller)
+                ProgressState.Refresh, ProgressState.Content -> HomeContent(state = state, controller = controller)
                 is ProgressState.Error -> HomeError(progressState)
                 ProgressState.Loading -> HomeLoading()
                 else -> Unit
@@ -313,7 +308,7 @@ private fun HomeError(progressState: ProgressState.Error) {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 private fun HomeContent(
         state: HomeScreenState,
@@ -323,6 +318,7 @@ private fun HomeContent(
 
     val entries = remember(deviceMap) { deviceMap.entries }
     val listState = rememberLazyListState()
+    val isRefreshing = state.progressState == ProgressState.Refresh
 
     val context = LocalContext.current
     val imageSizePx = with(LocalDensity.current) { DEVICE_IMAGE_SIZE.roundToPx() }
@@ -348,57 +344,90 @@ private fun HomeContent(
         }
     }
 
-    LazyColumn(
-            state = listState,
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = Dimmens.largeMargin),
-            verticalArrangement = Arrangement.spacedBy(Dimmens.mediumMargin),
-    ) {
-        entries.forEach { (areaName, deviceList) ->
-            item(key = areaName) {
-                AreaSection(
-                        areaName = areaName,
-                        deviceList = deviceList,
-                        controller = controller,
-                )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun AreaSection(
-        areaName: String,
-        deviceList: List<HomeAssistantDevice>,
-        controller: HomeController,
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(Dimmens.smallMargin)) {
-        GroupHeader(
-                title = areaName,
-                onClick = { controller.onAreaClicked() },
-                modifier = Modifier.padding(horizontal = Dimmens.mainMargin),
-        )
-
-        FlowRow(
-                modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = Dimmens.mainMargin),
-                horizontalArrangement = Arrangement.spacedBy(Dimmens.smallMargin),
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = Dimmens.largeMargin),
                 verticalArrangement = Arrangement.spacedBy(Dimmens.mediumMargin),
         ) {
-            deviceList.forEach { device ->
-                Box(modifier = Modifier) {
-                    DeviceCard(device, controller)
+            item(key = state.deviceState.availableAreas) {
+                if (state.deviceState.availableAreas.isNotEmpty()) {
+                    AreaChipRow(
+                            modifier = Modifier
+                                    .animateItem()
+                                    .padding(bottom = Dimmens.smallMargin),
+                            selectedAreaId = state.selectedAreaId,
+                            areas = state.deviceState.availableAreas,
+                            onAreaSelected = controller::onAreaSelected,
+                            contentPadding = PaddingValues(horizontal = Dimmens.mainMargin),
+                    )
+                }
+            }
+
+            entries.forEach { (areaName, deviceList) ->
+                item(areaName) {
+                    GroupHeader(
+                            title = areaName,
+                            onClick = { controller.onAreaClicked() },
+                            modifier = Modifier.padding(horizontal = Dimmens.mainMargin),
+                    )
+
+                    Spacer(modifier = Modifier.height(Dimmens.smallMargin))
+                }
+
+                item(deviceList) {
+                    FlowRow(
+                            modifier = Modifier
+                                    .animateItem()
+                                    .fillMaxWidth()
+                                    .padding(horizontal = Dimmens.mainMargin),
+                            horizontalArrangement = Arrangement.spacedBy(Dimmens.smallMargin),
+                            verticalArrangement = Arrangement.spacedBy(Dimmens.mediumMargin),
+                    ) {
+                        deviceList.forEach { device -> // TODO очень сложный рендеринг
+                            DeviceCard(device = device, controller = controller)
+                        }
+                    }
                 }
             }
         }
+
+        RefreshIndicator(
+                modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = Dimmens.largeMargin)
+                        .shadow(elevation = 2.dp, shape = CircleShape)
+                        .background(AppTheme.colors.colorPrimary, CircleShape),
+                isRefreshing = isRefreshing
+        )
     }
 }
 
 @Composable
-private fun DeviceCard(device: HomeAssistantDevice, controller: HomeController) {
+private fun RefreshIndicator(modifier: Modifier, isRefreshing: Boolean) {
+    AnimatedVisibility(
+            visible = isRefreshing,
+            modifier = modifier,
+    ) {
+        Loader(
+                modifier = Modifier
+                        .padding(Dimmens.smallMargin)
+                        .size(24.dp),
+                color = AppTheme.colors.colorAccent,
+                strokeWidth = 3.dp
+        )
+    }
+}
+
+@Composable
+private fun DeviceCard(
+        device: HomeAssistantDevice,
+        controller: HomeController,
+        modifier: Modifier = Modifier,
+) {
     DeviceCard(
+            modifier = modifier,
             title = device.name,
             description = null,
             image = device.image,

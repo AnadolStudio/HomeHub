@@ -2,6 +2,7 @@ package com.anadolstudio.homehub.feature.home.presentation.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -76,8 +77,10 @@ fun DeviceCard(
         entityList: List<HomeAssistantEntity<HomeAssistantAttribute>>,
         onInnerEntityClicked: (entity: HomeAssistantEntity<HomeAssistantAttribute>) -> Unit,
         onDeviceClicked: () -> Unit,
+        modifier: Modifier = Modifier,
 ) {
     BaseDeviceCard(
+            modifier = modifier,
             title = title,
             description = description,
             image = image,
@@ -92,9 +95,6 @@ fun DeviceCard(
             entityList.forEach { entity ->
                 when (val attribute = entity.state.attributes) {
                     is LightAttribute -> {
-                        // Оборачиваем в Column, чтобы для FlowColumn оба эти composable были
-                        // одним child'ом колонки (иначе maxItemsInEachColumn разводит их по
-                        // соседним колонкам — визуально это «в одну линию»).
                         Column(verticalArrangement = Arrangement.spacedBy(Dimmens.extraSmallMargin)) {
                             BaseSwitchEntityItem(
                                     entity = entity,
@@ -110,6 +110,7 @@ fun DeviceCard(
                                         modifier = Modifier
                                                 .size(24.dp)
                                                 .clip(CircleShape)
+                                                .border(1.dp, AppTheme.colors.colorAccentAlternative, CircleShape)
                                                 .background(animatedColor),
                                 )
                             }
@@ -181,7 +182,6 @@ fun EntityItem(
                     tint = if (isEnable) AppTheme.colors.colorAccent else AppTheme.colors.disable,
                     modifier = Modifier.size(24.dp),
             )
-
         }
 
         if (icon != null && text != null) {
@@ -218,10 +218,11 @@ fun BaseDeviceCard(
         description: String?,
         image: DeviceImage?,
         onDeviceClicked: () -> Unit,
+        modifier: Modifier = Modifier,
         entityInformationRow: (@Composable RowScope.() -> Unit)? = null,
 ) {
     Column(
-            modifier = Modifier
+            modifier = modifier
                     .width(IntrinsicSize.Min)
                     .shadow(elevation = DEVICE_CARD_ELEVATION, shape = DEVICE_CARD_SHAPE)
                     .background(color = AppTheme.colors.colorPrimary)

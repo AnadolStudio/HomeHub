@@ -13,7 +13,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 // android:exported="true" в манифесте обязательно — см. HA Companion PR #5509.
 internal class MatterCommissioningService : Service(), CommissioningService.Callback {
@@ -44,8 +43,6 @@ internal class MatterCommissioningService : Service(), CommissioningService.Call
         val pin = metadata.passcode
         val ipAddr = runCatching { metadata.networkLocation.ipAddress.hostAddress }
                 .getOrNull()
-
-        Timber.d("Matter onCommissioningRequested: pin=$pin, ip=$ipAddr")
 
         serviceScope.launch {
             val ok = matterRepository.commissionOnNetwork(pin = pin, ipAddr = ipAddr)

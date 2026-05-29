@@ -16,31 +16,16 @@ internal data class HomeScreenState(
         val selectedAreaId: String? = null,
 ) {
 
+    val homeName: String? = homeOverviewState.homeState?.attributes?.friendlyName
+
     val filteredAreaToDeviceMap: Map<String, List<HomeAssistantDevice>>
         get() = deviceState.areaToDeviceMap(selectedAreaId = selectedAreaId)
 
-    private val progressStateList get() = listOf(
-            homeOverviewState.progressState,
-            deviceState.progressState,
-    )
-
-    private val isLoading: Boolean
-        get() = connectionState != WebSocketConnectionState.ConnectedAuthenticated
+    private val hasConnection: Boolean
+        get() = connectionState == WebSocketConnectionState.ConnectedAuthenticated
 
     val progressState: ProgressState
-        get() = when {
-            isLoading || progressStateList.any { it is ProgressState.Loading } -> ProgressState.Loading
-            progressStateList.all { it is ProgressState.Content } -> ProgressState.Content
-            progressStateList.any { it is ProgressState.Error } -> {
-                val errorProgressState = progressStateList
-                        .firstOrNull { it is ProgressState.Error }
-                        as? ProgressState.Error
-
-                ProgressState.Error(errorProgressState?.error)
-            }
-
-            else -> ProgressState.Loading
-        }
+        get() = if (!hasConnection) ProgressState.Loading else deviceState.progressState
 }
 
 @Immutable

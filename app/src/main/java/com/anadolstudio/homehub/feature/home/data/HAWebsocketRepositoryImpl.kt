@@ -11,6 +11,8 @@ import com.anadolstudio.homehub.feature.home.data.model.EntityRegistryListResult
 import com.anadolstudio.homehub.feature.home.data.model.ExtractFromTargetResult
 import com.anadolstudio.homehub.feature.home.data.model.StateResponse
 import com.anadolstudio.homehub.feature.home.data.model.events.StateChangedEventResponse
+import com.anadolstudio.homehub.feature.home.data.model.registry.RegistryDeviceEventResponse
+import com.anadolstudio.homehub.feature.home.data.model.registry.toDomain
 import com.anadolstudio.homehub.feature.home.data.model.services.ServiceDescription
 import com.anadolstudio.homehub.feature.home.data.model.services.ServiceResponse
 import com.anadolstudio.homehub.feature.home.data.model.services.ServiceTarget
@@ -202,10 +204,11 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
                 .groupBy(keySelector = { entity -> entity.deviceId }, valueTransform = { entity -> entity })
                 .mapNotNull { (deviceId, entityList) ->
                     val deviceResponse = deviceMap[deviceId] ?: return@mapNotNull null
+                    val name = deviceResponse.nameByUser ?: deviceResponse.name
 
                     HomeAssistantDevice(
                             id = deviceResponse.id,
-                            name = deviceResponse.name.orEmpty(),
+                            name = name.orEmpty(),
                             model = deviceResponse.model.orEmpty(),
                             area = areaMap[deviceResponse.areaId],
                             modelId = deviceResponse.modelId,
@@ -241,7 +244,7 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
             }
             .onEach { event -> applyEventToEntityCache(event) }
 
-    override  fun subscribeToRegistryNewDeviceEvents(): Flow<RegistryDeviceEvent> = webSocketCore
+    override fun subscribeToRegistryNewDeviceEvents(): Flow<RegistryDeviceEvent> = webSocketCore
             .subscribe(
                     request = WsRequest(
                             command = Command.SUBSCRIBE_EVENTS,
@@ -249,8 +252,8 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
                                 put(PAYLOAD_EVENT_TYPE_KEY, SubscriptionEventType.DEVICE_REGISTRY_UPDATED.value)
                             }
                     ),
-                    deserializer = RegistryDeviceEvent.serializer()
-            )
+                    deserializer = RegistryDeviceEventResponse.serializer()
+            ).map { it.toDomain() }
 
     private fun applyEventToEntityCache(event: HomeAssistantStateChangedEvent) {
         val entityIdToEntityMap = entityCache.value.toMutableMap()

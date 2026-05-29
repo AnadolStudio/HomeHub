@@ -89,7 +89,7 @@ internal class AddMatterViewModel @Inject constructor(
     }
 
     override fun onGoogleCommissioningUiFinished(canceledByUser: Boolean) {
-        if (canceledByUser) {
+        if (canceledByUser && extraState.step != Step.Done) {
             updateExtraState {
                 copy(
                         step = Step.Failed,

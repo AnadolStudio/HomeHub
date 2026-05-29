@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -71,6 +72,7 @@ private fun AddZigbeeContent(
         state: BaseAddDeviceState<AddZigbeeScreenState>,
         controller: AddZigbeeController,
 ) {
+    val newDeviceSet = remember(state.newDeviceSet) { state.newDeviceSet }
     val zigbeeBridgeDevice = state.extraState.zigbeeBridgeDevice ?: return
 
     Column(
@@ -97,7 +99,7 @@ private fun AddZigbeeContent(
 
         Divider(modifier = Modifier.fillMaxWidth(), color = AppTheme.colors.divider)
 
-        if (state.extraState.isSearching && state.newDeviceList.isEmpty()) {
+        if (state.extraState.isSearching && state.newDeviceSet.isEmpty()) {
             HomeHubLoader(modifier = Modifier.fillMaxWidth())
         } else {
             FlowRow(
@@ -111,7 +113,7 @@ private fun AddZigbeeContent(
                             alignment = Alignment.Top
                     )
             ) {
-                state.newDeviceList.forEach { device ->
+                newDeviceSet.forEach { device ->
                     DeviceCard(
                             title = device.name,
                             description = device.model,

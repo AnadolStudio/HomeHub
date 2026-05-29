@@ -17,7 +17,7 @@ import kotlinx.serialization.json.decodeFromJsonElement
 data class AutomationAttributes(
         @Transient override val jsonAttributes: JsonObject = JsonObject(emptyMap()),
         @SerialName("friendly_name") override val friendlyName: String = "",
-        @SerialName("mode") val mode: String,
+        @SerialName("mode") val mode: String? = null,
         @SerialName("last_triggered") val lastTriggeredDataTime: String? = null,
         @SerialName("icon") override val icon: HaIcon? = null,
 ) : HomeAssistantAttribute, Iconable

@@ -5,11 +5,11 @@ import com.anadolstudio.homehub.feature.home.domain.model.HomeAssistantDevice
 
 @Immutable
 internal data class BaseAddDeviceState<S : ExtraAddDeviceState>(
-        val newDeviceList: Set<HomeAssistantDevice> = emptySet(),
+        val newDeviceSet: Set<HomeAssistantDevice> = emptySet(),
         val extraState: S,
 ) {
     val entityToDeviceMap: Map<String, HomeAssistantDevice>
-        get() = newDeviceList
+        get() = newDeviceSet
                 .flatMap { device -> device.allEntityList.map { entity -> entity.entityId to device } }
                 .toMap()
 }

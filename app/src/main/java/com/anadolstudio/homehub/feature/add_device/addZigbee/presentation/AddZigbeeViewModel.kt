@@ -8,6 +8,7 @@ import com.anadolstudio.homehub.feature.home.domain.model.AllowedDomain
 import com.anadolstudio.homehub.feature.home.domain.model.events.HomeAssistantStateChangedEvent
 import com.anadolstudio.homehub.feature.home.domain.model.services.SimpleToggleableService
 import com.anadolstudio.homehub.feature.home.domain.model.states.AllowedState
+import com.anadolstudio.homehub.feature.home.domain.model.states.HomeAssistantState
 import com.anadolstudio.homehub.util.mapIfContains
 import com.anadolstudio.utils.states.LoadingContext
 import com.anadolstudio.utils.states.lce.lceFlow
@@ -51,6 +52,11 @@ internal class AddZigbeeViewModel @Inject constructor(
                 )
                 .onEachContent { zigbeeBridgeDevice ->
                     updateExtraState { copy(zigbeeBridgeDevice = zigbeeBridgeDevice) }
+
+                    zigbeeBridgeDevice.targetEntityList.firstOrNull { it.allowedDomain == AllowedDomain.SWITCH }
+                            ?.also { updateSearchingStatus(it.state) }
+
+                    setZigbeeFinderEnable(true)
                 }
                 .launchIn(viewModelScope)
     }
@@ -66,10 +72,7 @@ internal class AddZigbeeViewModel @Inject constructor(
         val belongsToBridge = zigbeeBridgeDevice.entityMap.values.any { list -> list.any { it.entityId == entityId } }
         if (!belongsToBridge) return
 
-        val newState = event.newState
-        if (newState.allowedDomain == AllowedDomain.SWITCH) {
-            updateExtraState { copy(isSearching = newState.allowedState is AllowedState.On) }
-        }
+        updateSearchingStatus(event.newState)
 
         val newEntityMap = zigbeeBridgeDevice.entityMap.mapValues { (_, entityList) ->
             entityList.mapIfContains(
@@ -80,25 +83,34 @@ internal class AddZigbeeViewModel @Inject constructor(
         updateExtraState { copy(zigbeeBridgeDevice = zigbeeBridgeDevice.copy(entityMap = newEntityMap)) }
     }
 
-
+    private fun updateSearchingStatus(state: HomeAssistantState<*>) {
+        if (state.allowedDomain == AllowedDomain.SWITCH) {
+            updateExtraState { copy(isSearching = state.allowedState is AllowedState.On) }
+        }
+    }
 
     override fun onCleared() {
-        turnOffZigbeeFinder()
+        setZigbeeFinderEnable(false)
 
         super.onCleared()
     }
 
-    private fun turnOffZigbeeFinder() {
+    private fun setZigbeeFinderEnable(enable: Boolean) {
         val permitJoinEntity = extraState.zigbeeBridgeDevice
                 ?.targetEntityList
                 ?.firstOrNull { it.allowedDomain == AllowedDomain.SWITCH }
                 ?: return
 
+        val service = when (enable) {
+            true -> SimpleToggleableService.On
+            false -> SimpleToggleableService.Off
+        }
+
         lceStateFlow {
             websocketRepository.callService(
                     entityId = permitJoinEntity.entityId,
                     domain = permitJoinEntity.domain,
-                    service = SimpleToggleableService.Off
+                    service = service
             )
         }.launchIn(detachedScope)
     }

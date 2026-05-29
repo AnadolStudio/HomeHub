@@ -148,7 +148,7 @@ private fun ContentWithDeviceList(
                 modifier = Modifier.fillMaxWidth(),
         )
 
-        if (state.newDeviceList.isEmpty()) {
+        if (state.newDeviceSet.isEmpty()) {
             Text(
                     text = stringResource(R.string.add_matter_new_devices_empty),
                     style = AppTheme.typography.captionMedium14,
@@ -167,7 +167,7 @@ private fun ContentWithDeviceList(
                             alignment = Alignment.Top,
                     ),
             ) {
-                state.newDeviceList.forEach { device ->
+                state.newDeviceSet.forEach { device ->
                     DeviceCard(
                             title = device.name,
                             description = device.model,

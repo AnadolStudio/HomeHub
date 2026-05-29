@@ -12,6 +12,7 @@ import com.anadolstudio.homehub.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.homehub.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.homehub.feature.home.domain.model.entity.castEntityList
 import com.anadolstudio.homehub.feature.home.domain.model.events.HomeAssistantStateChangedEvent
+import com.anadolstudio.homehub.feature.home.domain.model.registry.RegistryDeviceEvent
 import com.anadolstudio.homehub.feature.home.domain.model.services.HomeAssistantService
 import com.anadolstudio.homehub.feature.home.domain.model.services.NumberService
 import com.anadolstudio.homehub.feature.home.domain.model.states.AllowedState
@@ -22,6 +23,7 @@ import com.anadolstudio.utils.states.lce.lceFlow
 import com.anadolstudio.utils.states.lce.mapToLce
 import com.anadolstudio.utils.states.lce.onEachContent
 import java.math.BigDecimal
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.launchIn
 
@@ -104,19 +106,27 @@ internal open class BaseDeviceDetailViewModel<S : ExtraDeviceDetailScreenState>(
                 .onEachContent { connectionState ->
                     if (connectionState is WebSocketConnectionState.ConnectedAuthenticated) {
                         subscribeToStateChangedEvents()
+                        subscribeToDeviceChanges()
                     }
                 }
                 .launchIn(viewModelScope)
     }
 
     private fun subscribeToStateChangedEvents() {
-        lceFlow {
-            websocketRepository.subscribeToStateChangedEvents()
-                    .filterIsInstance(HomeAssistantStateChangedEvent.Update::class)
-                    .collect { stateChangedEvent ->
-                        applyStateChangedEvent(stateChangedEvent)
-                    }
-        }.launchIn(viewModelScope)
+        websocketRepository.subscribeToStateChangedEvents()
+                .filterIsInstance(HomeAssistantStateChangedEvent.Update::class)
+                .mapToLce()
+                .onEachContent { stateChangedEvent -> applyStateChangedEvent(stateChangedEvent) }
+                .launchIn(viewModelScope)
+    }
+
+    private fun subscribeToDeviceChanges() {
+        websocketRepository.subscribeToRegistryNewDeviceEvents()
+                .filterIsInstance<RegistryDeviceEvent.Remove>()
+                .filter { it.deviceId == state.deviceId }
+                .mapToLce()
+                .onEachContent { onBackClicked() }
+                .launchIn(viewModelScope)
     }
 
     private fun applyStateChangedEvent(event: HomeAssistantStateChangedEvent.Update) {

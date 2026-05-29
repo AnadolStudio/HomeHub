@@ -26,17 +26,13 @@ import com.anadolstudio.utils.states.lce.mapToLce
 import com.anadolstudio.utils.states.lce.onEachContent
 import com.anadolstudio.utils.states.lce.onEachProgressState
 import javax.inject.Inject
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.launch
 
 internal class HomeViewModel @Inject constructor(
         private val restRepository: HARestRepository,
         private val websocketRepository: HAWebsocketRepository,
 ) : StatefulViewModel<HomeScreenState>(HomeScreenState()), HomeController {
-
-    private var subscribeJob: Job? = null
 
     init {
         loadHomeName(loadingContext = LoadingContext.INIT_LOADING)
@@ -89,7 +85,7 @@ internal class HomeViewModel @Inject constructor(
                             deviceSet = deviceSet, availableAreas = areas
                     )
                     updateState { copy(deviceState = newDeviceState, selectedAreaId = selectedAreaId) }
-                    subscribeToStateChangedEvents()
+                    subscribeChangedEvents()
                 }
                 .launchIn(viewModelScope)
     }
@@ -109,13 +105,17 @@ internal class HomeViewModel @Inject constructor(
                 .launchIn(viewModelScope)
     }
 
-    private fun subscribeToStateChangedEvents() {
-        subscribeJob?.cancel()
-        subscribeJob = viewModelScope.launch {
-            websocketRepository.subscribeToStateChangedEvents()
-                    .filterIsInstance(HomeAssistantStateChangedEvent.Update::class)
-                    .collect { stateChangedEvent -> updateEntity(stateChangedEvent) }
-        }
+    private fun subscribeChangedEvents() {
+        websocketRepository.subscribeToStateChangedEvents()
+                .filterIsInstance(HomeAssistantStateChangedEvent.Update::class)
+                .mapToLce()
+                .onEachContent { stateChangedEvent -> updateEntity(stateChangedEvent) }
+                .launchIn(viewModelScope)
+
+        websocketRepository.subscribeToRegistryNewDeviceEvents()
+                .mapToLce()
+                .onEachContent { loadDevices(LoadingContext.REFRESH) }
+                .launchIn(viewModelScope)
     }
 
     private fun updateEntity(stateChangedEvent: HomeAssistantStateChangedEvent.Update) {
