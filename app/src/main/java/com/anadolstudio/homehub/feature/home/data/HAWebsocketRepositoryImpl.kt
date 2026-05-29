@@ -10,6 +10,7 @@ import com.anadolstudio.homehub.feature.home.data.model.DeviceResponse
 import com.anadolstudio.homehub.feature.home.data.model.EntityRegistryListResult
 import com.anadolstudio.homehub.feature.home.data.model.ExtractFromTargetResult
 import com.anadolstudio.homehub.feature.home.data.model.StateResponse
+import com.anadolstudio.homehub.feature.home.data.model.UpdateDeviceRegistryRequest
 import com.anadolstudio.homehub.feature.home.data.model.events.StateChangedEventResponse
 import com.anadolstudio.homehub.feature.home.data.model.registry.RegistryDeviceEventResponse
 import com.anadolstudio.homehub.feature.home.data.model.registry.toDomain
@@ -30,6 +31,7 @@ import com.anadolstudio.homehub.feature.home.domain.model.registry.RegistryDevic
 import com.anadolstudio.homehub.feature.home.domain.model.services.HomeAssistantService
 import com.anadolstudio.homehub.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.homehub.feature.home.domain.model.states.HomeAssistantState
+import com.anadolstudio.homehub.util.mapIfContains
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,6 +44,7 @@ import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
@@ -223,6 +226,30 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
 
     override suspend fun getDevice(deviceId: String, useCache: Boolean): HomeAssistantDevice? {
         return getDeviceList(useCache = useCache).firstOrNull { it.id == deviceId }
+    }
+
+    override suspend fun updateDevice(request: UpdateDeviceRegistryRequest): DeviceResponse {
+        val payload = json
+                .encodeToJsonElement(UpdateDeviceRegistryRequest.serializer(), request)
+                .jsonObject
+
+        // success == false (например, отсутствие admin-доступа) пробрасывается как
+        // WebSocketCoreException из sendCommandForResult.
+        val updatedDevice = webSocketCore.sendCommandForResult(
+                request = WsRequest(
+                        command = Command.DEVICE_REGISTRY_UPDATE,
+                        payload = payload,
+                ),
+                deserializer = DeviceResponse.serializer(),
+        )
+
+        // Обновляем локальный кэш, если устройство в нём есть (пустой кэш не наполняем одной записью).
+        deviceCache.value = deviceCache.value.mapIfContains(
+                condition = { device -> device.id == updatedDevice.id },
+                provideNewElement = { updatedDevice }
+        )
+
+        return updatedDevice
     }
 
     override fun subscribeToStateChangedEvents(): Flow<HomeAssistantStateChangedEvent> = webSocketCore

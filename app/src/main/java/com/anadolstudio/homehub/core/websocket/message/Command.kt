@@ -7,6 +7,7 @@ enum class Command(val value: String) {
     CALL_SERVICE("call_service"),
     ENTITY_REGISTRY_LIST_FOR_DISPLAY("config/entity_registry/list_for_display"),
     DEVICE_REGISTRY_LIST("config/device_registry/list"),
+    DEVICE_REGISTRY_UPDATE("config/device_registry/update"),
     AREA_REGISTRY_LIST("config/area_registry/list"),
     SUBSCRIBE_EVENTS("subscribe_events"),
 

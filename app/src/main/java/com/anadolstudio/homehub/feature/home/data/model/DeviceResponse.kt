@@ -12,5 +12,7 @@ data class DeviceResponse(
         @SerialName("model") val model: String? = null,
         @SerialName("model_id") val modelId: String? = null,
         @SerialName("manufacturer") val manufacturer: String? = null,
+        @SerialName("disabled_by") val disabledBy: String? = null,
+        @SerialName("labels") val labels: List<String> = emptyList(),
 )
 

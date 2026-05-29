@@ -379,14 +379,13 @@ private fun HomeContent(
                 item(deviceList) {
                     FlowRow(
                             modifier = Modifier
-                                    .animateItem()
                                     .fillMaxWidth()
                                     .padding(horizontal = Dimmens.mainMargin),
                             horizontalArrangement = Arrangement.spacedBy(Dimmens.smallMargin),
                             verticalArrangement = Arrangement.spacedBy(Dimmens.mediumMargin),
                     ) {
                         deviceList.forEach { device -> // TODO очень сложный рендеринг
-                            DeviceCard(device = device, controller = controller)
+                            DeviceCard(modifier = Modifier.animateItem(), device = device, controller = controller)
                         }
                     }
                 }

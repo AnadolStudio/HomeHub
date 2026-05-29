@@ -1,7 +1,9 @@
 package com.anadolstudio.homehub.feature.home.domain
 
 import com.anadolstudio.homehub.core.websocket.connection.WebSocketConnectionState
+import com.anadolstudio.homehub.feature.home.data.model.DeviceResponse
 import com.anadolstudio.homehub.feature.home.data.model.ExtractFromTargetResult
+import com.anadolstudio.homehub.feature.home.data.model.UpdateDeviceRegistryRequest
 import com.anadolstudio.homehub.feature.home.data.model.services.ServiceResponse
 import com.anadolstudio.homehub.feature.home.data.model.services.ServiceTarget
 import com.anadolstudio.homehub.feature.home.domain.model.Area
@@ -31,6 +33,8 @@ interface HAWebsocketRepository {
     suspend fun getAreaList(useCache: Boolean = false): List<Area>
     suspend fun getDeviceList(useCache: Boolean = false): List<HomeAssistantDevice>
     suspend fun getDevice(deviceId: String, useCache: Boolean): HomeAssistantDevice?
+    suspend fun updateDevice(request: UpdateDeviceRegistryRequest): DeviceResponse
+
     fun subscribeToStateChangedEvents(): Flow<HomeAssistantStateChangedEvent>
     fun subscribeToRegistryNewDeviceEvents(): Flow<RegistryDeviceEvent>
 }
