@@ -104,6 +104,9 @@
     <string name="device_detail_value_empty">—</string>
     <string name="device_detail_error_generic">Не удалось загрузить устройство</string>
     <string name="device_detail_retry">Повторить</string>
+    <string name="device_detail_action_edit">Изменить</string>
+    <string name="device_detail_edit_title">Изменить устройство</string>
+    <string name="device_detail_edit_save">Сохранить</string>
     <string name="device_detail_not_found">Устройство не найдено: %1$s</string>
     <string name="device_detail_history_empty">За последние 24 часа состояний не менялось</string>
     <string name="device_detail_history_error">Не удалось загрузить историю</string>

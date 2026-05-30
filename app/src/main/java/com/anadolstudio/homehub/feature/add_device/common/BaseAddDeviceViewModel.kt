@@ -97,7 +97,11 @@ internal abstract class BaseAddDeviceViewModel<S : ExtraAddDeviceState>(
     }
 
     protected open fun onNewDeviceFound(device: HomeAssistantDevice) = updateState {
-        copy(newDeviceSet = newDeviceSet + device)
+        val newDeviceSet = newDeviceSet.toMutableSet().apply {
+            removeIf { it.id == device.id }
+            add(device)
+        }
+        copy(newDeviceSet = newDeviceSet.toSet())
     }
 
     override fun onDeviceClicked(device: HomeAssistantDevice) = navigateToDeviceDetail(device)

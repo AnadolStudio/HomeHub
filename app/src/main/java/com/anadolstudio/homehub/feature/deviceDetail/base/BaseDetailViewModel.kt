@@ -228,5 +228,10 @@ internal open class BaseDeviceDetailViewModel<S : ExtraDeviceDetailScreenState>(
 
         updateState { copy(entityIdToTextFieldDataMap = newEntityIdToTextFieldDataMap) }
     }
+
+    protected fun updateExtraState(transform: S.() -> S) {
+        val extraState = transform.invoke(extraState)
+        updateState { copy(extraState = extraState) }
+    }
 }
 

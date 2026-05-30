@@ -4,9 +4,12 @@ import androidx.lifecycle.viewModelScope
 import com.anadolstudio.homehub.event.showError
 import com.anadolstudio.homehub.feature.common.domain.ResourceRepository
 import com.anadolstudio.homehub.feature.deviceDetail.base.BaseDeviceDetailViewModel
+import com.anadolstudio.homehub.feature.home.data.model.DeviceResponse
+import com.anadolstudio.homehub.feature.home.data.model.UpdateDeviceRegistryRequest
 import com.anadolstudio.homehub.feature.home.domain.HARestRepository
 import com.anadolstudio.homehub.feature.home.domain.HAWebsocketRepository
 import com.anadolstudio.homehub.feature.home.domain.model.AllowedDomain
+import com.anadolstudio.homehub.feature.home.domain.model.Area
 import com.anadolstudio.homehub.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.homehub.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.homehub.feature.home.domain.model.entity.mapAttributes
@@ -67,7 +70,8 @@ internal class DeviceDetailViewModel @AssistedInject constructor(
                 .onEachContent { relations ->
                     val extraState = state.extraState.copy(
                             sceneList = relations.scenes,
-                            automationList = relations.automations
+                            automationList = relations.automations,
+                            areaList = relations.areaList
                     )
 
                     updateState { copy(extraState = extraState) }
@@ -97,7 +101,9 @@ internal class DeviceDetailViewModel @AssistedInject constructor(
                 .sortedBy { it.name }
                 .toList()
 
-        return DeviceRelations(scenes = scenes, automations = automations)
+        val areaList = websocketRepository.getAreaList()
+
+        return DeviceRelations(scenes = scenes, automations = automations, areaList = areaList)
     }
 
     private fun loadHistory(device: HomeAssistantDevice, loadingContext: LoadingContext) {
@@ -162,7 +168,7 @@ internal class DeviceDetailViewModel @AssistedInject constructor(
 
                         else -> rawValue
                     }
-                    val timestamp =  historyState.lastChanged ?: return@mapNotNull null
+                    val timestamp = historyState.lastChanged ?: return@mapNotNull null
 
                     DeviceHistoryEntry(
                             entityId = historyState.entityId,
@@ -182,6 +188,72 @@ internal class DeviceDetailViewModel @AssistedInject constructor(
 
     override fun onHistoryRetryClicked() = loadHistory(state.device, loadingContext = LoadingContext.RETRY)
 
+    override fun onEditClicked() {
+        val device = state.device
+        val editState = extraState.editState.copy(
+                isVisible = true,
+                name = device.name,
+                selectedAreaId = device.area?.areaId,
+                isSaving = false,
+        )
+
+        updateExtraState { copy(editState = editState) }
+    }
+
+    override fun onEditNameChanged(value: String) {
+        updateExtraState { copy(editState = extraState.editState.copy(name = value)) }
+    }
+
+    override fun onEditAreaSelected(area: Area?) {
+        updateExtraState { copy(editState = extraState.editState.copy(selectedAreaId = area?.areaId)) }
+    }
+
+    override fun onEditDismissed() {
+        updateExtraState { copy(editState = extraState.editState.copy(isVisible = false)) }
+    }
+
+    override fun onEditSaveClicked() {
+        val editState = state.extraState.editState
+        val device = state.device
+
+        updateExtraState { copy(editState = extraState.editState.copy(isSaving = true)) }
+
+        lceFlow {
+            websocketRepository.updateDevice(
+                    UpdateDeviceRegistryRequest(
+                            deviceId = device.id,
+                            areaId = editState.selectedAreaId,
+                            disabledBy = device.disabledBy,
+                            nameByUser = editState.name.ifBlank { null },
+                            labels = device.labels,
+                    )
+            )
+        }
+                .onEachContent { updatedDevice -> applyUpdatedDevice(updatedDevice) }
+                .onEachError { error ->
+                    showError(error)
+                    updateExtraState { copy(editState = extraState.editState.copy(isSaving = false)) }
+                }
+                .launchIn(viewModelScope)
+    }
+
+    private fun applyUpdatedDevice(updatedDevice: DeviceResponse) {
+        val newArea = state.extraState.areaList.firstOrNull { it.areaId == updatedDevice.areaId }
+        val newName = updatedDevice.nameByUser ?: updatedDevice.name.orEmpty()
+
+        updateState {
+            copy(
+                    device = device.copy(
+                            name = newName,
+                            area = newArea,
+                            disabledBy = updatedDevice.disabledBy,
+                            labels = updatedDevice.labels,
+                    ),
+                    extraState = extraState.copy(editState = EditDeviceState()),
+            )
+        }
+    }
+
     private fun HomeAssistantEntity<AutomationAttributes>.referencesAnyOf(entityIds: Set<String>): Boolean {
         if (entityIds.isEmpty()) return false
         val attributesAsString = state.attributes.jsonAttributes.toString()
@@ -191,6 +263,7 @@ internal class DeviceDetailViewModel @AssistedInject constructor(
     private data class DeviceRelations(
             val scenes: List<HomeAssistantEntity<SceneAttributes>>,
             val automations: List<HomeAssistantEntity<AutomationAttributes>>,
+            val areaList: List<Area>,
     )
 
     @AssistedFactory

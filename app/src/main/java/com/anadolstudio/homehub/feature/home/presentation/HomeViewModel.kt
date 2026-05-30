@@ -73,7 +73,9 @@ internal class HomeViewModel @Inject constructor(
                         }
                 )
                 .mapContent { (deviceList, areas) ->
-                    val deviceSet = deviceList.toSet()
+                    val deviceSet = deviceList
+                            .filter { device -> device.isBindToArea }
+                            .toSet()
 
                     return@mapContent deviceSet to areas
                 }
@@ -81,9 +83,7 @@ internal class HomeViewModel @Inject constructor(
                     val selectedAreaId = state.selectedAreaId
                             ?.takeIf { id -> areas.any { it.areaId == id } }
 
-                    val newDeviceState = state.deviceState.copy(
-                            deviceSet = deviceSet, availableAreas = areas
-                    )
+                    val newDeviceState = state.deviceState.copy(deviceSet = deviceSet, availableAreas = areas)
                     updateState { copy(deviceState = newDeviceState, selectedAreaId = selectedAreaId) }
                     subscribeChangedEvents()
                 }

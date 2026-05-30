@@ -106,6 +106,9 @@
     <string name="device_detail_value_empty">—</string>
     <string name="device_detail_error_generic">Failed to load the device</string>
     <string name="device_detail_retry">Retry</string>
+    <string name="device_detail_action_edit">Edit</string>
+    <string name="device_detail_edit_title">Edit device</string>
+    <string name="device_detail_edit_save">Save</string>
     <string name="device_detail_not_found">Device not found: %1$s</string>
     <string name="device_detail_history_empty">No state changes in the last 24 hours</string>
     <string name="device_detail_history_error">Failed to load history</string>

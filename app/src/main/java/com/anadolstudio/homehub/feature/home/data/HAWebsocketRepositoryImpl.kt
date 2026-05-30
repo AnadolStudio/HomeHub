@@ -183,6 +183,7 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
                         deserializer = ListSerializer(AreaResponse.serializer())
                 )
                 .map { it.toDomain() }
+                .sortedBy { it.name }
                 .also { areaCache.value = it }
     }
 
@@ -216,6 +217,8 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
                             area = areaMap[deviceResponse.areaId],
                             modelId = deviceResponse.modelId,
                             manufacturer = deviceResponse.manufacturer,
+                            disabledBy = deviceResponse.disabledBy,
+                            labels = deviceResponse.labels,
                             entityMap = entityList
                                     .sortedBy { it.domain + it.name }
                                     .groupBy { it.entityCategory }

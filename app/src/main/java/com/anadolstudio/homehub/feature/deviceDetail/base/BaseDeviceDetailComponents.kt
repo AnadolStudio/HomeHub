@@ -31,10 +31,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.WifiOff
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Switch
@@ -53,6 +55,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -95,6 +98,7 @@ import com.anadolstudio.homehub.feature.home.domain.model.states.NumberAttribute
 import com.anadolstudio.homehub.feature.home.domain.model.states.SelectAttribute
 import com.anadolstudio.homehub.feature.home.domain.model.states.SensorAttributes
 import com.anadolstudio.homehub.feature.home.domain.model.states.SwitchAttribute
+import com.anadolstudio.homehub.feature.home.presentation.PreviewUtils
 import com.anadolstudio.homehub.feature.home.presentation.components.DeviceImageView
 import com.anadolstudio.homehub.feature.main.NavigationController
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
@@ -135,6 +139,7 @@ internal fun DeviceContent(
         state: BaseDeviceDetailState<*>,
         device: HomeAssistantDevice,
         controller: BaseDeviceDetailController,
+        onEditClicked: (() -> Unit)? = null,
         selectedEntitySet: Set<String> = device.allEntityList.map { it.entityId }.toSet(),
         belowMainInfo: @Composable ColumnScope.() -> Unit = {},
 ) {
@@ -146,7 +151,7 @@ internal fun DeviceContent(
     ) {
         Spacer(modifier = Modifier.statusBarsPadding())
 
-        GeneralInfoSection(device = device)
+        GeneralInfoSection(device = device, onEditClicked = onEditClicked)
 
         val selectedEntity = remember(selectedEntitySet) { selectedEntitySet }
 
@@ -185,9 +190,13 @@ internal fun DeviceContent(
 }
 
 @Composable
-private fun GeneralInfoSection(device: HomeAssistantDevice) {
+private fun GeneralInfoSection(device: HomeAssistantDevice, onEditClicked: (() -> Unit)? = null) {
     val emptyValue = stringResource(R.string.device_detail_value_empty)
-    SectionContainer(title = stringResource(R.string.device_detail_section_general_info)) {
+    SectionContainer(
+            title = stringResource(R.string.device_detail_section_general_info),
+            actionImage = Icons.Outlined.Edit,
+            onActionClicked = onEditClicked
+    ) {
         Spacer(modifier = Modifier.height(Dimmens.mainMargin))
 
         Row(
@@ -687,7 +696,9 @@ private fun RowScope.BaseDescription(
 @Composable
 internal fun SectionContainer(
         title: String,
-        content: @Composable () -> Unit,
+        actionImage: ImageVector? = null,
+        onActionClicked: (() -> Unit)? = null,
+        content: @Composable () -> Unit = {},
 ) {
     Column(
             modifier = Modifier
@@ -697,12 +708,29 @@ internal fun SectionContainer(
                     .padding(Dimmens.mediumMargin),
             verticalArrangement = Arrangement.spacedBy(Dimmens.smallMargin),
     ) {
-        Text(
-                text = title,
-                style = AppTheme.typography.textBook22,
-                fontWeight = FontWeight.Bold,
-                color = AppTheme.colors.colorAccent,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                    modifier = Modifier.weight(1.0F),
+                    text = title,
+                    style = AppTheme.typography.textBook22.copy(),
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.colorAccent,
+            )
+
+            if (onActionClicked != null && actionImage != null) {
+                IconButton(
+                        onClick = onActionClicked,
+                        modifier = Modifier,
+                ) {
+                    Icon(
+                            imageVector = actionImage,
+                            contentDescription = stringResource(R.string.device_detail_action_edit),
+                            tint = AppTheme.colors.colorAccent,
+                    )
+                }
+            }
+        }
+
         content.invoke()
     }
 }
@@ -736,49 +764,45 @@ private fun previewNumberEntity(
         ),
 )
 
-@Preview(showBackground = true, widthDp = 320)
-@Composable
-private fun NumberAttributeControlPreview(
-        @PreviewParameter(ThemePreviewParameter::class) useDarkMode: Boolean,
-) {
-    AppTheme(useDarkMode) {
-        val entity = previewNumberEntity(value = "42")
-        Column(
-                modifier = Modifier
-                        .background(AppTheme.colors.colorSecondary)
-                        .fillMaxWidth()
-                        .padding(Dimmens.mediumMargin),
-                verticalArrangement = Arrangement.spacedBy(Dimmens.smallMargin),
-        ) {
-            NumericEntityValueRow(
-                    entity = entity,
-                    textFieldData = TextFieldData(""),
-                    onNumericEntityChanged = { _, _ -> },
-                    onNumericEntityFocusLost = { },
-            )
-        }
-    }
+
+private val previewBaseDeviceDetailController = object : BaseDeviceDetailController {
+    override fun onBackClicked() = Unit
+    override fun onSheetExpanded() = Unit
+    override fun onSheetHidden() = Unit
+    override fun onEntityChanged(
+            entity: HomeAssistantEntity<HomeAssistantAttribute>,
+            service: HomeAssistantService<*>,
+    ) = Unit
+
+    override fun onNumericEntityChanged(value: String, entity: HomeAssistantEntity<NumberAttribute>) = Unit
+    override fun onNumericEntityFocusLost(entity: HomeAssistantEntity<NumberAttribute>) = Unit
 }
 
-@Preview(showBackground = true, widthDp = 320)
+@Preview(showBackground = true, widthDp = 360, heightDp = 760)
 @Composable
-private fun NumberAttributeControlOutOfRangePreview(
+private fun DeviceContentPreview(
         @PreviewParameter(ThemePreviewParameter::class) useDarkMode: Boolean,
 ) {
     AppTheme(useDarkMode) {
-        // 150 при max=100 — состояние ошибки (красная подсветка поля)
-        val entity = previewNumberEntity(value = "150")
-        Column(
+        val device = PreviewUtils.previewDevices.first()
+        val numberFields = device.allEntityList
+                .filter { it.state.attributes is NumberAttribute }
+                .associate { entity -> entity.entityId to TextFieldData(value = entity.state.allowedState.value) }
+        val state = BaseDeviceDetailState(
+                device = device,
+                entityIdToTextFieldDataMap = numberFields,
+                extraState = object : ExtraDeviceDetailScreenState {},
+        )
+        Box(
                 modifier = Modifier
                         .background(AppTheme.colors.colorSecondary)
-                        .padding(Dimmens.mediumMargin),
-                verticalArrangement = Arrangement.spacedBy(Dimmens.smallMargin),
+                        .padding(horizontal = Dimmens.mediumMargin),
         ) {
-            NumericEntityValueRow(
-                    entity = entity,
-                    textFieldData = TextFieldData(entity.state.allowedState.value, true),
-                    onNumericEntityChanged = { _, _ -> },
-                    onNumericEntityFocusLost = { },
+            DeviceContent(
+                    state = state,
+                    device = device,
+                    controller = previewBaseDeviceDetailController,
+                    onEditClicked = {},
             )
         }
     }

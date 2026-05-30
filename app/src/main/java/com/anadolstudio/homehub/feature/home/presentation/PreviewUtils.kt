@@ -7,6 +7,7 @@ import com.anadolstudio.homehub.feature.home.domain.model.entity.HomeAssistantEn
 import com.anadolstudio.homehub.feature.home.domain.model.states.AllowedState
 import com.anadolstudio.homehub.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.homehub.feature.home.domain.model.states.HomeAssistantState
+import com.anadolstudio.homehub.feature.home.domain.model.states.NumberAttribute
 import com.anadolstudio.homehub.feature.home.domain.model.states.SensorAttributes
 import com.anadolstudio.homehub.feature.home.domain.model.states.SwitchAttribute
 import java.time.OffsetDateTime
@@ -53,15 +54,38 @@ internal object PreviewUtils {
             lastUpdated = null,
     )
 
+    fun previewNumberState(
+            entityId: String,
+            value: String = "42",
+            min: Double? = 0.0,
+            max: Double? = 100.0,
+            unit: String = "%",
+    ): HomeAssistantState<HomeAssistantAttribute> = HomeAssistantState(
+            entityId = entityId,
+            attributes = NumberAttribute(
+                    jsonAttributes = JsonObject(emptyMap()),
+                    friendlyName = entityId,
+                    min = min,
+                    max = max,
+                    step = 1.0,
+                    mode = "slider",
+                    unitOfMeasurement = unit,
+            ),
+            lastChanged = OffsetDateTime.MIN,
+            allowedState = AllowedState.DigitState(value),
+            lastUpdated = null,
+    )
+
     fun previewEntity(
             entityId: String,
             state: HomeAssistantState<HomeAssistantAttribute>,
+            name: String = entityId,
     ): HomeAssistantEntity<HomeAssistantAttribute> = HomeAssistantEntity(
             entityId = entityId,
             deviceId = "someId",
             services = setOf("turn_on", "turn_off", "toggle"),
             entityCategory = EntityCategory.TARGET,
-            name = entityId,
+            name = name,
             platform = "mqtt",
             state = state,
     )
@@ -83,6 +107,11 @@ internal object PreviewUtils {
                                     previewEntity(
                                             "switch.name_2",
                                             previewSwitchState("switch.name_2")
+                                    ),
+                                    previewEntity(
+                                            entityId = "number.brightness",
+                                            state = previewNumberState("number.brightness", value = "42"),
+                                            name = "Яркость",
                                     ),
                             ),
                     ),

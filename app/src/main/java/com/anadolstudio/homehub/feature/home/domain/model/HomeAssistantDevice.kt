@@ -21,6 +21,8 @@ data class HomeAssistantDevice(
         val manufacturer: String?,
         val area: Area?,
         val entityMap: Map<EntityCategory, List<HomeAssistantEntity<HomeAssistantAttribute>>>,
+        val disabledBy: String? = null,
+        val labels: List<String> = emptyList(),
 ) : Parcelable {
 
     val isBindToArea: Boolean get() = area != null

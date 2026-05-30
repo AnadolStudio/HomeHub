@@ -66,7 +66,7 @@ internal fun DeviceDetailScreen(
         snackbarHostState: SnackbarHostState,
         device: HomeAssistantDevice,
 ) {
-   if (LocalLifecycleOwner.current.lifecycle.currentState == Lifecycle.State.DESTROYED) return
+    if (LocalLifecycleOwner.current.lifecycle.currentState == Lifecycle.State.DESTROYED) return
 
     val factory = rememberViewModelFactory<DeviceDetailViewModel.Factory>()
     val viewModel = assistedViewModel { factory.create(device) }
@@ -102,6 +102,7 @@ private fun DeviceDetailLayout(
                     state = state,
                     device = state.device,
                     controller = controller,
+                    onEditClicked = { controller.onEditClicked() },
                     belowMainInfo = {
                         if (state.extraState.automationList.isNotEmpty()) {
                             AutomationsSection(automations = state.extraState.automationList)
@@ -116,6 +117,16 @@ private fun DeviceDetailLayout(
                     }
             )
         }
+
+        val editState = state.extraState.editState
+        EditDeviceSheet(
+                isVisible = editState.isVisible,
+                selectedAreaId = editState.selectedAreaId,
+                name = editState.name,
+                areaList = state.extraState.areaList,
+                isSaving = editState.isSaving,
+                controller = controller
+        )
     }
 }
 

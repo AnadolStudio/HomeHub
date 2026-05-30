@@ -299,7 +299,7 @@ private fun HomeError(progressState: ProgressState.Error) {
             contentAlignment = Alignment.Center
     ) {
         ErrorStub(
-                errorTitle = "Заголовок ошибки",
+                errorTitle = "Заголовок ошибки", //  TODO
                 errorMessage = progressState.error?.message.orEmpty(),
                 buttonTitle = "Название кнопки",
                 onRefreshClick = {},
@@ -384,7 +384,7 @@ private fun HomeContent(
                             horizontalArrangement = Arrangement.spacedBy(Dimmens.smallMargin),
                             verticalArrangement = Arrangement.spacedBy(Dimmens.mediumMargin),
                     ) {
-                        deviceList.forEach { device -> // TODO очень сложный рендеринг
+                        deviceList.forEach { device -> // TODO очень тяжелый рендеринг
                             DeviceCard(modifier = Modifier.animateItem(), device = device, controller = controller)
                         }
                     }
