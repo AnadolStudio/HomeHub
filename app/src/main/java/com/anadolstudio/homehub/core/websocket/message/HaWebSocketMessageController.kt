@@ -24,6 +24,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.DeserializationStrategy
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import okhttp3.WebSocket
 
 class HaWebSocketMessageController(
@@ -150,8 +152,17 @@ class HaWebSocketMessageController(
 
             awaitClose {
                 collectJob.cancel()
-                // TODO: Здесь можно отправить unsubscribe-команду, если протокол это требует.
-                // Например: scope.launch { sendCommand(WsRequest(type = "unsubscribe_events", id = subscriptionId)) }
+                scope.launch {
+                    runCatching {
+                        sendCommand(
+                                webSocket = webSocket,
+                                request = WsRequest(
+                                        command = Command.UNSUBSCRIBE_EVENTS,
+                                        payload = buildJsonObject { put("subscription", subscriptionId) },
+                                ),
+                        )
+                    }.onFailure { dependencies.logger.warning(TAG, "Unsubscribe failed: ${it.message}") }
+                }
             }
         }
                 .shareIn(scope, WhileSubscribed(5_000))
@@ -179,14 +190,18 @@ class HaWebSocketMessageController(
         pingJob = null
     }
 
+    fun resetSubscriptions() {
+        stopPingLoop()
+        subscriptionsFlowMap.clear()
+    }
+
     private suspend fun sendPing(webSocket: WebSocket) = sendCommand(
             webSocket = webSocket,
             request = WsRequest(type = TYPE_PING)
     )
 
     fun failAllPending(exception: WebSocketCoreException) {
-        stopPingLoop()
-        subscriptionsFlowMap.clear()
+        resetSubscriptions()
 
         val entries = pendingRequests.entries.toList()
         pendingRequests.clear()

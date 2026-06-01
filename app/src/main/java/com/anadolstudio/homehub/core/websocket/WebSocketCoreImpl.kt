@@ -107,6 +107,7 @@ class WebSocketCoreImpl @Inject constructor(
 
     private fun releaseScope() {
         scope.cancel()
+        messageController.resetSubscriptions()
         scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     }
 

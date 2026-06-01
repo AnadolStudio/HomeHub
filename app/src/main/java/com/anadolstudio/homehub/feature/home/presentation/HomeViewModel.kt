@@ -1,6 +1,7 @@
 package com.anadolstudio.homehub.feature.home.presentation
 
 import androidx.lifecycle.viewModelScope
+import com.anadolstudio.homehub.base.viewmodel.RestartableJob
 import com.anadolstudio.homehub.base.viewmodel.StatefulViewModel
 import com.anadolstudio.homehub.core.websocket.connection.WebSocketConnectionState
 import com.anadolstudio.homehub.event.showMessage
@@ -33,6 +34,9 @@ internal class HomeViewModel @Inject constructor(
         private val restRepository: HARestRepository,
         private val websocketRepository: HAWebsocketRepository,
 ) : StatefulViewModel<HomeScreenState>(HomeScreenState()), HomeController {
+
+    private var stateChangedJob by RestartableJob()
+    private var deviceChangesJob by RestartableJob()
 
     init {
         loadHomeName(loadingContext = LoadingContext.INIT_LOADING)
@@ -106,13 +110,13 @@ internal class HomeViewModel @Inject constructor(
     }
 
     private fun subscribeChangedEvents() {
-        websocketRepository.subscribeToStateChangedEvents()
+        stateChangedJob = websocketRepository.subscribeToStateChangedEvents()
                 .filterIsInstance(HomeAssistantStateChangedEvent.Update::class)
                 .mapToLce()
                 .onEachContent { stateChangedEvent -> updateEntity(stateChangedEvent) }
                 .launchIn(viewModelScope)
 
-        websocketRepository.subscribeToRegistryNewDeviceEvents()
+        deviceChangesJob = websocketRepository.subscribeToRegistryNewDeviceEvents()
                 .mapToLce()
                 .onEachContent { loadDevices(LoadingContext.REFRESH) }
                 .launchIn(viewModelScope)

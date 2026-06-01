@@ -316,7 +316,6 @@ private fun HomeContent(
 ) {
     val deviceMap = state.filteredAreaToDeviceMap
 
-    val entries = remember(deviceMap) { deviceMap.entries }
     val listState = rememberLazyListState()
     val isRefreshing = state.progressState == ProgressState.Refresh
 
@@ -365,7 +364,7 @@ private fun HomeContent(
                 }
             }
 
-            entries.forEach { (areaName, deviceList) ->
+            deviceMap.forEach { (areaName, deviceList) ->
                 item(areaName) {
                     GroupHeader(
                             title = areaName,

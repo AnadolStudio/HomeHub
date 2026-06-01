@@ -10,6 +10,7 @@ enum class Command(val value: String) {
     DEVICE_REGISTRY_UPDATE("config/device_registry/update"),
     AREA_REGISTRY_LIST("config/area_registry/list"),
     SUBSCRIBE_EVENTS("subscribe_events"),
+    UNSUBSCRIBE_EVENTS("unsubscribe_events"),
 
     MATTER_COMMISSION("matter/commission"),
     MATTER_COMMISSION_ON_NETWORK("matter/commission_on_network"),

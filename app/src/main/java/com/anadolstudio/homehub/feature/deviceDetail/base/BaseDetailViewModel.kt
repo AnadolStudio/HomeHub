@@ -2,6 +2,7 @@ package com.anadolstudio.homehub.feature.deviceDetail.base
 
 import androidx.lifecycle.viewModelScope
 import com.anadolstudio.homehub.R
+import com.anadolstudio.homehub.base.viewmodel.RestartableJob
 import com.anadolstudio.homehub.base.viewmodel.StatefulViewModel
 import com.anadolstudio.homehub.core.websocket.connection.WebSocketConnectionState
 import com.anadolstudio.homehub.event.navigateUp
@@ -84,6 +85,9 @@ internal open class BaseDeviceDetailViewModel<S : ExtraDeviceDetailScreenState>(
 
     private var hasStartedInitialLoad = false
 
+    private var stateChangedJob by RestartableJob()
+    private var deviceChangesJob by RestartableJob()
+
     override fun onSheetExpanded() {
         if (hasStartedInitialLoad) return
         hasStartedInitialLoad = true
@@ -113,7 +117,7 @@ internal open class BaseDeviceDetailViewModel<S : ExtraDeviceDetailScreenState>(
     }
 
     private fun subscribeToStateChangedEvents() {
-        websocketRepository.subscribeToStateChangedEvents()
+        stateChangedJob = websocketRepository.subscribeToStateChangedEvents()
                 .filterIsInstance(HomeAssistantStateChangedEvent.Update::class)
                 .mapToLce()
                 .onEachContent { stateChangedEvent -> applyStateChangedEvent(stateChangedEvent) }
@@ -121,7 +125,7 @@ internal open class BaseDeviceDetailViewModel<S : ExtraDeviceDetailScreenState>(
     }
 
     private fun subscribeToDeviceChanges() {
-        websocketRepository.subscribeToRegistryNewDeviceEvents()
+        deviceChangesJob = websocketRepository.subscribeToRegistryNewDeviceEvents()
                 .filterIsInstance<RegistryDeviceEvent.Remove>()
                 .filter { it.deviceId == state.deviceId }
                 .mapToLce()

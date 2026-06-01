@@ -89,8 +89,8 @@ internal class AddMatterViewModel @Inject constructor(
     }
 
     override fun onGoogleCommissioningUiFinished(canceledByUser: Boolean) {
-        if (canceledByUser && extraState.step != Step.Done) {
-            updateExtraState {
+        when {
+            canceledByUser && extraState.step != Step.Done -> updateExtraState {
                 copy(
                         step = Step.Failed,
                         result = AddMatterScreenState.Result(
@@ -98,10 +98,10 @@ internal class AddMatterViewModel @Inject constructor(
                         ),
                 )
             }
-            return
-        }
-        if (extraState.step == Step.GoogleUiActive) {
-            updateExtraState { copy(step = Step.FinalizingInHa) }
+
+            extraState.step == Step.GoogleUiActive -> updateExtraState {
+                copy(step = Step.FinalizingInHa)
+            }
         }
     }
 
@@ -111,7 +111,6 @@ internal class AddMatterViewModel @Inject constructor(
 
     override fun onFinishClicked() = navigateUp()
 
-    // Намеренно сохраняем newDeviceList — это устройства, которые юзер только что добавил.
     private fun reset() {
         commissioningJob = null
         matterRepository.resetOutcomes()

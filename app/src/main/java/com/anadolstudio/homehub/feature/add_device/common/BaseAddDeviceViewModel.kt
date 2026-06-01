@@ -1,6 +1,7 @@
 package com.anadolstudio.homehub.feature.add_device.common
 
 import androidx.lifecycle.viewModelScope
+import com.anadolstudio.homehub.base.viewmodel.RestartableJob
 import com.anadolstudio.homehub.base.viewmodel.StatefulViewModel
 import com.anadolstudio.homehub.core.websocket.connection.WebSocketConnectionState
 import com.anadolstudio.homehub.event.showMessage
@@ -28,6 +29,9 @@ internal abstract class BaseAddDeviceViewModel<S : ExtraAddDeviceState>(
 
     protected val extraState: S get() = state.extraState
 
+    private var stateChangedJob by RestartableJob()
+    private var deviceChangesJob by RestartableJob()
+
     init {
         observeConnectionState()
     }
@@ -46,7 +50,7 @@ internal abstract class BaseAddDeviceViewModel<S : ExtraAddDeviceState>(
     }
 
     private fun subscribeToDeviceChanges() {
-        websocketRepository.subscribeToRegistryNewDeviceEvents()
+        deviceChangesJob = websocketRepository.subscribeToRegistryNewDeviceEvents()
                 .mapToLce()
                 .onEachContent { event ->
                     when (event) {
@@ -63,7 +67,7 @@ internal abstract class BaseAddDeviceViewModel<S : ExtraAddDeviceState>(
     }
 
     private fun subscribeToStateChangedEvents() {
-        websocketRepository.subscribeToStateChangedEvents()
+        stateChangedJob = websocketRepository.subscribeToStateChangedEvents()
                 .filterIsInstance(HomeAssistantStateChangedEvent.Update::class)
                 .mapToLce()
                 .onEachContent(this::onStateChanged)

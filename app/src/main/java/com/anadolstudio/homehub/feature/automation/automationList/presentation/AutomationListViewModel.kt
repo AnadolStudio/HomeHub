@@ -2,6 +2,7 @@ package com.anadolstudio.homehub.feature.automation.automationList.presentation
 
 import androidx.lifecycle.viewModelScope
 import com.anadolstudio.homehub.R
+import com.anadolstudio.homehub.base.viewmodel.RestartableJob
 import com.anadolstudio.homehub.base.viewmodel.StatefulViewModel
 import com.anadolstudio.homehub.event.showError
 import com.anadolstudio.homehub.event.showMessage
@@ -26,6 +27,7 @@ import com.anadolstudio.homehub.feature.main.MainGraph.navigateToSceneEdit
 import com.anadolstudio.homehub.util.mapIfContains
 import com.anadolstudio.utils.states.LoadingContext
 import com.anadolstudio.utils.states.lce.lceFlow
+import com.anadolstudio.utils.states.lce.mapToLce
 import com.anadolstudio.utils.states.lce.onEachContent
 import com.anadolstudio.utils.states.lce.onEachError
 import com.anadolstudio.utils.states.lce.onEachProgressState
@@ -39,6 +41,8 @@ internal class AutomationListViewModel @Inject constructor(
         private val json: Json,
 ) : StatefulViewModel<AutomationListScreenState>(AutomationListScreenState()),
     AutomationListController {
+
+    private var stateChangedJob by RestartableJob()
 
     init {
         loadAutomationStates(LoadingContext.INIT_LOADING)
@@ -75,14 +79,15 @@ internal class AutomationListViewModel @Inject constructor(
     }
 
     private fun subscribeToStateChangedEvents() {
-        lceFlow {
-            websocketRepository.subscribeToStateChangedEvents().collect { event ->
-                when (event) {
-                    is HomeAssistantStateChangedEvent.Remove -> removeEntity(event.entityId)
-                    is HomeAssistantStateChangedEvent.Update -> updateEntity(event)
+        stateChangedJob = websocketRepository.subscribeToStateChangedEvents()
+                .mapToLce()
+                .onEachContent { event ->
+                    when (event) {
+                        is HomeAssistantStateChangedEvent.Remove -> removeEntity(event.entityId)
+                        is HomeAssistantStateChangedEvent.Update -> updateEntity(event)
+                    }
                 }
-            }
-        }.launchIn(viewModelScope)
+                .launchIn(viewModelScope)
     }
 
     private fun removeEntity(entityId: String) {
