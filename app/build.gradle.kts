@@ -75,7 +75,11 @@ android {
 
     kotlinOptions {
         jvmTarget = javaVersion.toString()
-        freeCompilerArgs = freeCompilerArgs + listOf("-opt-in=androidx.compose.foundation.ExperimentalFoundationApi")
+        freeCompilerArgs = freeCompilerArgs + listOf(
+                "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
+                "-P",
+                "plugin:androidx.compose.compiler.plugins.kotlin:strongSkipping=true",
+        )
     }
 
     composeOptions {

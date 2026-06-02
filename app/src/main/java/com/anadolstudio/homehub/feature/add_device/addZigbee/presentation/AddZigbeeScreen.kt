@@ -90,7 +90,6 @@ private fun AddZigbeeContent(
 
         DeviceCard(
                 title = zigbeeBridgeDevice.name,
-                description = null,
                 image = zigbeeBridgeDevice.image,
                 entityList = zigbeeBridgeDevice.targetEntityList,
                 onInnerEntityClicked = { controller.onEntityClicked(it, SimpleToggleableService.Toggle) },
@@ -116,7 +115,6 @@ private fun AddZigbeeContent(
                 newDeviceSet.forEach { device ->
                     DeviceCard(
                             title = device.name,
-                            description = device.model,
                             image = device.image,
                             entityList = device.targetEntityList,
                             onInnerEntityClicked = { controller.onEntityClicked(it, SimpleToggleableService.Toggle) },

@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
@@ -76,17 +77,16 @@ internal fun DeviceImageView(
                     painter = painter,
                     contentDescription = null,
                     modifier = modifier,
+                    contentScale = ContentScale.Fit,
                     colorFilter = colorFilter,
             )
         }
 
-        else -> {
-            Icon(
-                    imageVector = defaultIcon,
-                    contentDescription = null,
-                    modifier = modifier,
-                    tint = AppTheme.colors.colorAccent,
-            )
-        }
+        else -> Icon(
+                imageVector = defaultIcon,
+                contentDescription = null,
+                modifier = modifier,
+                tint = AppTheme.colors.colorAccent,
+        )
     }
 }

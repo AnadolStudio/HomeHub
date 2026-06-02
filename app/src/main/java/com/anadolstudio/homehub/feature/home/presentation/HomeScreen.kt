@@ -1,14 +1,13 @@
 package com.anadolstudio.homehub.feature.home.presentation
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,8 +18,12 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -33,7 +36,6 @@ import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -47,10 +49,12 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.IntOffset
@@ -77,16 +81,28 @@ import com.anadolstudio.homehub.feature.home.domain.model.services.HomeAssistant
 import com.anadolstudio.homehub.feature.home.domain.model.services.SimpleToggleableService
 import com.anadolstudio.homehub.feature.home.domain.model.states.HomeAssistantAttribute
 import com.anadolstudio.homehub.feature.home.presentation.components.AreaChipRow
+import com.anadolstudio.homehub.feature.home.presentation.components.DEVICE_IMAGE_MAX_SIZE
 import com.anadolstudio.homehub.feature.home.presentation.components.DeviceCard
+import com.anadolstudio.homehub.feature.home.presentation.components.deviceCardRequiredWidth
 import com.anadolstudio.homehub.feature.main.NavigationController
 import com.anadolstudio.utils.states.ProgressState
+import kotlin.math.ceil
+import kotlin.math.roundToInt
 
-private val DEVICE_IMAGE_SIZE = 60.dp
 private val HEADER_MAX_HEIGHT = 320.dp
 private val BADGE_HEIGHT = 56.dp
 private val BADGE_BOTTOM_INSET = 12.dp
 private val CONTENT_CORNER_RADIUS = 32.dp
 private val CONTENT_HEADER_OVERLAP = CONTENT_CORNER_RADIUS
+private val DEVICE_CELL_MIN_WIDTH = 100.dp
+private val DEVICE_CELL_MAX_WIDTH = 300.dp
+
+private const val KEY_AREA_CHIPS = "area_chips"
+private const val KEY_PREFIX_HEADER = "header_"
+private const val KEY_PREFIX_DEVICES = "devices_"
+private const val CONTENT_TYPE_AREA_CHIPS = "area_chips"
+private const val CONTENT_TYPE_GROUP_HEADER = "group_header"
+private const val CONTENT_TYPE_DEVICE_ROW = "device_row"
 
 @Composable
 internal fun HomeScreen(
@@ -142,15 +158,7 @@ private fun HomeLayout(
         }
     }
 
-    // Текущая высота "контентного отступа" — высота видимой части шапки.
-    // derivedStateOf, чтобы перерасчёт не дёргал композицию при идентичных значениях.
-    val visibleHeaderHeightDp by remember(density) {
-        derivedStateOf {
-            with(density) {
-                (maxHeaderPx + headerOffsetPx.floatValue).coerceAtLeast(0f).toDp()
-            }
-        }
-    }
+    val overlapPx = with(density) { CONTENT_HEADER_OVERLAP.roundToPx() }
 
     Box(
             modifier = Modifier
@@ -199,7 +207,18 @@ private fun HomeLayout(
         Column(
                 modifier = Modifier
                         .fillMaxSize()
-                        .padding(top = (visibleHeaderHeightDp - CONTENT_HEADER_OVERLAP).coerceAtLeast(0.dp))
+                        .layout { measurable, constraints ->
+                            val topPx = (maxHeaderPx + headerOffsetPx.floatValue - overlapPx)
+                                    .coerceAtLeast(0f)
+                                    .roundToInt()
+                            val height = (constraints.maxHeight - topPx).coerceAtLeast(0)
+                            val placeable = measurable.measure(
+                                    constraints.copy(minHeight = height, maxHeight = height),
+                            )
+                            layout(constraints.maxWidth, constraints.maxHeight) {
+                                placeable.place(0, topPx)
+                            }
+                        }
                         .clip(RoundedCornerShape(topStart = CONTENT_CORNER_RADIUS, topEnd = CONTENT_CORNER_RADIUS))
                         .background(color = AppTheme.colors.colorSecondary),
         ) {
@@ -308,7 +327,7 @@ private fun HomeError(progressState: ProgressState.Error) {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 private fun HomeContent(
         state: HomeScreenState,
@@ -316,11 +335,17 @@ private fun HomeContent(
 ) {
     val deviceMap = state.filteredAreaToDeviceMap
 
-    val listState = rememberLazyListState()
+    val listState = rememberLazyGridState()
     val isRefreshing = state.progressState == ProgressState.Refresh
 
     val context = LocalContext.current
-    val imageSizePx = with(LocalDensity.current) { DEVICE_IMAGE_SIZE.roundToPx() }
+    val density = LocalDensity.current
+    val imageSizePx = with(density) { DEVICE_IMAGE_MAX_SIZE.roundToPx() }
+    val textMeasurer = rememberTextMeasurer()
+    val entityTextStyle = AppTheme.typography.captionMedium12
+    val availableAreas = remember(state.deviceState.availableAreas.isNotEmpty()) {
+        state.deviceState.availableAreas.isNotEmpty()
+    }
 
     LaunchedEffect(deviceMap) {
         val urls = deviceMap.values
@@ -343,15 +368,44 @@ private fun HomeContent(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val cellSpacing = Dimmens.smallMargin
+        val gridInnerWidth = maxWidth - Dimmens.mainMargin * 2
+
+        val deviceSpans = remember(deviceMap, gridInnerWidth) {
+            val columns = ((gridInnerWidth + cellSpacing) / (DEVICE_CELL_MIN_WIDTH + cellSpacing))
+                    .toInt()
+                    .coerceAtLeast(1)
+            val cellWidth = (gridInnerWidth - cellSpacing * (columns - 1)) / columns
+            deviceMap.values.flatten().associate { device ->
+                val required = deviceCardRequiredWidth(
+                        entityList = device.targetEntityList,
+                        textMeasurer = textMeasurer,
+                        textStyle = entityTextStyle,
+                        density = density,
+                )
+                device.id to ceil(required.value / cellWidth.value).toInt().coerceIn(1, columns)
+            }
+        }
+
+        LazyVerticalGrid(
                 state = listState,
+                columns = GridCells.Adaptive(minSize = DEVICE_CELL_MIN_WIDTH),
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = Dimmens.largeMargin),
+                contentPadding = PaddingValues(
+                        start = Dimmens.mainMargin,
+                        end = Dimmens.mainMargin,
+                        bottom = Dimmens.largeMargin,
+                ),
+                horizontalArrangement = Arrangement.spacedBy(cellSpacing),
                 verticalArrangement = Arrangement.spacedBy(Dimmens.mediumMargin),
         ) {
-            item(key = state.deviceState.availableAreas) {
-                if (state.deviceState.availableAreas.isNotEmpty()) {
+            if (availableAreas) {
+                item(
+                        key = KEY_AREA_CHIPS,
+                        span = { GridItemSpan(maxLineSpan) },
+                        contentType = CONTENT_TYPE_AREA_CHIPS,
+                ) {
                     AreaChipRow(
                             modifier = Modifier
                                     .animateItem()
@@ -359,34 +413,44 @@ private fun HomeContent(
                             selectedAreaId = state.selectedAreaId,
                             areas = state.deviceState.availableAreas,
                             onAreaSelected = controller::onAreaSelected,
-                            contentPadding = PaddingValues(horizontal = Dimmens.mainMargin),
+                            contentPadding = PaddingValues(horizontal = 0.dp),
                     )
                 }
             }
 
             deviceMap.forEach { (areaName, deviceList) ->
-                item(areaName) {
-                    GroupHeader(
-                            title = areaName,
-                            onClick = { controller.onAreaClicked() },
-                            modifier = Modifier.padding(horizontal = Dimmens.mainMargin),
-                    )
-
-                    Spacer(modifier = Modifier.height(Dimmens.smallMargin))
+                item(
+                        key = "$KEY_PREFIX_HEADER$areaName",
+                        span = { GridItemSpan(maxLineSpan) },
+                        contentType = CONTENT_TYPE_GROUP_HEADER,
+                ) {
+                    Column {
+                        GroupHeader(
+                                title = areaName,
+                                onClick = { controller.onAreaClicked() },
+                        )
+                        Spacer(modifier = Modifier.height(Dimmens.smallMargin))
+                    }
                 }
 
-                item(deviceList) {
-                    FlowRow(
+                items(
+                        items = deviceList,
+                        key = { device -> device.id },
+                        span = { device ->
+                            GridItemSpan((deviceSpans[device.id] ?: 1).coerceAtMost(maxLineSpan))
+                        },
+                        contentType = { device ->
+                            "$CONTENT_TYPE_DEVICE_ROW-${device.targetEntityList.size.coerceAtMost(3)}"
+                        },
+                ) { device ->
+                    DeviceCard(
                             modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = Dimmens.mainMargin),
-                            horizontalArrangement = Arrangement.spacedBy(Dimmens.smallMargin),
-                            verticalArrangement = Arrangement.spacedBy(Dimmens.mediumMargin),
-                    ) {
-                        deviceList.forEach { device -> // TODO очень тяжелый рендеринг
-                            DeviceCard(modifier = Modifier.animateItem(), device = device, controller = controller)
-                        }
-                    }
+                                    .animateItem()
+                                    .widthIn(max = DEVICE_CELL_MAX_WIDTH)
+                                    .fillMaxWidth(),
+                            device = device,
+                            controller = controller,
+                    )
                 }
             }
         }
@@ -427,7 +491,6 @@ private fun DeviceCard(
     DeviceCard(
             modifier = modifier,
             title = device.name,
-            description = null,
             image = device.image,
             entityList = device.targetEntityList,
             onInnerEntityClicked = { controller.onEntityClicked(it, SimpleToggleableService.Toggle) },

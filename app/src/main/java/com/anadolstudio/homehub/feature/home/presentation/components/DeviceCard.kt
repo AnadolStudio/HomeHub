@@ -7,13 +7,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowColumn
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -40,11 +37,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.anadolstudio.compose.ui.theme.AppTheme
 import com.anadolstudio.compose.ui.theme.Dimmens
@@ -61,61 +62,56 @@ import com.anadolstudio.homehub.feature.home.domain.model.states.SwitchAttribute
 import com.anadolstudio.homehub.feature.home.presentation.PreviewUtils
 import com.anadolstudio.homehub.util.toPainter
 
-private val DEVICE_IMAGE_MAX_SIZE = 70.dp
+internal val DEVICE_IMAGE_MAX_SIZE = 64.dp
 private val DEVICE_CARD_SHAPE = RoundedCornerShape(12.dp)
 private val DEVICE_CARD_ELEVATION = 4.dp
-private const val MAX_SWITCH_ENTITY = 6
-private const val MAX_PER_COLUMN = 3
-private const val ENTITY_TEXT_MAX_LENGTH = 15
+private const val MAX_VISIBLE_ENTITIES = 3
+private const val ENTITY_TEXT_MAX_LENGTH = 20
+private val ENTITY_ICON_SIZE = 24.dp
+private val ENTITY_TEXT_END_SPACE = 2.dp
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DeviceCard(
         title: String,
-        description: String?,
         image: DeviceImage?,
         entityList: List<HomeAssistantEntity<HomeAssistantAttribute>>,
         onInnerEntityClicked: (entity: HomeAssistantEntity<HomeAssistantAttribute>) -> Unit,
         onDeviceClicked: () -> Unit,
-        modifier: Modifier = Modifier,
+        modifier: Modifier = Modifier.width(IntrinsicSize.Min),
 ) {
     BaseDeviceCard(
             modifier = modifier,
             title = title,
-            description = description,
             image = image,
             onDeviceClicked = onDeviceClicked,
     ) {
         val size = entityList.size
 
-        FlowColumn(
+        Column(
                 modifier = Modifier.fillMaxWidth(),
-                maxItemsInEachColumn = MAX_PER_COLUMN,
+                verticalArrangement = Arrangement.spacedBy(Dimmens.extraSmallMargin)
         ) {
-            entityList.forEach { entity ->
+            entityList.take(MAX_VISIBLE_ENTITIES).forEach { entity ->
                 when (val attribute = entity.state.attributes) {
                     is LightAttribute -> {
-                        Column(verticalArrangement = Arrangement.spacedBy(Dimmens.extraSmallMargin)) {
-                            BaseSwitchEntityItem(
-                                    entity = entity,
-                                    size = size,
-                                    onInnerEntityClicked = onInnerEntityClicked
+                        BaseSwitchEntityItem(
+                                entity = entity,
+                                size = size,
+                                onInnerEntityClicked = onInnerEntityClicked
+                        )
+                        attribute.color?.let { argb ->
+                            val animatedColor by animateColorAsState(
+                                    targetValue = Color(argb),
+                                    label = "light_color",
                             )
-                            attribute.color?.let { argb ->
-                                val animatedColor by animateColorAsState(
-                                        targetValue = Color(argb),
-                                        label = "light_color",
-                                )
-                                Box(
-                                        modifier = Modifier
-                                                .size(24.dp)
-                                                .clip(CircleShape)
-                                                .border(1.dp, AppTheme.colors.colorAccentAlternative, CircleShape)
-                                                .background(animatedColor),
-                                )
-                            }
-                        }
-                    }
+                            Box(
+                                    modifier = Modifier
+                                            .size(24.dp)
+                                            .clip(CircleShape)
+                                            .border(1.dp, AppTheme.colors.colorAccentAlternative, CircleShape)
+                                            .background(animatedColor),
+                            )
+                        }                    }
 
                     is SwitchAttribute -> BaseSwitchEntityItem(
                             entity = entity,
@@ -129,7 +125,11 @@ fun DeviceCard(
                             isEnable = true,
                     )
 
-                    else -> Unit
+                    else -> EntityItem(
+                            icon = entity.state.icon.toPainter(),
+                            text = entity.state.allowedState.value,
+                            isEnable = true,
+                    )
                 }
             }
         }
@@ -180,7 +180,7 @@ fun EntityItem(
                     painter = it,
                     contentDescription = null,
                     tint = if (isEnable) AppTheme.colors.colorAccent else AppTheme.colors.disable,
-                    modifier = Modifier.size(24.dp),
+                    modifier = Modifier.size(ENTITY_ICON_SIZE),
             )
         }
 
@@ -207,23 +207,52 @@ fun EntityItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
             )
-            Spacer(modifier = Modifier.width(2.dp))
+            Spacer(modifier = Modifier.width(ENTITY_TEXT_END_SPACE))
         }
     }
+}
+
+private fun HomeAssistantEntity<HomeAssistantAttribute>.gridDisplayText(deviceEntityCount: Int): String? =
+        when (val attribute = state.attributes) {
+            is SensorAttributes -> "${state.allowedState.value} ${attribute.unitOfMeasurement}"
+            is LightAttribute, is SwitchAttribute -> name.takeIf { deviceEntityCount > 1 }
+            else -> null
+        }
+
+/** Ширина, которую карточка реально хочет занять — по самому широкому видимому тексту сущности. */
+internal fun deviceCardRequiredWidth(
+        // TODO доработать, пока берет только текст, но есть разные виды entity
+        entityList: List<HomeAssistantEntity<HomeAssistantAttribute>>,
+        textMeasurer: TextMeasurer,
+        textStyle: TextStyle,
+        density: Density,
+): Dp {
+    val count = entityList.size
+    val widestText = entityList
+            .take(MAX_VISIBLE_ENTITIES)
+            .mapNotNull { entity -> entity.gridDisplayText(count)?.take(ENTITY_TEXT_MAX_LENGTH) }
+            .maxByOrNull { text -> text.length }
+
+    val textWidth = widestText
+            ?.let { text -> with(density) { textMeasurer.measure(text, textStyle).size.width.toDp() } }
+            ?: 0.dp
+
+    val entityColumnWidth = ENTITY_ICON_SIZE +
+            if (widestText != null) Dimmens.extraSmallMargin + textWidth + ENTITY_TEXT_END_SPACE else 0.dp
+
+    return Dimmens.smallMargin * 2 + DEVICE_IMAGE_MAX_SIZE + entityColumnWidth
 }
 
 @Composable
 fun BaseDeviceCard(
         title: String,
-        description: String?,
         image: DeviceImage?,
         onDeviceClicked: () -> Unit,
-        modifier: Modifier = Modifier,
+        modifier: Modifier = Modifier.width(IntrinsicSize.Min),
         entityInformationRow: (@Composable RowScope.() -> Unit)? = null,
 ) {
     Column(
             modifier = modifier
-                    .width(IntrinsicSize.Min)
                     .shadow(elevation = DEVICE_CARD_ELEVATION, shape = DEVICE_CARD_SHAPE)
                     .background(color = AppTheme.colors.colorPrimary)
                     .clickable(onClick = { onDeviceClicked.invoke() })
@@ -236,10 +265,9 @@ fun BaseDeviceCard(
                 verticalAlignment = Alignment.Top,
         ) {
             DeviceImageView(
-                    modifier = Modifier
-                            .heightIn(max = DEVICE_IMAGE_MAX_SIZE)
-                            .aspectRatio(1f),
-                    image = image
+                    modifier = Modifier.size(DEVICE_IMAGE_MAX_SIZE),
+                    image = image,
+                    imageSize = DEVICE_IMAGE_MAX_SIZE,
             )
 
             entityInformationRow?.invoke(this@Row)
@@ -252,21 +280,11 @@ fun BaseDeviceCard(
                 style = AppTheme.typography.captionMedium14,
                 fontWeight = FontWeight.Bold,
                 color = AppTheme.colors.colorAccent,
+                minLines = 1,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
         )
 
-        Spacer(modifier = Modifier.height(2.dp))
-
-        description?.let {
-            Text(
-                    text = it,
-                    style = AppTheme.typography.captionMedium12,
-                    color = AppTheme.colors.colorAccent,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-            )
-        }
     }
 }
 
@@ -285,14 +303,12 @@ private fun BaseDeviceCardPreview(
             val device = PreviewUtils.previewDevices.first()
             BaseDeviceCard(
                     title = device.name,
-                    description = null,
                     image = device.image,
                     onDeviceClicked = {},
             )
 
             DeviceCard(
                     title = device.name,
-                    description = null,
                     image = device.image,
                     entityList = device.targetEntityList,
                     onDeviceClicked = {},
@@ -301,7 +317,6 @@ private fun BaseDeviceCardPreview(
 
             DeviceCard(
                     title = device.name,
-                    description = null,
                     image = device.image,
                     entityList = device.targetEntityList.take(1),
                     onDeviceClicked = {},

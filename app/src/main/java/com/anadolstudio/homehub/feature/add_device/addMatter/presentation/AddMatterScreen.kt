@@ -170,7 +170,6 @@ private fun ContentWithDeviceList(
                 state.newDeviceSet.forEach { device ->
                     DeviceCard(
                             title = device.name,
-                            description = device.model,
                             image = device.image,
                             entityList = device.targetEntityList,
                             onInnerEntityClicked = { controller.onEntityClicked(it, SimpleToggleableService.Toggle) },

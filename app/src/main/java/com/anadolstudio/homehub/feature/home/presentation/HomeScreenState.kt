@@ -18,8 +18,8 @@ internal data class HomeScreenState(
 
     val homeName: String? = homeOverviewState.homeState?.attributes?.friendlyName
 
-    val filteredAreaToDeviceMap: Map<String, List<HomeAssistantDevice>>
-        get() = deviceState.areaToDeviceMap(selectedAreaId = selectedAreaId)
+    val filteredAreaToDeviceMap: Map<String, List<HomeAssistantDevice>> = deviceState
+            .areaToDeviceMap(selectedAreaId = selectedAreaId)
 
     private val hasConnection: Boolean
         get() = connectionState == WebSocketConnectionState.ConnectedAuthenticated
@@ -41,10 +41,9 @@ internal data class DeviceState(
             .mapValues { (_, devices) -> devices.sortedDevice().toList() }
             .toSortedMap()
 
-    val entityToDeviceMap: Map<String, HomeAssistantDevice>
-        get() = deviceSet
-                .flatMap { device -> device.allEntityList.map { entity -> entity.entityId to device } }
-                .toMap()
+    val entityToDeviceMap: Map<String, HomeAssistantDevice> = deviceSet
+            .flatMap { device -> device.allEntityList.map { entity -> entity.entityId to device } }
+            .toMap()
 
     private fun Collection<HomeAssistantDevice>.sortedDevice(): Set<HomeAssistantDevice> = this
             .sortedBy { it.model + it.name + it.id }

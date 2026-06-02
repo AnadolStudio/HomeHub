@@ -135,7 +135,7 @@ class HaWebSocketMessageController(
 
             if (!subscriptionResult.success) {
                 val errorMsg = subscriptionResult.error?.let { "${it.code}: ${it.message}" } ?: "Unknown error"
-                close(WebSocketCoreException.ProtocolError("Subscription failed: $errorMsg"))
+                close(WebSocketCoreException.ProtocolError("Subscription failed: $errorMsg")) // TODO логика переотправки
                 return@callbackFlow
             }
 
