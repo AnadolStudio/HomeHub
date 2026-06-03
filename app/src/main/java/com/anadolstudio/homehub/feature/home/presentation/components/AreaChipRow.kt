@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,10 +19,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import com.anadolstudio.compose.ui.theme.AppTheme
+import com.anadolstudio.compose.ui.theme.Dimmens
 import com.anadolstudio.compose.ui.theme.preview.ThemePreviewParameter
 import com.anadolstudio.homehub.R
 import com.anadolstudio.homehub.base.view.HomeHubFilterChip
@@ -35,21 +38,40 @@ internal fun AreaChipRow(
         onAreaSelected: (Area?) -> Unit,
         modifier: Modifier = Modifier,
         contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp),
+        title: String? = stringResource(R.string.device_detail_field_area),
 ) {
     val items = listOf<Area?>(null) + areas
-    Row(
-            modifier = modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(contentPadding),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+    Column(
+            modifier = modifier,
+            verticalArrangement = Arrangement.spacedBy(Dimmens.extraSmallMargin)
     ) {
-        items.forEach { area ->
-            AreaChip(
-                    area = area,
-                    selected = area?.areaId == selectedAreaId,
-                    onAreaSelected = { onAreaSelected(it) }
+
+        title?.let {
+            Text(
+                    text = it,
+                    style = AppTheme.typography.captionMedium16,
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.colorAccent,
+                    modifier = Modifier
+                            .padding(contentPadding)
+                            .padding(bottom = Dimmens.extraSmallMargin),
             )
+        }
+
+        Row(
+                modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(contentPadding),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            items.forEach { area ->
+                AreaChip(
+                        area = area,
+                        selected = area?.areaId == selectedAreaId,
+                        onAreaSelected = { onAreaSelected(it) }
+                )
+            }
         }
     }
 }

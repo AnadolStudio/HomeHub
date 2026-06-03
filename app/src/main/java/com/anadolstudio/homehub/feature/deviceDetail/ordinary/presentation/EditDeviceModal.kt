@@ -86,13 +86,6 @@ private fun EditDeviceContent(
                 singleLine = true,
                 modifier = Modifier.padding(horizontal = Dimmens.mainMargin),
         )
-        Text(
-                text = stringResource(R.string.device_detail_field_area),
-                style = AppTheme.typography.captionMedium16,
-                fontWeight = FontWeight.Bold,
-                color = AppTheme.colors.colorAccent,
-                modifier = Modifier.padding(horizontal = Dimmens.mainMargin),
-        )
         AreaChipRow(
                 selectedAreaId = selectedAreaId,
                 areas = areaList,
