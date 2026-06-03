@@ -1,6 +1,7 @@
 plugins {
     id(libs.plugins.android.application.get().pluginId)
     id(libs.plugins.kotlin.android.get().pluginId)
+    id(libs.plugins.compose.compiler.get().pluginId)
     id(libs.plugins.kotlin.kapt.get().pluginId)
     id(libs.plugins.kotlin.parcelize.get().pluginId)
 //    id("com.google.firebase.crashlytics") // TODO
@@ -77,13 +78,7 @@ android {
         jvmTarget = javaVersion.toString()
         freeCompilerArgs = freeCompilerArgs + listOf(
                 "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
-                "-P",
-                "plugin:androidx.compose.compiler.plugins.kotlin:strongSkipping=true",
         )
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.kotlinCompilerExtensionVersion.get()
     }
 
     lint {

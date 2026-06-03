@@ -1,6 +1,7 @@
 plugins {
     id(libs.plugins.android.library.get().pluginId)
     id(libs.plugins.kotlin.android.get().pluginId)
+    id(libs.plugins.compose.compiler.get().pluginId)
 }
 
 android {
@@ -42,10 +43,6 @@ android {
     kotlinOptions {
         jvmTarget = javaVersion.toString()
         freeCompilerArgs = freeCompilerArgs + listOf("-opt-in=androidx.compose.foundation.ExperimentalFoundationApi")
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.kotlinCompilerExtensionVersion.get()
     }
 }
 
