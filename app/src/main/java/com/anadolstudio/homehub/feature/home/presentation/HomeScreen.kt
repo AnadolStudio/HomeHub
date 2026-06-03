@@ -73,6 +73,7 @@ import com.anadolstudio.homehub.base.view.HomeHubLoader
 import com.anadolstudio.homehub.base.viewmodel.ObserveViewModelLifecycle
 import com.anadolstudio.homehub.di.viewmodel.daggerViewModel
 import com.anadolstudio.homehub.event.ObserveEvents
+import com.anadolstudio.homehub.feature.home.domain.model.AllowedDomain
 import com.anadolstudio.homehub.feature.home.domain.model.Area
 import com.anadolstudio.homehub.feature.home.domain.model.DeviceImage
 import com.anadolstudio.homehub.feature.home.domain.model.HomeAssistantDevice
@@ -83,6 +84,7 @@ import com.anadolstudio.homehub.feature.home.domain.model.states.HomeAssistantAt
 import com.anadolstudio.homehub.feature.home.presentation.components.AreaChipRow
 import com.anadolstudio.homehub.feature.home.presentation.components.DEVICE_IMAGE_MAX_SIZE
 import com.anadolstudio.homehub.feature.home.presentation.components.DeviceCard
+import com.anadolstudio.homehub.feature.home.presentation.components.DomainChipRow
 import com.anadolstudio.homehub.feature.home.presentation.components.deviceCardRequiredWidth
 import com.anadolstudio.homehub.feature.main.NavigationController
 import com.anadolstudio.utils.states.ProgressState
@@ -97,9 +99,11 @@ private val CONTENT_HEADER_OVERLAP = CONTENT_CORNER_RADIUS
 private val DEVICE_CELL_MIN_WIDTH = 100.dp
 private val DEVICE_CELL_MAX_WIDTH = 300.dp
 
+private const val KEY_DOMAIN_CHIPS = "domain_chips"
 private const val KEY_AREA_CHIPS = "area_chips"
 private const val KEY_PREFIX_HEADER = "header_"
 private const val KEY_PREFIX_DEVICES = "devices_"
+private const val CONTENT_TYPE_DOMAIN_CHIPS = "domain_chips"
 private const val CONTENT_TYPE_AREA_CHIPS = "area_chips"
 private const val CONTENT_TYPE_GROUP_HEADER = "group_header"
 private const val CONTENT_TYPE_DEVICE_ROW = "device_row"
@@ -346,6 +350,9 @@ private fun HomeContent(
     val availableAreas = remember(state.deviceState.availableAreas.isNotEmpty()) {
         state.deviceState.availableAreas.isNotEmpty()
     }
+    val availableDomains = remember(state.deviceState.availableDomains.isNotEmpty()) {
+        state.deviceState.availableDomains.isNotEmpty()
+    }
 
     LaunchedEffect(deviceMap) {
         val urls = deviceMap.values
@@ -398,8 +405,26 @@ private fun HomeContent(
                         bottom = Dimmens.largeMargin,
                 ),
                 horizontalArrangement = Arrangement.spacedBy(cellSpacing),
-                verticalArrangement = Arrangement.spacedBy(Dimmens.mediumMargin),
+                verticalArrangement = Arrangement.spacedBy(Dimmens.smallMargin),
         ) {
+            if (availableDomains) {
+                item(
+                        key = KEY_DOMAIN_CHIPS,
+                        span = { GridItemSpan(maxLineSpan) },
+                        contentType = CONTENT_TYPE_DOMAIN_CHIPS,
+                ) {
+                    DomainChipRow(
+                            modifier = Modifier
+                                    .animateItem()
+                                    .padding(bottom = Dimmens.extraSmallMargin),
+                            selectedDomain = state.selectedDomain,
+                            domains = state.deviceState.availableDomains,
+                            onDomainSelected = controller::onDomainSelected,
+                            contentPadding = PaddingValues(horizontal = 0.dp),
+                    )
+                }
+            }
+
             if (availableAreas) {
                 item(
                         key = KEY_AREA_CHIPS,
@@ -541,6 +566,7 @@ private fun createPreviewController(): HomeController = object : HomeController 
     override fun onAddClicked() = Unit
     override fun onHistoryClicked() = Unit
     override fun onAreaSelected(area: Area?) = Unit
+    override fun onDomainSelected(domain: AllowedDomain?) = Unit
 }
 
 @Preview(showBackground = true, heightDp = 800)

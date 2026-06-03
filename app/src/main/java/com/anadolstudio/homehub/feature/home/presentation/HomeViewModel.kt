@@ -8,6 +8,7 @@ import com.anadolstudio.homehub.event.showMessage
 import com.anadolstudio.homehub.event.showTodo
 import com.anadolstudio.homehub.feature.home.domain.HARestRepository
 import com.anadolstudio.homehub.feature.home.domain.HAWebsocketRepository
+import com.anadolstudio.homehub.feature.home.domain.model.AllowedDomain
 import com.anadolstudio.homehub.feature.home.domain.model.Area
 import com.anadolstudio.homehub.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.homehub.feature.home.domain.model.entity.HomeAssistantEntity
@@ -88,7 +89,16 @@ internal class HomeViewModel @Inject constructor(
                             ?.takeIf { id -> areas.any { it.areaId == id } }
 
                     val newDeviceState = state.deviceState.copy(deviceSet = deviceSet, availableAreas = areas)
-                    updateState { copy(deviceState = newDeviceState, selectedAreaId = selectedAreaId) }
+                    val selectedDomain = state.selectedDomain
+                            ?.takeIf { domain -> newDeviceState.availableDomains.contains(domain) }
+
+                    updateState {
+                        copy(
+                                deviceState = newDeviceState,
+                                selectedAreaId = selectedAreaId,
+                                selectedDomain = selectedDomain,
+                        )
+                    }
                     subscribeChangedEvents()
                 }
                 .launchIn(viewModelScope)
@@ -166,5 +176,13 @@ internal class HomeViewModel @Inject constructor(
 
     override fun onAreaClicked() = showTodo()
 
-    override fun onAreaSelected(area: Area?) = updateState { copy(selectedAreaId = area?.areaId) }
+    override fun onAreaSelected(area: Area?) {
+        val selectedAreaId = if (state.selectedAreaId == area?.areaId) null else area?.areaId
+        updateState { copy(selectedAreaId = selectedAreaId) }
+    }
+
+    override fun onDomainSelected(domain: AllowedDomain?) {
+        val selectedDomain = if (state.selectedDomain == domain) null else domain
+        updateState { copy(selectedDomain = selectedDomain) }
+    }
 }

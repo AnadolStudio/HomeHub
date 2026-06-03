@@ -64,7 +64,7 @@ import com.anadolstudio.homehub.util.toPainter
 
 internal val DEVICE_IMAGE_MAX_SIZE = 64.dp
 private val DEVICE_CARD_SHAPE = RoundedCornerShape(12.dp)
-private val DEVICE_CARD_ELEVATION = 4.dp
+private val DEVICE_CARD_ELEVATION = 2.dp
 private const val MAX_VISIBLE_ENTITIES = 3
 private const val ENTITY_TEXT_MAX_LENGTH = 20
 private val ENTITY_ICON_SIZE = 24.dp

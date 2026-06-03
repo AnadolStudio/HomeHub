@@ -2,6 +2,7 @@ package com.anadolstudio.homehub.feature.home.presentation
 
 import androidx.compose.runtime.Immutable
 import com.anadolstudio.homehub.core.websocket.connection.WebSocketConnectionState
+import com.anadolstudio.homehub.feature.home.domain.model.AllowedDomain
 import com.anadolstudio.homehub.feature.home.domain.model.Area
 import com.anadolstudio.homehub.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.homehub.feature.home.domain.model.states.HomeAssistantState
@@ -14,12 +15,13 @@ internal data class HomeScreenState(
         val homeOverviewState: HomeOverviewState = HomeOverviewState(),
         val deviceState: DeviceState = DeviceState(),
         val selectedAreaId: String? = null,
+        val selectedDomain: AllowedDomain? = null,
 ) {
 
     val homeName: String? = homeOverviewState.homeState?.attributes?.friendlyName
 
     val filteredAreaToDeviceMap: Map<String, List<HomeAssistantDevice>> = deviceState
-            .areaToDeviceMap(selectedAreaId = selectedAreaId)
+            .areaToDeviceMap(selectedAreaId = selectedAreaId, selectedDomain = selectedDomain)
 
     private val hasConnection: Boolean
         get() = connectionState == WebSocketConnectionState.ConnectedAuthenticated
@@ -34,9 +36,19 @@ internal data class DeviceState(
         val deviceSet: Set<HomeAssistantDevice> = emptySet(),
         val availableAreas: List<Area> = emptyList(),
 ) {
-    fun areaToDeviceMap(selectedAreaId: String? = null): Map<String, List<HomeAssistantDevice>> = deviceSet
+    val availableDomains: List<AllowedDomain> = deviceSet
+            .flatMap { device -> device.targetEntityList.mapNotNull { it.allowedDomain } }
+            .distinct()
+
+    fun areaToDeviceMap(
+            selectedAreaId: String? = null,
+            selectedDomain: AllowedDomain? = null,
+    ): Map<String, List<HomeAssistantDevice>> = deviceSet
             .asSequence()
             .filter { device -> selectedAreaId == null || device.area?.areaId == selectedAreaId }
+            .filter { device ->
+                selectedDomain == null || device.targetEntityList.any { it.allowedDomain == selectedDomain }
+            }
             .groupBy { device -> device.area?.name.toString() }
             .mapValues { (_, devices) -> devices.sortedDevice().toList() }
             .toSortedMap()

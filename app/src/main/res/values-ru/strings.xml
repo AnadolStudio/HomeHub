@@ -51,6 +51,21 @@
 
     <string name="area_filter_all">Все</string>
 
+    <string name="domain_filter_title">Тип</string>
+    <string name="domain_light">Свет</string>
+    <string name="domain_switch">Выключатель</string>
+    <string name="domain_sensor">Датчик</string>
+    <string name="domain_binary_sensor">Бинарный датчик</string>
+    <string name="domain_climate">Климат</string>
+    <string name="domain_zone_home">Зона</string>
+    <string name="domain_select">Выбор</string>
+    <string name="domain_number">Число</string>
+    <string name="domain_person">Человек</string>
+    <string name="domain_automation">Автоматизация</string>
+    <string name="domain_scene">Сцена</string>
+    <string name="domain_weather">Погода</string>
+    <string name="domain_button">Кнопка</string>
+
     <string name="automation_list_tab_automations">Автоматизации</string>
     <string name="automation_list_tab_scenes">Сцены</string>
     <string name="automation_list_create_automation">Создать автоматизацию</string>

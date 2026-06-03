@@ -53,6 +53,21 @@
 
     <string name="area_filter_all">All</string>
 
+    <string name="domain_filter_title">Type</string>
+    <string name="domain_light">Light</string>
+    <string name="domain_switch">Switch</string>
+    <string name="domain_sensor">Sensor</string>
+    <string name="domain_binary_sensor">Binary sensor</string>
+    <string name="domain_climate">Climate</string>
+    <string name="domain_zone_home">Zone</string>
+    <string name="domain_select">Select</string>
+    <string name="domain_number">Number</string>
+    <string name="domain_person">Person</string>
+    <string name="domain_automation">Automation</string>
+    <string name="domain_scene">Scene</string>
+    <string name="domain_weather">Weather</string>
+    <string name="domain_button">Button</string>
+
     <string name="automation_list_tab_automations">Automations</string>
     <string name="automation_list_tab_scenes">Scenes</string>
     <string name="automation_list_create_automation">Create automation</string>

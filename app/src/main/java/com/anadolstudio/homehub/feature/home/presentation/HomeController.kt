@@ -1,5 +1,6 @@
 package com.anadolstudio.homehub.feature.home.presentation
 
+import com.anadolstudio.homehub.feature.home.domain.model.AllowedDomain
 import com.anadolstudio.homehub.feature.home.domain.model.Area
 import com.anadolstudio.homehub.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.homehub.feature.home.domain.model.entity.HomeAssistantEntity
@@ -15,4 +16,5 @@ interface HomeController {
     fun onHistoryClicked()
     fun onAreaClicked()
     fun onAreaSelected(area: Area?)
+    fun onDomainSelected(domain: AllowedDomain?)
 }
