@@ -20,7 +20,6 @@ import com.anadolstudio.homehub.feature.autoSetupHomeAssistantUrl.presetnation.A
 import com.anadolstudio.homehub.feature.automation.automationDetail.presentation.AutomationDetailScreen
 import com.anadolstudio.homehub.feature.automation.automationList.presentation.AutomationListScreen
 import com.anadolstudio.homehub.feature.automation.automationList.presentation.AutomationListViewModel
-import com.anadolstudio.homehub.feature.automation.sceneDetail.presentation.SceneDetailScreen
 import com.anadolstudio.homehub.feature.deviceDetail.demo.DemoDeviceDetailScreen
 import com.anadolstudio.homehub.feature.deviceDetail.ordinary.presentation.DeviceDetailScreen
 import com.anadolstudio.homehub.feature.history.presentation.HistoryScreen
@@ -175,9 +174,6 @@ internal object MainGraph : NavGraphContract() {
         }
         composable(automationDetail()) {
             AutomationDetailScreen(navigator = navigator, snackbarHostState = snackbarHostState)
-        }
-        composable(sceneDetail()) {
-            SceneDetailScreen(navigator = navigator, snackbarHostState = snackbarHostState)
         }
         composable(sceneCreate()) {
             SceneCreateScreen(navigator = navigator, snackbarHostState = snackbarHostState)

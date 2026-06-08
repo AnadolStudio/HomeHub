@@ -74,6 +74,24 @@
     <string name="automation_list_create_scene">Create scene</string>
     <string name="automation_list_action_delete">Delete</string>
 
+    <string name="automation_detail_title">Automation</string>
+    <string name="automation_detail_label_name">Automation name</string>
+    <string name="automation_detail_section_triggers">Triggers</string>
+    <string name="automation_detail_section_conditions">Conditions</string>
+    <string name="automation_detail_section_services">Services</string>
+    <string name="automation_detail_info_triggers">A trigger is a specific event happening inside or around your home, for example: «When the sun sets».</string>
+    <string name="automation_detail_info_conditions">For the sequence of actions to run, all the conditions listed here must be met.</string>
+    <string name="automation_detail_info_services">This list of actions runs sequentially when the automation is triggered.</string>
+    <string name="automation_detail_button_add_trigger">Add trigger</string>
+    <string name="automation_detail_button_add_condition">Add condition</string>
+    <string name="automation_detail_button_add_service">Add service</string>
+    <string name="automation_detail_empty_triggers">No triggers yet. Add at least one.</string>
+    <string name="automation_detail_empty_conditions">No conditions yet.</string>
+    <string name="automation_detail_empty_services">No services yet. Add at least one.</string>
+    <string name="automation_detail_button_save">Save</string>
+    <string name="automation_detail_action_edit">Edit</string>
+    <string name="automation_detail_action_delete">Delete</string>
+
     <string name="scene_create_title_create">Create scene</string>
     <string name="scene_create_title_edit">Edit scene</string>
     <string name="scene_create_label_name">Scene name</string>

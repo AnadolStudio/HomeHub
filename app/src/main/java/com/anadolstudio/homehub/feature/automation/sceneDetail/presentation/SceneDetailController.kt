@@ -1,3 +1,0 @@
-package com.anadolstudio.homehub.feature.automation.sceneDetail.presentation
-
-internal interface SceneDetailController

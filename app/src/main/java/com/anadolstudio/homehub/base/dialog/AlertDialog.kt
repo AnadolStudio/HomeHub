@@ -65,7 +65,7 @@ internal fun AlertDialog(
             {
                 Text(
                     text = text,
-                    color = AppTheme.colors.template,
+                    color = AppTheme.colors.colorAccent,
                     style = AppTypography.captionBook16,
                 )
             }
