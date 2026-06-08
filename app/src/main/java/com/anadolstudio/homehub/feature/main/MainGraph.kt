@@ -18,8 +18,11 @@ import com.anadolstudio.homehub.feature.autoSetupHomeAssistantUrl.domain.model.H
 import com.anadolstudio.homehub.feature.autoSetupHomeAssistantUrl.presetnation.AutoSetupHomeAssistantUrlScreen
 import com.anadolstudio.homehub.feature.autoSetupHomeAssistantUrl.presetnation.AutoSetupHomeAssistantUrlViewModel
 import com.anadolstudio.homehub.feature.automation.automationDetail.presentation.AutomationDetailScreen
+import com.anadolstudio.homehub.feature.automation.automationDetail.presentation.AutomationDetailViewModel
 import com.anadolstudio.homehub.feature.automation.automationList.presentation.AutomationListScreen
 import com.anadolstudio.homehub.feature.automation.automationList.presentation.AutomationListViewModel
+import com.anadolstudio.homehub.feature.automation.automationMode.presentation.AutomationModePickerScreen
+import com.anadolstudio.homehub.feature.automation.common.presentation.AutomationMode
 import com.anadolstudio.homehub.feature.deviceDetail.demo.DemoDeviceDetailScreen
 import com.anadolstudio.homehub.feature.deviceDetail.ordinary.presentation.DeviceDetailScreen
 import com.anadolstudio.homehub.feature.history.presentation.HistoryScreen
@@ -38,7 +41,9 @@ import com.anadolstudio.homehub.feature.sceneCreate.presentation.picker.SceneDev
 import com.anadolstudio.homehub.feature.splash.SplashScreen
 import com.anadolstudio.homehub.feature.splash.SplashViewModel
 import com.anadolstudio.homehub.navigation.NavGraphContract
+import com.anadolstudio.homehub.navigation.enumArgument
 import com.anadolstudio.homehub.navigation.objectToString
+import com.anadolstudio.homehub.navigation.requireEnumArgument
 import com.anadolstudio.homehub.navigation.requireObject
 import com.anadolstudio.homehub.navigation.requireStringArgument
 import com.anadolstudio.homehub.navigation.stringArgument
@@ -58,6 +63,8 @@ internal object MainGraph : NavGraphContract() {
     private val lightDetailArgsArgument = stringArgument(name = "lightDetailArgs")
 
     private val sceneConfigIdArgument = stringArgument(name = "sceneConfigId")
+
+    private val automationModeArgument = enumArgument<AutomationMode>(name = "mode")
 
     private val excludedDeviceIdsArgument = stringArgument(name = "excludedDeviceIds")
 
@@ -87,6 +94,11 @@ internal object MainGraph : NavGraphContract() {
     private fun automationList() = route { "automationList" }
 
     private fun automationDetail() = route { "automationDetail" }
+
+    private fun automationModePicker() = route { "automationModePicker/{${automationModeArgument.name}}" }
+
+    private fun automationModePicker(mode: AutomationMode): String =
+            route { "automationModePicker/${mode.name}" }
 
     private fun sceneDetail() = route { "sceneDetail" }
 
@@ -174,6 +186,18 @@ internal object MainGraph : NavGraphContract() {
         }
         composable(automationDetail()) {
             AutomationDetailScreen(navigator = navigator, snackbarHostState = snackbarHostState)
+        }
+        bottomSheet(
+                route = automationModePicker(),
+                arguments = listOf(automationModeArgument),
+        ) { entry ->
+            if (entry.lifecycle.currentState == Lifecycle.State.DESTROYED) return@bottomSheet
+            val mode = entry.requireEnumArgument<AutomationMode>(automationModeArgument)
+            AutomationModePickerScreen(
+                    navigator = navigator,
+                    snackbarHostState = snackbarHostState,
+                    currentMode = mode,
+            )
         }
         composable(sceneCreate()) {
             SceneCreateScreen(navigator = navigator, snackbarHostState = snackbarHostState)
@@ -274,6 +298,9 @@ internal object MainGraph : NavGraphContract() {
     fun HomeViewModel.navigateToAutomationList() = navigateTo(automationList())
 
     fun AutomationListViewModel.navigateToAutomationDetail() = navigateTo(automationDetail())
+
+    fun AutomationDetailViewModel.navigateToAutomationModePicker(mode: AutomationMode) =
+            navigateTo(automationModePicker(mode))
 
     fun AutomationListViewModel.navigateToSceneDetail() = navigateTo(sceneDetail())
 

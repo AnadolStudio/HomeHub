@@ -13,6 +13,7 @@ import com.anadolstudio.homehub.feature.add_device.addZigbee.di.AddZigbeeModule
 import com.anadolstudio.homehub.feature.autoSetupHomeAssistantUrl.di.AutoSetupHomeAssistantUrlModule
 import com.anadolstudio.homehub.feature.automation.automationDetail.di.AutomationDetailModule
 import com.anadolstudio.homehub.feature.automation.automationList.di.AutomationListModule
+import com.anadolstudio.homehub.feature.automation.automationMode.di.AutomationModePickerModule
 import com.anadolstudio.homehub.feature.deviceDetail.demo.di.DemoDeviceDetailModule
 import com.anadolstudio.homehub.feature.deviceDetail.ordinary.di.DeviceDetailModule
 import com.anadolstudio.homehub.feature.history.di.HistoryModule
@@ -39,6 +40,7 @@ import javax.inject.Singleton
         AddZigbeeModule::class,
         AutomationDetailModule::class,
         AutomationListModule::class,
+        AutomationModePickerModule::class,
         AutoSetupHomeAssistantUrlModule::class,
         DemoDeviceDetailModule::class,
         DeviceDetailModule::class,
