@@ -11,11 +11,14 @@ import com.anadolstudio.homehub.feature.add_device.addMatter.di.AddMatterModule
 import com.anadolstudio.homehub.feature.add_device.addMatter.gms.MatterCommissioningService
 import com.anadolstudio.homehub.feature.add_device.addZigbee.di.AddZigbeeModule
 import com.anadolstudio.homehub.feature.autoSetupHomeAssistantUrl.di.AutoSetupHomeAssistantUrlModule
+import com.anadolstudio.homehub.feature.automation.automationConditionPicker.di.AutomationConditionPickerModule
 import com.anadolstudio.homehub.feature.automation.automationDetail.di.AutomationDetailModule
 import com.anadolstudio.homehub.feature.automation.automationList.di.AutomationListModule
 import com.anadolstudio.homehub.feature.automation.automationMode.di.AutomationModePickerModule
 import com.anadolstudio.homehub.feature.deviceDetail.demo.di.DemoDeviceDetailModule
+import com.anadolstudio.homehub.feature.deviceDetail.entityPicker.di.EntityPickerModule
 import com.anadolstudio.homehub.feature.deviceDetail.ordinary.di.DeviceDetailModule
+import com.anadolstudio.homehub.feature.devicePicker.di.DevicePickerModule
 import com.anadolstudio.homehub.feature.history.di.HistoryModule
 import com.anadolstudio.homehub.feature.home.di.HomeModule
 import com.anadolstudio.homehub.feature.homeAssistantAuth.di.HomeAssistantAuthModule
@@ -38,12 +41,15 @@ import javax.inject.Singleton
         AddMatterModule::class,
         AddPersonModule::class,
         AddZigbeeModule::class,
+        AutomationConditionPickerModule::class,
         AutomationDetailModule::class,
         AutomationListModule::class,
         AutomationModePickerModule::class,
         AutoSetupHomeAssistantUrlModule::class,
         DemoDeviceDetailModule::class,
+        EntityPickerModule::class,
         DeviceDetailModule::class,
+        DevicePickerModule::class,
         HistoryModule::class,
         HomeAssistantAuthModule::class,
         HomeModule::class,

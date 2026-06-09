@@ -174,7 +174,7 @@ private fun LazyListScope.automationItems(
                 icon = automation.state.attributes.icon?.toPainter()
                         ?: rememberVectorPainter(Icons.Outlined.HdrAuto),
                 draggableActionIcon = Icons.Outlined.DeleteOutline,
-                onClicked = { controller.onAutomationItemClicked() },
+                onClicked = { controller.onAutomationItemClicked(automation) },
                 onDraggableActionClicked = { controller.onAutomationItemDeleteClicked(automation) },
                 trailing = {
                     Switch(

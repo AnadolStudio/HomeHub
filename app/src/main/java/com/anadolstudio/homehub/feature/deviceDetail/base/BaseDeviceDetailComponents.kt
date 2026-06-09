@@ -31,7 +31,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material.icons.outlined.WifiOff
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -82,7 +84,6 @@ import com.anadolstudio.homehub.base.view.homeHubSwitchDefaults
 import com.anadolstudio.homehub.base.view.rememberThrottled
 import com.anadolstudio.homehub.feature.home.domain.model.AllowedDomain
 import com.anadolstudio.homehub.feature.home.domain.model.HomeAssistantDevice
-import com.anadolstudio.homehub.feature.home.domain.model.entity.EntityCategory
 import com.anadolstudio.homehub.feature.home.domain.model.entity.HomeAssistantEntity
 import com.anadolstudio.homehub.feature.home.domain.model.services.HomeAssistantService
 import com.anadolstudio.homehub.feature.home.domain.model.services.LightService
@@ -91,7 +92,6 @@ import com.anadolstudio.homehub.feature.home.domain.model.services.SimpleTogglea
 import com.anadolstudio.homehub.feature.home.domain.model.states.AllowedState
 import com.anadolstudio.homehub.feature.home.domain.model.states.ClimateAttribute
 import com.anadolstudio.homehub.feature.home.domain.model.states.HomeAssistantAttribute
-import com.anadolstudio.homehub.feature.home.domain.model.states.HomeAssistantState
 import com.anadolstudio.homehub.feature.home.domain.model.states.LightAttribute
 import com.anadolstudio.homehub.feature.home.domain.model.states.LightEntityColorMode
 import com.anadolstudio.homehub.feature.home.domain.model.states.NumberAttribute
@@ -102,11 +102,9 @@ import com.anadolstudio.homehub.feature.home.presentation.PreviewUtils
 import com.anadolstudio.homehub.feature.home.presentation.components.DeviceImageView
 import com.anadolstudio.homehub.feature.main.NavigationController
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
-import java.time.OffsetDateTime
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.JsonObject
 
 private val DEVICE_DETAIL_IMAGE_SIZE = 120.dp
 
@@ -141,6 +139,8 @@ internal fun DeviceContent(
         controller: BaseDeviceDetailController,
         onEditClicked: (() -> Unit)? = null,
         selectedEntitySet: Set<String> = device.allEntityList.map { it.entityId }.toSet(),
+        selectable: Boolean = false,
+        onEntitySelectToggle: ((HomeAssistantEntity<HomeAssistantAttribute>) -> Unit)? = null,
         belowMainInfo: @Composable ColumnScope.() -> Unit = {},
 ) {
     Column(
@@ -160,28 +160,36 @@ internal fun DeviceContent(
                 entities = device.targetEntityList.filter { it.allowedDomain != AllowedDomain.SENSOR },
                 controller = controller,
                 entityIdToTextFieldDataMap = state.entityIdToTextFieldDataMap,
-                selectedEntity = selectedEntity
+                selectedEntity = selectedEntity,
+                selectable = selectable,
+                onEntitySelectToggle = onEntitySelectToggle,
         )
         EntitySection(
                 title = stringResource(R.string.device_detail_section_sensors),
                 entities = device.targetEntityList.filter { it.allowedDomain == AllowedDomain.SENSOR },
                 controller = controller,
                 entityIdToTextFieldDataMap = state.entityIdToTextFieldDataMap,
-                selectedEntity = selectedEntity
+                selectedEntity = selectedEntity,
+                selectable = selectable,
+                onEntitySelectToggle = onEntitySelectToggle,
         )
         EntitySection(
                 title = stringResource(R.string.device_detail_section_config),
                 entities = device.configEntityList,
                 controller = controller,
                 entityIdToTextFieldDataMap = state.entityIdToTextFieldDataMap,
-                selectedEntity = selectedEntity
+                selectedEntity = selectedEntity,
+                selectable = selectable,
+                onEntitySelectToggle = onEntitySelectToggle,
         )
         EntitySection(
                 title = stringResource(R.string.device_detail_section_diagnostic),
                 entities = device.diagnosticEntityList,
                 controller = controller,
                 entityIdToTextFieldDataMap = state.entityIdToTextFieldDataMap,
-                selectedEntity = selectedEntity
+                selectedEntity = selectedEntity,
+                selectable = selectable,
+                onEntitySelectToggle = onEntitySelectToggle,
         )
         belowMainInfo.invoke(this)
 
@@ -253,12 +261,24 @@ private fun EntitySection(
         controller: BaseDeviceDetailController,
         entityIdToTextFieldDataMap: Map<String, TextFieldData>,
         selectedEntity: Set<String> = emptySet(),
+        selectable: Boolean = false,
+        onEntitySelectToggle: ((HomeAssistantEntity<HomeAssistantAttribute>) -> Unit)? = null,
 ) {
     if (entities.isEmpty()) return
 
     SectionContainer(title = title) {
         entities.forEach { entity ->
             val isChoose = selectedEntity.contains(entity.entityId)
+
+            if (selectable) {
+                SelectableEntityRow(
+                        entity = entity,
+                        isChoose = isChoose,
+                        onClick = { onEntitySelectToggle?.invoke(entity) },
+                )
+                return@forEach
+            }
+
             when (entity.state.attributes) {
                 is LightAttribute -> LightEntityValueRow(
                         entity = entity as HomeAssistantEntity<LightAttribute>,
@@ -568,6 +588,33 @@ private fun EntityValueRow(
 }
 
 @Composable
+private fun SelectableEntityRow(
+        entity: HomeAssistantEntity<HomeAssistantAttribute>,
+        isChoose: Boolean,
+        onClick: () -> Unit,
+) {
+    Row(
+            modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(Shapes.largeShimmer)
+                    .setChoose(isChoose)
+                    .clickable(onClick = onClick)
+                    .heightIn(min = LocalMinimumInteractiveComponentSize.current)
+                    .padding(vertical = Dimmens.extraSmallMargin, horizontal = Dimmens.smallMargin),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Dimmens.smallMargin),
+    ) {
+        BaseDescription(entity.state.icon.drawableRes, entity.name)
+
+        Icon(
+                imageVector = if (isChoose) Icons.Outlined.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
+                contentDescription = null,
+                tint = if (isChoose) AppTheme.colors.colorAccent else AppTheme.colors.disable,
+        )
+    }
+}
+
+@Composable
 private fun Modifier.setChoose(isChoose: Boolean): Modifier {
     return if (isChoose) {
         this.background(AppTheme.colors.colorPrimary)
@@ -734,36 +781,6 @@ internal fun SectionContainer(
         content.invoke()
     }
 }
-
-private fun previewNumberEntity(
-        value: String,
-        min: Double? = 0.0,
-        max: Double? = 100.0,
-        unit: String = "%",
-): HomeAssistantEntity<NumberAttribute> = HomeAssistantEntity(
-        entityId = "number.preview_value",
-        deviceId = "preview_device",
-        name = "Яркость",
-        platform = "mqtt",
-        services = setOf("set_value"),
-        entityCategory = EntityCategory.TARGET,
-        state = HomeAssistantState(
-                entityId = "number.preview_value",
-                attributes = NumberAttribute(
-                        jsonAttributes = JsonObject(emptyMap()),
-                        friendlyName = "Яркость",
-                        min = min,
-                        max = max,
-                        step = 1.0,
-                        mode = "slider",
-                        unitOfMeasurement = unit,
-                ),
-                allowedState = AllowedState.DigitState(value),
-                lastChanged = OffsetDateTime.MIN,
-                lastUpdated = null,
-        ),
-)
-
 
 private val previewBaseDeviceDetailController = object : BaseDeviceDetailController {
     override fun onBackClicked() = Unit

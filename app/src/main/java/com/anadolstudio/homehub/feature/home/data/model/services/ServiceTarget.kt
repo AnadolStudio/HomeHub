@@ -13,5 +13,4 @@ data class ServiceTarget(
     @SerialName("device_id") val deviceId: List<String>? = null,
     @SerialName("area_id") val areaId: List<String>? = null,
     @SerialName("label_id") val labelId: List<String>? = null,
-    @SerialName("floor_id") val floorId: List<String>? = null,
 )

@@ -1,4 +1,4 @@
-package com.anadolstudio.homehub.feature.sceneCreate.presentation.picker
+package com.anadolstudio.homehub.feature.devicePicker.presentation
 
 import androidx.lifecycle.viewModelScope
 import com.anadolstudio.homehub.base.viewmodel.StatefulViewModel
@@ -8,6 +8,7 @@ import com.anadolstudio.homehub.feature.home.domain.HAWebsocketRepository
 import com.anadolstudio.homehub.feature.home.domain.model.Area
 import com.anadolstudio.homehub.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.homehub.feature.main.MainGraph.navigateToDemoDeviceDetailFromPicker
+import com.anadolstudio.homehub.feature.main.MainGraph.navigateToEntityPicker
 import com.anadolstudio.utils.states.LoadingContext
 import com.anadolstudio.utils.states.lce.lceFlow
 import com.anadolstudio.utils.states.lce.onEachContent
@@ -18,11 +19,13 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.launchIn
 
-internal class SceneDevicePickerViewModel @AssistedInject constructor(
+internal class DevicePickerViewModel @AssistedInject constructor(
         @Assisted private val excludedDeviceIds: Set<String>,
+        @Assisted private val directResultKey: String?,
+        @Assisted private val mode: DevicePickerMode,
         private val websocketRepository: HAWebsocketRepository,
-) : StatefulViewModel<SceneDevicePickerScreenState>(SceneDevicePickerScreenState()),
-    SceneDevicePickerController {
+) : StatefulViewModel<DevicePickerScreenState>(DevicePickerScreenState()),
+    DevicePickerController {
 
     init {
         load(LoadingContext.INIT_LOADING)
@@ -59,7 +62,19 @@ internal class SceneDevicePickerViewModel @AssistedInject constructor(
     override fun onAreaSelected(area: Area?) = updateState { copy(selectedAreaId = area?.areaId) }
 
     override fun onDeviceClicked(device: HomeAssistantDevice) {
-        navigateToDemoDeviceDetailFromPicker(device = device, selectedEntitySet = emptySet())
+        when (mode) {
+            DevicePickerMode.AUTOMATION -> {
+                if (directResultKey != null) navigateUp(directResultKey to device)
+                navigateToEntityPicker(device = device, selectedEntitySet = emptySet())
+            }
+
+            DevicePickerMode.NORMAL ->
+                if (directResultKey != null) {
+                    navigateUp(directResultKey to device)
+                } else {
+                    navigateToDemoDeviceDetailFromPicker(device = device, selectedEntitySet = emptySet())
+                }
+        }
     }
 
     override fun onRetryClicked() = load(LoadingContext.RETRY)
@@ -68,6 +83,10 @@ internal class SceneDevicePickerViewModel @AssistedInject constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(excludedDeviceIds: Set<String>): SceneDevicePickerViewModel
+        fun create(
+                excludedDeviceIds: Set<String>,
+                directResultKey: String?,
+                mode: DevicePickerMode,
+        ): DevicePickerViewModel
     }
 }

@@ -91,6 +91,43 @@
     <string name="automation_detail_button_save">Save</string>
     <string name="automation_detail_action_edit">Edit</string>
     <string name="automation_detail_action_delete">Delete</string>
+    <string name="automation_detail_label_mode">Run mode</string>
+
+    <string name="automation_mode_picker_title">Change mode</string>
+    <string name="automation_mode_picker_confirm">Change mode</string>
+    <string name="automation_mode_picker_cancel">Cancel</string>
+    <string name="automation_mode_single_title">Single</string>
+    <string name="automation_mode_single_description">Show a warning without interrupting the running automation.</string>
+    <string name="automation_mode_restart_title">Restart</string>
+    <string name="automation_mode_restart_description">Stop the running automation and start it again.</string>
+    <string name="automation_mode_queued_title">Queued</string>
+    <string name="automation_mode_queued_description">Finish the running automation and start it again.</string>
+    <string name="automation_mode_parallel_title">Parallel</string>
+    <string name="automation_mode_parallel_description">Start the automation independently of the previous run.</string>
+
+    <string name="logic_block_operator_and">AND</string>
+    <string name="logic_block_operator_or">OR</string>
+    <string name="logic_block_operator_not">NOT</string>
+    <string name="logic_block_symbol_and">&amp;</string>
+    <string name="logic_block_symbol_or">∨</string>
+    <string name="logic_block_symbol_not">≠</string>
+    <string name="logic_block_state_title">State of \"%1$s\" —</string>
+    <string name="logic_block_state_title_with_state">State of \"%1$s\" — %2$s</string>
+    <string name="logic_block_state_on">On</string>
+    <string name="logic_block_state_off">Off</string>
+    <string name="logic_block_state_unknown">Unknown</string>
+    <string name="logic_block_state_unavailable">Unavailable</string>
+    <string name="logic_block_new_condition">New condition</string>
+    <string name="logic_block_error_into_itself">Can\'t move a block into itself</string>
+    <string name="logic_block_error_too_deep">Can\'t nest more than 3 levels</string>
+
+    <string name="automation_condition_picker_group_blocks">Logic blocks</string>
+    <string name="automation_condition_picker_group_objects">Objects</string>
+    <string name="automation_condition_picker_object">Object state</string>
+    <string name="automation_condition_numeric_title">Numeric condition</string>
+    <string name="automation_condition_above">Above</string>
+    <string name="automation_condition_below">Below</string>
+    <string name="automation_condition_state_title">State</string>
 
     <string name="scene_create_title_create">Create scene</string>
     <string name="scene_create_title_edit">Edit scene</string>

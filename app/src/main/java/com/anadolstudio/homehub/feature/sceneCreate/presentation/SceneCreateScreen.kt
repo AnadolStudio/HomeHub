@@ -335,7 +335,7 @@ private fun LazyListScope.devicesSection(
 }
 
 @Composable
-private fun DeviceCardView(
+internal fun DeviceCardView(
         card: DeviceDraftCard,
         onEditClicked: () -> Unit,
         onRemoveClicked: () -> Unit,

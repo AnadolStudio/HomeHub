@@ -88,6 +88,8 @@ internal object PreviewUtils {
             name = name,
             platform = "mqtt",
             state = state,
+            isTarget = true,
+            isCondition = true
     )
 
     val previewDevices: List<HomeAssistantDevice> = listOf(

@@ -11,6 +11,8 @@ import com.anadolstudio.homehub.feature.home.data.model.EntityRegistryListResult
 import com.anadolstudio.homehub.feature.home.data.model.ExtractFromTargetResult
 import com.anadolstudio.homehub.feature.home.data.model.StateResponse
 import com.anadolstudio.homehub.feature.home.data.model.UpdateDeviceRegistryRequest
+import com.anadolstudio.homehub.feature.home.data.model.automation.AutomationConfigResponse
+import com.anadolstudio.homehub.feature.home.data.model.automation.AutomationConfigResult
 import com.anadolstudio.homehub.feature.home.data.model.events.StateChangedEventResponse
 import com.anadolstudio.homehub.feature.home.data.model.registry.RegistryDeviceEventResponse
 import com.anadolstudio.homehub.feature.home.data.model.registry.toDomain
@@ -80,7 +82,10 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
         val stateMap = getAllStates().associateBy { states -> states.entityId }
         val regex = AllowedDomain.getRegex()
 
+        val allEntityId = mutableSetOf<String>()
+
         return entityRegistryListResult.entities
+                .also { allEntityId.addAll(it.map { entry -> entry.entityId })  }
                 .filter { entity -> entity.entityId.contains(regex) }
                 .mapNotNull { registryEntry ->
                     val state = stateMap[registryEntry.entityId] ?: return@mapNotNull null
@@ -139,7 +144,6 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
             put("target", json.encodeToJsonElement(ServiceTarget.serializer(), target))
             put("expand_group", expandGroup)
         }
-
         return webSocketCore.sendCommandForResult(
                 request = WsRequest(
                         command = Command.EXTRACT_FROM_TARGET,
@@ -148,6 +152,35 @@ internal class HAWebsocketRepositoryImpl @Inject constructor(
                 deserializer = ExtractFromTargetResult.serializer(),
         )
     }
+
+    override suspend fun getTriggersForTarget(target: ServiceTarget): ExtractFromTargetResult =
+            getForTarget(Command.GET_TRIGGERS_FOR_TARGET, target) // TODO
+
+    override suspend fun getConditionsForTarget(target: ServiceTarget): ExtractFromTargetResult =
+            getForTarget(Command.GET_CONDITIONS_FOR_TARGET, target) // TODO
+
+    override suspend fun getServicesForTarget(target: ServiceTarget): ExtractFromTargetResult =
+            getForTarget(Command.GET_SERVICES_FOR_TARGET, target) // TODO
+
+    private suspend fun getForTarget(command: Command, target: ServiceTarget): ExtractFromTargetResult =
+            webSocketCore.sendCommandForResult(
+                    request = WsRequest(
+                            command = command,
+                            payload = buildJsonObject {
+                                put("target", json.encodeToJsonElement(ServiceTarget.serializer(), target))
+                            },
+                    ),
+                    deserializer = ExtractFromTargetResult.serializer(),
+            )
+
+    override suspend fun getAutomationConfig(entityId: String): AutomationConfigResponse =
+            webSocketCore.sendCommandForResult(
+                    request = WsRequest(
+                            command = Command.GET_AUTOMATION_CONFIG,
+                            payload = buildJsonObject { put("entity_id", entityId) },
+                    ),
+                    deserializer = AutomationConfigResult.serializer(),
+            ).config
 
     override suspend fun callService(
             entityId: String,

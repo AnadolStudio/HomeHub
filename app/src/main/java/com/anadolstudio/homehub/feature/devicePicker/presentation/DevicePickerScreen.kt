@@ -1,4 +1,4 @@
-package com.anadolstudio.homehub.feature.sceneCreate.presentation.picker
+package com.anadolstudio.homehub.feature.devicePicker.presentation
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -50,20 +50,22 @@ import com.anadolstudio.homehub.feature.main.NavigationController
 import com.anadolstudio.utils.states.ProgressState
 
 @Composable
-internal fun SceneDevicePickerScreen(
+internal fun DevicePickerScreen(
         navigator: NavigationController,
         snackbarHostState: SnackbarHostState,
         excludedDeviceIds: Set<String>,
+        directResultKey: String? = null,
+        mode: DevicePickerMode = DevicePickerMode.NORMAL,
 ) {
-    val factory = rememberViewModelFactory<SceneDevicePickerViewModel.Factory>()
-    val viewModel = assistedViewModel { factory.create(excludedDeviceIds) }
+    val factory = rememberViewModelFactory<DevicePickerViewModel.Factory>()
+    val viewModel = assistedViewModel { factory.create(excludedDeviceIds, directResultKey, mode) }
 
     val state by viewModel.stateFlow.collectAsState()
     ObserveEvents(viewModel.events, snackbarHostState, navigator)
 
     BackHandler { viewModel.onCloseClicked() }
 
-    SceneDevicePickerLayout(
+    DevicePickerLayout(
             state = state,
             controller = viewModel,
             onDeviceClicked = { item -> viewModel.onDeviceClicked(item.device) },
@@ -71,9 +73,9 @@ internal fun SceneDevicePickerScreen(
 }
 
 @Composable
-private fun SceneDevicePickerLayout(
-        state: SceneDevicePickerScreenState,
-        controller: SceneDevicePickerController,
+private fun DevicePickerLayout(
+        state: DevicePickerScreenState,
+        controller: DevicePickerController,
         onDeviceClicked: (DeviceListItem) -> Unit,
 ) {
     Column(
@@ -254,4 +256,3 @@ private fun ErrorContent(onRetryClicked: () -> Unit) {
         }
     }
 }
-

@@ -1,9 +1,9 @@
-package com.anadolstudio.homehub.feature.sceneCreate.presentation.picker
+package com.anadolstudio.homehub.feature.devicePicker.presentation
 
 import com.anadolstudio.homehub.feature.home.domain.model.Area
 import com.anadolstudio.homehub.feature.home.domain.model.HomeAssistantDevice
 
-internal interface SceneDevicePickerController {
+internal interface DevicePickerController {
 
     fun onSearchQueryChanged(query: String)
 

@@ -1,4 +1,4 @@
-package com.anadolstudio.homehub.feature.sceneCreate.presentation.picker
+package com.anadolstudio.homehub.feature.devicePicker.presentation
 
 import androidx.compose.runtime.Immutable
 import com.anadolstudio.homehub.feature.home.domain.model.Area
@@ -7,7 +7,7 @@ import com.anadolstudio.homehub.feature.sceneCreate.domain.isSupportedInScene
 import com.anadolstudio.utils.states.ProgressState
 
 @Immutable
-internal data class SceneDevicePickerScreenState(
+internal data class DevicePickerScreenState(
         val allDevices: List<HomeAssistantDevice> = emptyList(),
         val availableAreas: List<Area> = emptyList(),
         val searchQuery: String = "",

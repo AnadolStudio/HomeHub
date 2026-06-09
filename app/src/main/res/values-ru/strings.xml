@@ -89,6 +89,40 @@
     <string name="automation_detail_button_save">Сохранить</string>
     <string name="automation_detail_action_edit">Изменить</string>
     <string name="automation_detail_action_delete">Удалить</string>
+    <string name="automation_detail_label_mode">Режим запуска</string>
+
+    <string name="automation_mode_picker_title">Изменить режим</string>
+    <string name="automation_mode_picker_confirm">Изменить режим</string>
+    <string name="automation_mode_picker_cancel">Отменить</string>
+    <string name="automation_mode_single_title">Одиночный</string>
+    <string name="automation_mode_single_description">Выдать предупреждение не прерывая работу автоматизации.</string>
+    <string name="automation_mode_restart_title">Рестарт</string>
+    <string name="automation_mode_restart_description">Прервать работу автоматизации и запустить снова.</string>
+    <string name="automation_mode_queued_title">Очередь</string>
+    <string name="automation_mode_queued_description">Завершить работу автоматизации и запустить снова.</string>
+    <string name="automation_mode_parallel_title">Параллельный</string>
+    <string name="automation_mode_parallel_description">Запустить автоматизацию независимо от предыдущего запуска.</string>
+
+    <string name="logic_block_operator_and">И</string>
+    <string name="logic_block_operator_or">ИЛИ</string>
+    <string name="logic_block_operator_not">НЕ</string>
+    <string name="logic_block_state_title">Состояние объекта \"%1$s\" —</string>
+    <string name="logic_block_state_title_with_state">Состояние объекта \"%1$s\" — %2$s</string>
+    <string name="logic_block_state_on">Включено</string>
+    <string name="logic_block_state_off">Выключено</string>
+    <string name="logic_block_state_unknown">Неизвестно</string>
+    <string name="logic_block_state_unavailable">Недоступно</string>
+    <string name="logic_block_new_condition">Новое условие</string>
+    <string name="logic_block_error_into_itself">Нельзя переместить блок внутрь самого себя</string>
+    <string name="logic_block_error_too_deep">Нельзя вкладывать больше 3 уровней</string>
+
+    <string name="automation_condition_picker_group_blocks">Логические блоки</string>
+    <string name="automation_condition_picker_group_objects">Объекты</string>
+    <string name="automation_condition_picker_object">Состояние объекта</string>
+    <string name="automation_condition_numeric_title">Числовое условие</string>
+    <string name="automation_condition_above">Выше</string>
+    <string name="automation_condition_below">Ниже</string>
+    <string name="automation_condition_state_title">Состояние</string>
 
     <string name="scene_create_title_create">Создание сцены</string>
     <string name="scene_create_title_edit">Редактирование сцены</string>

@@ -2,6 +2,7 @@ package com.anadolstudio.homehub.feature.automation.automationDetail.presentatio
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,6 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Icon
@@ -31,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
@@ -45,22 +48,41 @@ import com.anadolstudio.compose.ui.view.snackbar.SnackbarHostState
 import com.anadolstudio.compose.ui.view.text.LargeTextField
 import com.anadolstudio.homehub.R
 import com.anadolstudio.homehub.base.dialog.AlertDialog
-import com.anadolstudio.homehub.di.viewmodel.daggerViewModel
+import com.anadolstudio.homehub.di.viewmodel.assistedViewModel
+import com.anadolstudio.homehub.di.viewmodel.rememberViewModelFactory
 import com.anadolstudio.homehub.event.ObserveEvents
-import com.anadolstudio.homehub.feature.automation.automationDetail.presentation.items.ConditionItem
-import com.anadolstudio.homehub.feature.automation.automationDetail.presentation.items.ServiceItem
 import com.anadolstudio.homehub.feature.automation.automationDetail.presentation.items.TriggerItem
+import com.anadolstudio.homehub.feature.automation.automationDetail.presentation.logic_block.LogicBlockEditor
+import com.anadolstudio.homehub.feature.automation.automationDetail.presentation.logic_block.LogicOperator
+import com.anadolstudio.homehub.feature.automation.automationMode.presentation.AUTOMATION_MODE_RESULT_KEY
+import com.anadolstudio.homehub.feature.automation.common.presentation.AutomationMode
+import com.anadolstudio.homehub.feature.deviceDetail.demo.DemoDeviceDetailResult
+import com.anadolstudio.homehub.feature.deviceDetail.entityPicker.EntityPickerResult
+import com.anadolstudio.homehub.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.homehub.feature.main.NavigationController
+import com.anadolstudio.homehub.feature.sceneCreate.presentation.DeviceCardView
+import com.anadolstudio.homehub.feature.sceneCreate.presentation.SCENE_DEVICE_SNAPSHOT_KEY
+import com.anadolstudio.homehub.navigation.ObserveResultValue
 import com.anadolstudio.utils.states.ProgressState
 
 @Composable
 internal fun AutomationDetailScreen(
         navigator: NavigationController,
         snackbarHostState: SnackbarHostState,
-        viewModel: AutomationDetailViewModel = daggerViewModel(),
+        automationId: String?,
 ) {
+    val factory = rememberViewModelFactory<AutomationDetailViewModel.Factory>()
+    val viewModel = assistedViewModel { factory.create(automationId) }
     val state by viewModel.stateFlow.collectAsState()
     ObserveEvents(viewModel.events, snackbarHostState, navigator)
+    ObserveResultValue<AutomationMode>(navigator = navigator, key = AUTOMATION_MODE_RESULT_KEY, onValue = viewModel::onModeChanged)
+    ObserveResultValue<HomeAssistantDevice>(navigator = navigator, key = AUTOMATION_TRIGGER_DEVICE_KEY, onValue = viewModel::onTriggerDeviceAdded)
+    ObserveResultValue<HomeAssistantDevice>(navigator = navigator, key = SCENE_DEVICE_SNAPSHOT_KEY, onValue = viewModel::onServiceDeviceAdded)
+    ObserveResultValue<Set<String>>(navigator = navigator, key = DemoDeviceDetailResult.KEY, onValue = viewModel::onServiceConfigured)
+    ObserveResultValue<LogicOperator>(navigator = navigator, key = AUTOMATION_CONDITION_OPERATOR_KEY, onValue = viewModel::onConditionBlockChosen)
+    ObserveResultValue<HomeAssistantDevice>(navigator = navigator, key = AUTOMATION_CONDITION_DEVICE_KEY, onValue = viewModel::onConditionDeviceChosen)
+    // Must come after the device observers so the pending target/device is set before the entity set is applied.
+    ObserveResultValue<Set<String>>(navigator = navigator, key = EntityPickerResult.KEY, onValue = viewModel::onEntitiesConfigured)
 
     AutomationDetailLayout(state = state, controller = viewModel)
 }
@@ -112,7 +134,46 @@ private fun AutomationDetailLayout(
                 }
             }
 
-            item(key = "name_to_triggers_spacer") { Spacer(modifier = Modifier.height(24.dp)) }
+            item(key = "name_to_mode_spacer") { Spacer(modifier = Modifier.height(24.dp)) }
+
+            item(key = "mode_field") {
+                Column(
+                        modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = Dimmens.mainMargin),
+                ) {
+                    Text(
+                            text = stringResource(R.string.automation_detail_label_mode),
+                            style = AppTheme.typography.textMedium18,
+                            color = AppTheme.colors.colorAccent,
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                            modifier = Modifier
+                                    .fillMaxWidth()
+                                    .shadow(2.dp, Shapes.largeShimmer)
+                                    .background(AppTheme.colors.colorPrimary)
+                                    .clip(Shapes.largeShimmer)
+                                    .clickable(onClick = controller::onModeClicked)
+                                    .padding(horizontal = Dimmens.mediumMargin, vertical = Dimmens.mediumMargin),
+                            verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                                modifier = Modifier.weight(1f),
+                                text = stringResource(state.mode.titleRes),
+                                style = AppTheme.typography.textMedium18,
+                                color = AppTheme.colors.colorAccent,
+                        )
+                        Icon(
+                                imageVector = Icons.Outlined.ChevronRight,
+                                contentDescription = null,
+                                tint = AppTheme.colors.colorAccent,
+                        )
+                    }
+                }
+            }
+
+            item(key = "mode_to_triggers_spacer") { Spacer(modifier = Modifier.height(24.dp)) }
 
             triggersSection(
                     state = state,
@@ -216,7 +277,8 @@ private fun LazyListScope.triggersSection(
                             .animateItem(),
                     title = trigger.title,
                     subtitle = trigger.subtitle,
-                    onEditClicked = { controller.onTriggerEditClicked(trigger) },
+                    image = trigger.image,
+                    onClick = { controller.onTriggerEditClicked(trigger) },
                     onDeleteClicked = { controller.onTriggerDeleteClicked(trigger) },
             )
         }
@@ -232,25 +294,23 @@ private fun LazyListScope.conditionsSection(
             keyPrefix = "conditions",
             titleRes = R.string.automation_detail_section_conditions,
             addButtonRes = R.string.automation_detail_button_add_condition,
-            onAddClicked = controller::onAddConditionClicked,
+            onAddClicked = {},
             onInfoClicked = onInfoClicked,
+            showAddButton = false,
     )
 
-    if (state.conditions.isEmpty()) {
-        emptySection(keyPrefix = "conditions", textRes = R.string.automation_detail_empty_conditions)
-    } else {
-        items(items = state.conditions, key = { "condition_${it.id}" }) { condition ->
-            ConditionItem(
-                    modifier = Modifier
-                            .padding(horizontal = Dimmens.mainMargin)
-                            .padding(bottom = 12.dp)
-                            .animateItem(),
-                    title = condition.title,
-                    subtitle = condition.subtitle,
-                    onEditClicked = { controller.onConditionEditClicked(condition) },
-                    onDeleteClicked = { controller.onConditionDeleteClicked(condition) },
-            )
-        }
+    item(key = "conditions_editor") {
+        LogicBlockEditor(
+                modifier = Modifier
+                        .padding(horizontal = Dimmens.mainMargin)
+                        .animateItem(),
+                nodes = state.conditionTree,
+                onDelete = controller::onConditionDeleted,
+                onToggleCollapse = controller::onConditionCollapseToggled,
+                onAddCondition = controller::onAddConditionClicked,
+                onLeafClicked = controller::onConditionLeafClicked,
+                onEntityValueChanged = controller::onConditionEntityValueChanged,
+        )
     }
 }
 
@@ -271,15 +331,15 @@ private fun LazyListScope.servicesSection(
         emptySection(keyPrefix = "services", textRes = R.string.automation_detail_empty_services)
     } else {
         items(items = state.services, key = { "service_${it.id}" }) { service ->
-            ServiceItem(
+            DeviceCardView(
                     modifier = Modifier
                             .padding(horizontal = Dimmens.mainMargin)
                             .padding(bottom = 12.dp)
                             .animateItem(),
-                    title = service.title,
-                    subtitle = service.subtitle,
+                    card = service,
                     onEditClicked = { controller.onServiceEditClicked(service) },
-                    onDeleteClicked = { controller.onServiceDeleteClicked(service) },
+                    onRemoveClicked = { controller.onServiceDeleteClicked(service) },
+                    onEntityRemoved = { entityState -> controller.onServiceEntityRemoved(service.id, entityState) },
             )
         }
     }
@@ -291,6 +351,7 @@ private fun LazyListScope.sectionHeader(
         @StringRes addButtonRes: Int,
         onAddClicked: () -> Unit,
         onInfoClicked: () -> Unit,
+        showAddButton: Boolean = true,
 ) {
     item(key = "${keyPrefix}_title") {
         Row(
@@ -316,16 +377,18 @@ private fun LazyListScope.sectionHeader(
 
     item(key = "${keyPrefix}_title_spacer") { Spacer(modifier = Modifier.height(8.dp)) }
 
-    item(key = "${keyPrefix}_add_button") {
-        OutlineButtonLarge(
-                modifier = Modifier.padding(horizontal = Dimmens.mainMargin),
-                text = stringResource(addButtonRes),
-                onClick = onAddClicked,
-                icon = rememberVectorPainter(Icons.Outlined.Add),
-        )
-    }
+    if (showAddButton) {
+        item(key = "${keyPrefix}_add_button") {
+            OutlineButtonLarge(
+                    modifier = Modifier.padding(horizontal = Dimmens.mainMargin),
+                    text = stringResource(addButtonRes),
+                    onClick = onAddClicked,
+                    icon = rememberVectorPainter(Icons.Outlined.Add),
+            )
+        }
 
-    item(key = "${keyPrefix}_add_button_spacer") { Spacer(modifier = Modifier.height(12.dp)) }
+        item(key = "${keyPrefix}_add_button_spacer") { Spacer(modifier = Modifier.height(12.dp)) }
+    }
 }
 
 private fun LazyListScope.emptySection(

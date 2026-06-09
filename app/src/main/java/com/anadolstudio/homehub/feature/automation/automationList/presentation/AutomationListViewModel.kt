@@ -126,8 +126,8 @@ internal class AutomationListViewModel @Inject constructor(
         }
     }
 
-    override fun onAutomationItemClicked() {
-        navigateToAutomationDetail()
+    override fun onAutomationItemClicked(automation: HomeAssistantEntity<AutomationAttributes>) {
+        navigateToAutomationDetail(automation.entityId)
     }
 
     override fun onSceneListRefreshRequested() {

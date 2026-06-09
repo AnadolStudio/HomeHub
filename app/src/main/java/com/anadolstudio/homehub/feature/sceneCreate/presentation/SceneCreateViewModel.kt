@@ -11,7 +11,7 @@ import com.anadolstudio.homehub.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.homehub.feature.home.domain.model.scene.SceneConfig
 import com.anadolstudio.homehub.feature.home.domain.model.states.HomeAssistantState
 import com.anadolstudio.homehub.feature.main.MainGraph.navigateToDemoDeviceDetailFromSceneCreate
-import com.anadolstudio.homehub.feature.main.MainGraph.navigateToSceneDevicePicker
+import com.anadolstudio.homehub.feature.main.MainGraph.navigateToDevicePicker
 import com.anadolstudio.homehub.feature.sceneCreate.util.slugify
 import com.anadolstudio.homehub.util.mapIfContains
 import com.anadolstudio.utils.states.LoadingContext
@@ -96,7 +96,7 @@ internal class SceneCreateViewModel @AssistedInject constructor(
         updateState { copy(name = value, sceneConfigId = sceneConfigId) }
     }
 
-    override fun onAddClicked() = navigateToSceneDevicePicker(state.selectedDeviceDraftSet.map { it.id }.toSet())
+    override fun onAddClicked() = navigateToDevicePicker(state.selectedDeviceDraftSet.map { it.id }.toSet())
 
     override fun onDeviceEditClicked(deviceDraft: DeviceDraftCard) {
         lceFlow { websocketRepository.getDevice(deviceId = deviceDraft.id, useCache = true) }

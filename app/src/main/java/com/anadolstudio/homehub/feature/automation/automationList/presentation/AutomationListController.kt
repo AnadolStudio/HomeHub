@@ -7,7 +7,7 @@ import com.anadolstudio.homehub.feature.home.domain.model.states.SceneAttributes
 
 internal interface AutomationListController {
 
-    fun onAutomationItemClicked()
+    fun onAutomationItemClicked(automation: HomeAssistantEntity<AutomationAttributes>)
     fun onAutomationItemEnableChanged(entity: HomeAssistantEntity<HomeAssistantAttribute>)
     fun onAutomationItemDeleteClicked(automation: HomeAssistantEntity<AutomationAttributes>)
     fun onTabSelected(tab: AutomationTab)

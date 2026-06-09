@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.anadolstudio.compose.ui.theme.AppTheme
@@ -123,13 +124,8 @@ private fun ModeOption(
     Row(
             modifier = Modifier
                     .fillMaxWidth()
-                    .clip(shape)
-                    .background(if (selected) AppTheme.colors.colorAccent.copy(alpha = 0.12f) else AppTheme.colors.colorPrimary)
-                    .border(
-                            width = 1.dp,
-                            color = if (selected) AppTheme.colors.colorAccent else AppTheme.colors.divider,
-                            shape = shape,
-                    )
+                    .shadow(Dimmens.baseElevation, shape)
+                    .background(AppTheme.colors.colorPrimary)
                     .clickable(onClick = onClick)
                     .padding(Dimmens.mediumMargin),
             verticalAlignment = Alignment.Top,

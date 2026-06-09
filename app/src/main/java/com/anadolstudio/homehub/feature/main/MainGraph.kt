@@ -17,6 +17,10 @@ import com.anadolstudio.homehub.feature.add_device.common.BaseAddDeviceViewModel
 import com.anadolstudio.homehub.feature.autoSetupHomeAssistantUrl.domain.model.HomeAssistantInstance
 import com.anadolstudio.homehub.feature.autoSetupHomeAssistantUrl.presetnation.AutoSetupHomeAssistantUrlScreen
 import com.anadolstudio.homehub.feature.autoSetupHomeAssistantUrl.presetnation.AutoSetupHomeAssistantUrlViewModel
+import com.anadolstudio.homehub.feature.automation.automationConditionPicker.presentation.AutomationConditionPickerScreen
+import com.anadolstudio.homehub.feature.automation.automationConditionPicker.presentation.AutomationConditionPickerViewModel
+import com.anadolstudio.homehub.feature.automation.automationDetail.presentation.AUTOMATION_CONDITION_DEVICE_KEY
+import com.anadolstudio.homehub.feature.automation.automationDetail.presentation.AUTOMATION_TRIGGER_DEVICE_KEY
 import com.anadolstudio.homehub.feature.automation.automationDetail.presentation.AutomationDetailScreen
 import com.anadolstudio.homehub.feature.automation.automationDetail.presentation.AutomationDetailViewModel
 import com.anadolstudio.homehub.feature.automation.automationList.presentation.AutomationListScreen
@@ -24,7 +28,11 @@ import com.anadolstudio.homehub.feature.automation.automationList.presentation.A
 import com.anadolstudio.homehub.feature.automation.automationMode.presentation.AutomationModePickerScreen
 import com.anadolstudio.homehub.feature.automation.common.presentation.AutomationMode
 import com.anadolstudio.homehub.feature.deviceDetail.demo.DemoDeviceDetailScreen
+import com.anadolstudio.homehub.feature.deviceDetail.entityPicker.EntityPickerScreen
 import com.anadolstudio.homehub.feature.deviceDetail.ordinary.presentation.DeviceDetailScreen
+import com.anadolstudio.homehub.feature.devicePicker.presentation.DevicePickerMode
+import com.anadolstudio.homehub.feature.devicePicker.presentation.DevicePickerScreen
+import com.anadolstudio.homehub.feature.devicePicker.presentation.DevicePickerViewModel
 import com.anadolstudio.homehub.feature.history.presentation.HistoryScreen
 import com.anadolstudio.homehub.feature.home.domain.model.HomeAssistantDevice
 import com.anadolstudio.homehub.feature.home.presentation.HomeScreen
@@ -36,13 +44,15 @@ import com.anadolstudio.homehub.feature.registerUser.presentation.RegisterUserVi
 import com.anadolstudio.homehub.feature.sceneCreate.presentation.SCENE_DEVICE_SNAPSHOT_KEY
 import com.anadolstudio.homehub.feature.sceneCreate.presentation.SceneCreateScreen
 import com.anadolstudio.homehub.feature.sceneCreate.presentation.SceneCreateViewModel
-import com.anadolstudio.homehub.feature.sceneCreate.presentation.picker.SceneDevicePickerScreen
-import com.anadolstudio.homehub.feature.sceneCreate.presentation.picker.SceneDevicePickerViewModel
 import com.anadolstudio.homehub.feature.splash.SplashScreen
 import com.anadolstudio.homehub.feature.splash.SplashViewModel
 import com.anadolstudio.homehub.navigation.NavGraphContract
+import com.anadolstudio.homehub.navigation.booleanArgument
 import com.anadolstudio.homehub.navigation.enumArgument
+import com.anadolstudio.homehub.navigation.getStringArgument
 import com.anadolstudio.homehub.navigation.objectToString
+import com.anadolstudio.homehub.navigation.optionalStringArgument
+import com.anadolstudio.homehub.navigation.requireBooleanArgument
 import com.anadolstudio.homehub.navigation.requireEnumArgument
 import com.anadolstudio.homehub.navigation.requireObject
 import com.anadolstudio.homehub.navigation.requireStringArgument
@@ -93,12 +103,27 @@ internal object MainGraph : NavGraphContract() {
 
     private fun automationList() = route { "automationList" }
 
+    private val automationIdArgument = optionalStringArgument(name = "automationId")
+
+    private fun automationDetailRoute() = route { "automationDetail?automationId={${automationIdArgument.name}}" }
+
     private fun automationDetail() = route { "automationDetail" }
+
+    private fun automationDetail(automationId: String): String =
+            route { "automationDetail?automationId=${Uri.encode(automationId)}" }
 
     private fun automationModePicker() = route { "automationModePicker/{${automationModeArgument.name}}" }
 
     private fun automationModePicker(mode: AutomationMode): String =
             route { "automationModePicker/${mode.name}" }
+
+    private val conditionBlocksEnabledArgument = booleanArgument(name = "blocksEnabled")
+
+    private fun automationConditionPickerRoute() =
+            route { "automationConditionPicker/{${conditionBlocksEnabledArgument.name}}" }
+
+    private fun automationConditionPicker(blocksEnabled: Boolean): String =
+            route { "automationConditionPicker/$blocksEnabled" }
 
     private fun sceneDetail() = route { "sceneDetail" }
 
@@ -109,10 +134,27 @@ internal object MainGraph : NavGraphContract() {
     private fun sceneEdit(sceneConfigId: String): String =
             route { "sceneEdit/${Uri.encode(sceneConfigId)}" }
 
-    private fun sceneDevicePicker() = route { "sceneDevicePicker/{${excludedDeviceIdsArgument.name}}" }
+    private val devicePickerResultKeyArgument = optionalStringArgument(name = "resultKey")
 
-    private fun sceneDevicePicker(excludedDeviceIds: Set<String>): String =
-            route { "sceneDevicePicker/${Uri.encode(objectToString(excludedDeviceIds))}" }
+    private val devicePickerModeArgument = optionalStringArgument(name = "mode")
+
+    private fun devicePicker() = route {
+        "devicePicker/{${excludedDeviceIdsArgument.name}}" +
+                "?resultKey={${devicePickerResultKeyArgument.name}}" +
+                "&mode={${devicePickerModeArgument.name}}"
+    }
+
+    private fun devicePicker(excludedDeviceIds: Set<String>): String =
+            route { "devicePicker/${Uri.encode(objectToString(excludedDeviceIds))}" }
+
+    private fun devicePicker(excludedDeviceIds: Set<String>, resultKey: String): String =
+            route { "devicePicker/${Uri.encode(objectToString(excludedDeviceIds))}?resultKey=${Uri.encode(resultKey)}" }
+
+    private fun devicePicker(excludedDeviceIds: Set<String>, resultKey: String, mode: DevicePickerMode): String =
+            route {
+                "devicePicker/${Uri.encode(objectToString(excludedDeviceIds))}" +
+                        "?resultKey=${Uri.encode(resultKey)}&mode=${mode.name}"
+            }
 
     private fun deviceDetail() = route { "deviceDetail/{${deviceArgument.name}}" }
 
@@ -126,6 +168,17 @@ internal object MainGraph : NavGraphContract() {
     private fun demoDeviceDetail(device: HomeAssistantDevice, selectedEntitySet: Set<String>): String =
             route {
                 "demoDeviceDetail/" +
+                        "${Uri.encode(objectToString(device))}/" +
+                        Uri.encode(objectToString(selectedEntitySet))
+            }
+
+    private fun entityPicker() = route {
+        "entityPicker/{${deviceArgument.name}}/{${selectedEntitySetArgument.name}}"
+    }
+
+    private fun entityPicker(device: HomeAssistantDevice, selectedEntitySet: Set<String>): String =
+            route {
+                "entityPicker/" +
                         "${Uri.encode(objectToString(device))}/" +
                         Uri.encode(objectToString(selectedEntitySet))
             }
@@ -184,8 +237,15 @@ internal object MainGraph : NavGraphContract() {
         composable(automationList()) {
             AutomationListScreen(navigator = navigator, snackbarHostState = snackbarHostState)
         }
-        composable(automationDetail()) {
-            AutomationDetailScreen(navigator = navigator, snackbarHostState = snackbarHostState)
+        composable(
+                route = automationDetailRoute(),
+                arguments = listOf(automationIdArgument),
+        ) { entry ->
+            AutomationDetailScreen(
+                    navigator = navigator,
+                    snackbarHostState = snackbarHostState,
+                    automationId = entry.getStringArgument(automationIdArgument),
+            )
         }
         bottomSheet(
                 route = automationModePicker(),
@@ -197,6 +257,17 @@ internal object MainGraph : NavGraphContract() {
                     navigator = navigator,
                     snackbarHostState = snackbarHostState,
                     currentMode = mode,
+            )
+        }
+        bottomSheet(
+                route = automationConditionPickerRoute(),
+                arguments = listOf(conditionBlocksEnabledArgument),
+        ) { entry ->
+            if (entry.lifecycle.currentState == Lifecycle.State.DESTROYED) return@bottomSheet
+            AutomationConditionPickerScreen(
+                    navigator = navigator,
+                    snackbarHostState = snackbarHostState,
+                    blocksEnabled = entry.requireBooleanArgument(conditionBlocksEnabledArgument),
             )
         }
         composable(sceneCreate()) {
@@ -214,14 +285,19 @@ internal object MainGraph : NavGraphContract() {
             )
         }
         composable(
-                route = sceneDevicePicker(),
-                arguments = listOf(excludedDeviceIdsArgument),
+                route = devicePicker(),
+                arguments = listOf(excludedDeviceIdsArgument, devicePickerResultKeyArgument, devicePickerModeArgument),
         ) { entry ->
             val excludedDeviceIds = entry.requireObject<Set<String>>(excludedDeviceIdsArgument)
-            SceneDevicePickerScreen(
+            val mode = entry.getStringArgument(devicePickerModeArgument)
+                    ?.let { DevicePickerMode.valueOf(it) }
+                    ?: DevicePickerMode.NORMAL
+            DevicePickerScreen(
                     navigator = navigator,
                     snackbarHostState = snackbarHostState,
                     excludedDeviceIds = excludedDeviceIds,
+                    directResultKey = entry.getStringArgument(devicePickerResultKeyArgument),
+                    mode = mode,
             )
         }
         bottomSheet(
@@ -247,6 +323,20 @@ internal object MainGraph : NavGraphContract() {
             val device = entry.requireObject<HomeAssistantDevice>(deviceArgument)
             val selectedEntitySet = entry.requireObject<Set<String>>(selectedEntitySetArgument)
             DemoDeviceDetailScreen(
+                    navigator = navigator,
+                    snackbarHostState = snackbarHostState,
+                    device = device,
+                    selectedEntitySet = selectedEntitySet,
+            )
+        }
+        bottomSheet(
+                route = entityPicker(),
+                arguments = listOf(deviceArgument, selectedEntitySetArgument),
+        ) { entry ->
+            if (entry.lifecycle.currentState == Lifecycle.State.DESTROYED) return@bottomSheet
+            val device = entry.requireObject<HomeAssistantDevice>(deviceArgument)
+            val selectedEntitySet = entry.requireObject<Set<String>>(selectedEntitySetArgument)
+            EntityPickerScreen(
                     navigator = navigator,
                     snackbarHostState = snackbarHostState,
                     device = device,
@@ -299,8 +389,19 @@ internal object MainGraph : NavGraphContract() {
 
     fun AutomationListViewModel.navigateToAutomationDetail() = navigateTo(automationDetail())
 
+    fun AutomationListViewModel.navigateToAutomationDetail(automationId: String) =
+            navigateTo(automationDetail(automationId))
+
     fun AutomationDetailViewModel.navigateToAutomationModePicker(mode: AutomationMode) =
             navigateTo(automationModePicker(mode))
+
+    fun AutomationDetailViewModel.navigateToConditionPicker(blocksEnabled: Boolean) =
+            navigateTo(automationConditionPicker(blocksEnabled))
+
+    fun AutomationConditionPickerViewModel.navigateToConditionDevicePicker() {
+        navigateUp()
+        navigateTo(devicePicker(emptySet(), AUTOMATION_CONDITION_DEVICE_KEY, DevicePickerMode.AUTOMATION))
+    }
 
     fun AutomationListViewModel.navigateToSceneDetail() = navigateTo(sceneDetail())
 
@@ -309,15 +410,38 @@ internal object MainGraph : NavGraphContract() {
     fun AutomationListViewModel.navigateToSceneEdit(sceneConfigId: String) =
             navigateTo(sceneEdit(sceneConfigId))
 
-    fun SceneCreateViewModel.navigateToSceneDevicePicker(excludedDeviceIds: Set<String>) =
-            navigateTo(sceneDevicePicker(excludedDeviceIds))
+    fun SceneCreateViewModel.navigateToDevicePicker(excludedDeviceIds: Set<String>) =
+            navigateTo(devicePicker(excludedDeviceIds))
+
+    fun AutomationDetailViewModel.navigateToDevicePicker(excludedDeviceIds: Set<String>) =
+            navigateTo(devicePicker(excludedDeviceIds, AUTOMATION_TRIGGER_DEVICE_KEY, DevicePickerMode.AUTOMATION))
+
+    // Service add reuses the scene device-config flow (DevicePicker -> DemoDeviceDetail), so no
+    // direct result key — the device snapshot and selected entities come back via the shared keys.
+    fun AutomationDetailViewModel.navigateToServiceDevicePicker(excludedDeviceIds: Set<String>) =
+            navigateTo(devicePicker(excludedDeviceIds))
+
+    fun AutomationDetailViewModel.navigateToServiceDeviceDetail(
+            device: HomeAssistantDevice,
+            selectedEntitySet: Set<String>,
+    ) = navigateTo(demoDeviceDetail(device, selectedEntitySet))
 
     fun SceneCreateViewModel.navigateToDemoDeviceDetailFromSceneCreate(
             device: HomeAssistantDevice,
             selectedEntitySet: Set<String>,
     ) = navigateTo(demoDeviceDetail(device, selectedEntitySet))
 
-    fun SceneDevicePickerViewModel.navigateToDemoDeviceDetailFromPicker(
+    fun DevicePickerViewModel.navigateToEntityPicker(
+            device: HomeAssistantDevice,
+            selectedEntitySet: Set<String>,
+    ) = navigateTo(entityPicker(device, selectedEntitySet))
+
+    fun AutomationDetailViewModel.navigateToEntityPicker(
+            device: HomeAssistantDevice,
+            selectedEntitySet: Set<String>,
+    ) = navigateTo(entityPicker(device, selectedEntitySet))
+
+    fun DevicePickerViewModel.navigateToDemoDeviceDetailFromPicker(
             device: HomeAssistantDevice,
             selectedEntitySet: Set<String>,
     ) {

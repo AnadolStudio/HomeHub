@@ -21,6 +21,8 @@ data class HomeAssistantEntity<out Attribute : HomeAssistantAttribute>(
         val services: Set<String>,
         val entityCategory: EntityCategory,
         val state: HomeAssistantState<Attribute>,
+        val isTarget: Boolean = state != null,
+        val isCondition: Boolean = state != null,
 ) : DomainParser, Parcelable
 
 fun <E : HomeAssistantAttribute, T : HomeAssistantAttribute> HomeAssistantEntity<E>.mapAttributes(
@@ -32,7 +34,9 @@ fun <E : HomeAssistantAttribute, T : HomeAssistantAttribute> HomeAssistantEntity
         services = services,
         entityCategory = entityCategory,
         platform = platform,
-        state = state.mapAttributes(block)
+        state = state.mapAttributes(block),
+        isTarget = isTarget,
+        isCondition = isCondition,
 )
 
 inline fun <reified Attribute : HomeAssistantAttribute> List<HomeAssistantEntity<HomeAssistantAttribute>>.castEntityList() = this
