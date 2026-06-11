@@ -17,13 +17,112 @@
 
     <string name="automation_button">Автоматизации</string>
 
+    <string name="add_title">Что добавить?</string>
+    <string name="add_button_zigbee">Добавить по Zigbee</string>
+    <string name="add_button_matter">Добавить по Matter</string>
+    <string name="add_button_person">Добавить человека</string>
+    <string name="add_button_device_group">Добавить группу устройств</string>
+
+    <!-- AddMatter screen -->
+    <string name="add_matter_title">Добавление Matter-устройства</string>
+    <string name="add_matter_idle_description">Включите устройство и убедитесь, что оно в режиме сопряжения (LED мигает).\nЗатем нажмите кнопку ниже — Google поможет со сканированием QR-кода и подключением к Wi-Fi, а Home Assistant примет устройство в свою сеть.</string>
+    <string name="add_matter_start_button">Начать сопряжение</string>
+    <string name="add_matter_preparing_title">Готовим Google UI…</string>
+    <string name="add_matter_preparing_description">Сейчас откроется системное окно сопряжения.</string>
+    <string name="add_matter_google_active_title">Сопряжение через Google</string>
+    <string name="add_matter_google_active_description">Следуйте инструкциям в окне Google. Не выходите из приложения.</string>
+    <string name="add_matter_finalizing_title">Регистрируем в Home Assistant…</string>
+    <string name="add_matter_finalizing_description">Передаём устройство в ваш Home Assistant.\nЭто занимает до 30 секунд.</string>
+    <string name="add_matter_done_title">Устройство добавлено</string>
+    <string name="add_matter_done_description">Устройство появится в Home Assistant в течение нескольких секунд.</string>
+    <string name="add_matter_new_devices_title">Новые устройства</string>
+    <string name="add_matter_new_devices_empty">Пока новых устройств в Home Assistant нет.\nОни появятся здесь, как только Home Assistant их зарегистрирует.</string>
+    <string name="add_matter_add_another_button">Добавить ещё одно</string>
+    <string name="add_matter_finish_button">Готово</string>
+    <string name="add_matter_failed_title">Не получилось</string>
+    <string name="add_matter_retry_button">Попробовать снова</string>
+    <string name="add_matter_cancel_button">Отмена</string>
+    <string name="add_matter_error_unsupported_android">Matter доступен начиная с Android 8.1</string>
+    <string name="add_matter_error_user_cancelled">Сопряжение отменено</string>
+    <string name="add_matter_error_intent_failed">Не удалось открыть commissioning UI</string>
+    <string name="add_matter_error_unknown">Не удалось добавить устройство</string>
+    <string name="add_matter_error_ha_rejected">Home Assistant отклонил %1$s</string>
+    <string name="add_matter_error_network">Сетевая ошибка при %1$s</string>
+
     <string name="area_filter_all">Все</string>
+
+    <string name="domain_filter_title">Тип</string>
+    <string name="domain_light">Свет</string>
+    <string name="domain_switch">Выключатель</string>
+    <string name="domain_sensor">Датчик</string>
+    <string name="domain_binary_sensor">Бинарный датчик</string>
+    <string name="domain_climate">Климат</string>
+    <string name="domain_zone_home">Зона</string>
+    <string name="domain_select">Выбор</string>
+    <string name="domain_number">Число</string>
+    <string name="domain_person">Человек</string>
+    <string name="domain_automation">Автоматизация</string>
+    <string name="domain_scene">Сцена</string>
+    <string name="domain_weather">Погода</string>
+    <string name="domain_button">Кнопка</string>
 
     <string name="automation_list_tab_automations">Автоматизации</string>
     <string name="automation_list_tab_scenes">Сцены</string>
     <string name="automation_list_create_automation">Создать автоматизацию</string>
     <string name="automation_list_create_scene">Создать сцену</string>
     <string name="automation_list_action_delete">Удалить</string>
+
+    <string name="automation_detail_title">Автоматизация</string>
+    <string name="automation_detail_label_name">Название автоматизации</string>
+    <string name="automation_detail_section_triggers">Триггеры</string>
+    <string name="automation_detail_section_conditions">Условия</string>
+    <string name="automation_detail_section_services">Действия</string>
+    <string name="automation_detail_info_triggers">Триггер — это определённое событие, происходящее внутри или вокруг вашего дома, например: «Когда садится солнце».</string>
+    <string name="automation_detail_info_conditions">Для запуска последовательности действий все указанные здесь условия должны быть выполнены.</string>
+    <string name="automation_detail_info_services">Этот список действий будет выполняться последовательно при запуске автоматизации.</string>
+    <string name="automation_detail_button_add_trigger">Добавить триггер</string>
+    <string name="automation_detail_button_add_condition">Добавить условие</string>
+    <string name="automation_detail_button_add_service">Добавить действие</string>
+    <string name="automation_detail_empty_triggers">Пока нет триггеров. Добавьте хотя бы один.</string>
+    <string name="automation_detail_empty_conditions">Пока нет условий.</string>
+    <string name="automation_detail_empty_services">Пока нет действий. Добавьте хотя бы одно.</string>
+    <string name="automation_detail_button_save">Сохранить</string>
+    <string name="automation_detail_action_edit">Изменить</string>
+    <string name="automation_detail_action_delete">Удалить</string>
+    <string name="automation_detail_label_mode">Режим запуска</string>
+
+    <string name="automation_mode_picker_title">Изменить режим</string>
+    <string name="automation_mode_picker_confirm">Изменить режим</string>
+    <string name="automation_mode_picker_cancel">Отменить</string>
+    <string name="automation_mode_single_title">Одиночный</string>
+    <string name="automation_mode_single_description">Выдать предупреждение не прерывая работу автоматизации.</string>
+    <string name="automation_mode_restart_title">Рестарт</string>
+    <string name="automation_mode_restart_description">Прервать работу автоматизации и запустить снова.</string>
+    <string name="automation_mode_queued_title">Очередь</string>
+    <string name="automation_mode_queued_description">Завершить работу автоматизации и запустить снова.</string>
+    <string name="automation_mode_parallel_title">Параллельный</string>
+    <string name="automation_mode_parallel_description">Запустить автоматизацию независимо от предыдущего запуска.</string>
+
+    <string name="logic_block_operator_and">И</string>
+    <string name="logic_block_operator_or">ИЛИ</string>
+    <string name="logic_block_operator_not">НЕ</string>
+    <string name="logic_block_state_title">Состояние объекта \"%1$s\" —</string>
+    <string name="logic_block_state_title_with_state">Состояние объекта \"%1$s\" — %2$s</string>
+    <string name="logic_block_state_on">Включено</string>
+    <string name="logic_block_state_off">Выключено</string>
+    <string name="logic_block_state_unknown">Неизвестно</string>
+    <string name="logic_block_state_unavailable">Недоступно</string>
+    <string name="logic_block_new_condition">Новое условие</string>
+    <string name="logic_block_error_into_itself">Нельзя переместить блок внутрь самого себя</string>
+    <string name="logic_block_error_too_deep">Нельзя вкладывать больше 3 уровней</string>
+
+    <string name="automation_condition_picker_group_blocks">Логические блоки</string>
+    <string name="automation_condition_picker_group_objects">Объекты</string>
+    <string name="automation_condition_picker_object">Состояние объекта</string>
+    <string name="automation_condition_numeric_title">Числовое условие</string>
+    <string name="automation_condition_above">Выше</string>
+    <string name="automation_condition_below">Ниже</string>
+    <string name="automation_condition_state_title">Состояние</string>
 
     <string name="scene_create_title_create">Создание сцены</string>
     <string name="scene_create_title_edit">Редактирование сцены</string>
@@ -72,6 +171,9 @@
     <string name="device_detail_value_empty">—</string>
     <string name="device_detail_error_generic">Не удалось загрузить устройство</string>
     <string name="device_detail_retry">Повторить</string>
+    <string name="device_detail_action_edit">Изменить</string>
+    <string name="device_detail_edit_title">Изменить устройство</string>
+    <string name="device_detail_edit_save">Сохранить</string>
     <string name="device_detail_not_found">Устройство не найдено: %1$s</string>
     <string name="device_detail_history_empty">За последние 24 часа состояний не менялось</string>
     <string name="device_detail_history_error">Не удалось загрузить историю</string>

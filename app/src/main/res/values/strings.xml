@@ -18,13 +18,116 @@
 
     <string name="automation_button">Automation</string>
 
+    <string name="add_title">What to add?</string>
+    <string name="add_button_zigbee">Add via Zigbee</string>
+    <string name="add_button_matter">Add via Matter</string>
+
+    <!-- AddMatter screen -->
+    <string name="add_matter_title">Add Matter device</string>
+    <string name="add_matter_idle_description">Power on the device and make sure it is in pairing mode (LED is blinking).\nThen tap the button below — Google will help you scan the QR code and connect to Wi-Fi, and Home Assistant will accept the device into its network.</string>
+    <string name="add_matter_start_button">Start pairing</string>
+    <string name="add_matter_preparing_title">Preparing Google UI…</string>
+    <string name="add_matter_preparing_description">The system pairing window is about to open.</string>
+    <string name="add_matter_google_active_title">Pairing via Google</string>
+    <string name="add_matter_google_active_description">Follow the instructions in the Google window. Do not leave the app.</string>
+    <string name="add_matter_finalizing_title">Registering in Home Assistant…</string>
+    <string name="add_matter_finalizing_description">Handing the device over to your Home Assistant.\nThis can take up to 30 seconds.</string>
+    <string name="add_matter_done_title">Device added</string>
+    <string name="add_matter_done_description">The device will appear in Home Assistant within a few seconds.</string>
+    <string name="add_matter_new_devices_title">Newly added devices</string>
+    <string name="add_matter_new_devices_empty">No new devices in Home Assistant yet.\nThey will show up here as soon as Home Assistant registers them.</string>
+    <string name="add_matter_add_another_button">Add another</string>
+    <string name="add_matter_finish_button">Done</string>
+    <string name="add_matter_failed_title">Something went wrong</string>
+    <string name="add_matter_retry_button">Try again</string>
+    <string name="add_matter_cancel_button">Cancel</string>
+    <string name="add_matter_error_unsupported_android">Matter is available starting from Android 8.1</string>
+    <string name="add_matter_error_user_cancelled">Pairing cancelled</string>
+    <string name="add_matter_error_intent_failed">Could not open the commissioning UI</string>
+    <string name="add_matter_error_unknown">Could not add the device</string>
+    <!-- Placeholder %1$s — WS command name, e.g. matter/commission_on_network -->
+    <string name="add_matter_error_ha_rejected">Home Assistant rejected %1$s</string>
+    <string name="add_matter_error_network">Network error during %1$s</string>
+    <string name="add_button_person">Add a person</string>
+    <string name="add_button_device_group">Add a device group</string>
+
     <string name="area_filter_all">All</string>
+
+    <string name="domain_filter_title">Type</string>
+    <string name="domain_light">Light</string>
+    <string name="domain_switch">Switch</string>
+    <string name="domain_sensor">Sensor</string>
+    <string name="domain_binary_sensor">Binary sensor</string>
+    <string name="domain_climate">Climate</string>
+    <string name="domain_zone_home">Zone</string>
+    <string name="domain_select">Select</string>
+    <string name="domain_number">Number</string>
+    <string name="domain_person">Person</string>
+    <string name="domain_automation">Automation</string>
+    <string name="domain_scene">Scene</string>
+    <string name="domain_weather">Weather</string>
+    <string name="domain_button">Button</string>
 
     <string name="automation_list_tab_automations">Automations</string>
     <string name="automation_list_tab_scenes">Scenes</string>
     <string name="automation_list_create_automation">Create automation</string>
     <string name="automation_list_create_scene">Create scene</string>
     <string name="automation_list_action_delete">Delete</string>
+
+    <string name="automation_detail_title">Automation</string>
+    <string name="automation_detail_label_name">Automation name</string>
+    <string name="automation_detail_section_triggers">Triggers</string>
+    <string name="automation_detail_section_conditions">Conditions</string>
+    <string name="automation_detail_section_services">Services</string>
+    <string name="automation_detail_info_triggers">A trigger is a specific event happening inside or around your home, for example: «When the sun sets».</string>
+    <string name="automation_detail_info_conditions">For the sequence of actions to run, all the conditions listed here must be met.</string>
+    <string name="automation_detail_info_services">This list of actions runs sequentially when the automation is triggered.</string>
+    <string name="automation_detail_button_add_trigger">Add trigger</string>
+    <string name="automation_detail_button_add_condition">Add condition</string>
+    <string name="automation_detail_button_add_service">Add service</string>
+    <string name="automation_detail_empty_triggers">No triggers yet. Add at least one.</string>
+    <string name="automation_detail_empty_conditions">No conditions yet.</string>
+    <string name="automation_detail_empty_services">No services yet. Add at least one.</string>
+    <string name="automation_detail_button_save">Save</string>
+    <string name="automation_detail_action_edit">Edit</string>
+    <string name="automation_detail_action_delete">Delete</string>
+    <string name="automation_detail_label_mode">Run mode</string>
+
+    <string name="automation_mode_picker_title">Change mode</string>
+    <string name="automation_mode_picker_confirm">Change mode</string>
+    <string name="automation_mode_picker_cancel">Cancel</string>
+    <string name="automation_mode_single_title">Single</string>
+    <string name="automation_mode_single_description">Show a warning without interrupting the running automation.</string>
+    <string name="automation_mode_restart_title">Restart</string>
+    <string name="automation_mode_restart_description">Stop the running automation and start it again.</string>
+    <string name="automation_mode_queued_title">Queued</string>
+    <string name="automation_mode_queued_description">Finish the running automation and start it again.</string>
+    <string name="automation_mode_parallel_title">Parallel</string>
+    <string name="automation_mode_parallel_description">Start the automation independently of the previous run.</string>
+
+    <string name="logic_block_operator_and">AND</string>
+    <string name="logic_block_operator_or">OR</string>
+    <string name="logic_block_operator_not">NOT</string>
+    <string name="logic_block_symbol_and">&amp;</string>
+    <string name="logic_block_symbol_or">∨</string>
+    <string name="logic_block_symbol_not">≠</string>
+    <string name="logic_block_state_title">State of \"%1$s\" —</string>
+    <string name="logic_block_state_title_with_state">State of \"%1$s\" — %2$s</string>
+    <string name="logic_block_state_on">On</string>
+    <string name="logic_block_state_off">Off</string>
+    <string name="logic_block_state_unknown">Unknown</string>
+    <string name="logic_block_state_unavailable">Unavailable</string>
+    <string name="logic_block_new_condition">New condition</string>
+    <string name="logic_block_error_into_itself">Can\'t move a block into itself</string>
+    <string name="logic_block_error_too_deep">Can\'t nest more than 3 levels</string>
+
+    <string name="automation_condition_picker_group_blocks">Logic blocks</string>
+    <string name="automation_condition_picker_group_objects">Objects</string>
+    <string name="automation_condition_picker_object">Object state</string>
+    <string name="automation_condition_numeric_title">Numeric condition</string>
+    <string name="automation_condition_above">Above</string>
+    <string name="automation_condition_below">Below</string>
+    <string name="automation_condition_state_title">State</string>
 
     <string name="scene_create_title_create">Create scene</string>
     <string name="scene_create_title_edit">Edit scene</string>
@@ -73,6 +176,9 @@
     <string name="device_detail_value_empty">—</string>
     <string name="device_detail_error_generic">Failed to load the device</string>
     <string name="device_detail_retry">Retry</string>
+    <string name="device_detail_action_edit">Edit</string>
+    <string name="device_detail_edit_title">Edit device</string>
+    <string name="device_detail_edit_save">Save</string>
     <string name="device_detail_not_found">Device not found: %1$s</string>
     <string name="device_detail_history_empty">No state changes in the last 24 hours</string>
     <string name="device_detail_history_error">Failed to load history</string>

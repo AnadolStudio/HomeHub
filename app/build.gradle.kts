@@ -1,6 +1,7 @@
 plugins {
     id(libs.plugins.android.application.get().pluginId)
     id(libs.plugins.kotlin.android.get().pluginId)
+    id(libs.plugins.compose.compiler.get().pluginId)
     id(libs.plugins.kotlin.kapt.get().pluginId)
     id(libs.plugins.kotlin.parcelize.get().pluginId)
 //    id("com.google.firebase.crashlytics") // TODO
@@ -75,11 +76,9 @@ android {
 
     kotlinOptions {
         jvmTarget = javaVersion.toString()
-        freeCompilerArgs = freeCompilerArgs + listOf("-opt-in=androidx.compose.foundation.ExperimentalFoundationApi")
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.kotlinCompilerExtensionVersion.get()
+        freeCompilerArgs = freeCompilerArgs + listOf(
+                "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
+        )
     }
 
     lint {
@@ -91,7 +90,7 @@ android {
         generateStubs = true
     }
 
-    namespace = "com.anadolstudio.template"
+    namespace = "com.anadolstudio.homehub"
 }
 
 dependencies {
@@ -110,6 +109,8 @@ dependencies {
     implementation(libs.webkit)
     implementation(libs.accompanist.webview)
 
+    implementation(libs.reorderable)
+
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
     implementation(libs.retrofit)
@@ -121,6 +122,10 @@ dependencies {
 
     implementation(libs.room)
     kapt(libs.room.compiler)
+
+    // Matter commissioning через Google Home Mobile SDK (Commissioning API).
+    implementation(libs.play.services.home)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.bundles.android.test)
 }

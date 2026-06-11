@@ -1,0 +1,3 @@
+package com.anadolstudio.homehub.feature.manualSetupHomeAssistantUrl.presetnation
+
+class ManualSetupHomeAssistantUrlState

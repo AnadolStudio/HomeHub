@@ -29,6 +29,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true">
 
+        <profileable android:shell="true" tools:targetApi="29" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
@@ -50,6 +52,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- exported=true обязательно (см. home-assistant/android PR #5509). -->
+        <service
+            android:name=".feature.add_device.addMatter.gms.MatterCommissioningService"
+            android:exported="true"
+            tools:ignore="ExportedService" />
 
     </application>
 
